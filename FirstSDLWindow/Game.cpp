@@ -5,7 +5,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Game::Game() 
-	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr){}
+	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), scoreManager(nullptr){}
 
 
 Game::~Game() {clean();}
@@ -24,12 +24,18 @@ bool Game::init()
 		return false;
 	}
 
+	if(TTF_Init() < 0) {
+		std::cerr << "TTF could not initialize! " << TTF_GetError() << "\n";
+		return false;
+	}
+
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	player = new Player(renderer);
 	bullet = new Bullet(renderer);
 	ufo = new UFO(renderer);
+	scoreManager = new ScoreManager(renderer, "../Assets/Fonts/space_invaders.ttf", 24);
 	for (int row = 0; row < rows; ++row)
 	{
 		for (int col = 0; col < cols; ++col)
@@ -126,6 +132,7 @@ void Game::update()
 		{
 			bullet->deactivate();
 			enemy->destroy();
+			scoreManager->addPoints(10);
 		}
 
 		if (enemy->isAlive())
@@ -137,6 +144,7 @@ void Game::update()
 	{
 		bullet->deactivate();
 		ufo->deactivate();
+		scoreManager->addPoints(100);
 		lastUFOSpawnTime = currentTime; // reset if ufo died
 	}
 		
@@ -165,6 +173,7 @@ void Game::render()
 	player->render();
 	bullet->render();
 	ufo->render();
+	scoreManager->render(renderer);
 
 	for (auto& enemy : enemies)
 	{
@@ -191,6 +200,8 @@ void Game::clean()
 	delete player;
 	delete bullet;
 	delete enemy;
+	delete scoreManager;
+	TTF_Quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

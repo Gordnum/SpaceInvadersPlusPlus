@@ -4,7 +4,6 @@
 
 int main(int argc, char *argv[])
 {
-	// testing
 	Game game;
 	if(game.init())
 	{

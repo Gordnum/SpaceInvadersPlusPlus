@@ -5,6 +5,7 @@
 #include "Bullet.h"
 #include "Enemy.h"
 #include "UFO.h"
+#include "ScoreManager.h"
 
 class Game
 {
@@ -21,6 +22,7 @@ class Game
     Bullet* bullet;
     Enemy* enemy;
     UFO* ufo;
+    ScoreManager* scoreManager;
     std::vector<Enemy*> enemies;
 
     int enemyDirection = 1;
