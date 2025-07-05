@@ -44,6 +44,7 @@ bool Game::init()
 			int y = 150 + row * (20 + spacingY); // change starting height
 
 			enemy = new Enemy(renderer);
+			enemy->setRowIndex(row);  // this is key for tracking top row
 			enemy->setPosition(x, y);
 			enemies.push_back(enemy);
 		}
@@ -78,7 +79,6 @@ void Game::handleEvents()
 void Game::update()
 {
 	unsigned int currentTime = SDL_GetTicks();
-
 	if (currentTime - lastMoveTime >= moveInterval)
 	{
 		int leftEdge = SCREEN_WIDTH;
@@ -124,6 +124,28 @@ void Game::update()
 		lastMoveTime = currentTime;
 	}
 
+	// Enemy shoot
+	unsigned currentEnemyShotTime = SDL_GetTicks();
+	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown) {
+		std::vector<Enemy*> shooters;
+		for (Enemy* e : enemies) {
+			if (e->isAlive() && e->isInTopRow()) {
+				shooters.push_back(e);
+			}
+		}
+
+		if (!shooters.empty()) {
+			Enemy* shooter = shooters[rand() % shooters.size()];
+
+			Bullet* b = new Bullet(renderer);
+			SDL_Rect r = shooter->getRect();
+			b->fireFrom(r.x + r.w / 2, r.y + r.h);
+			enemyBullets.push_back(b);
+		}
+
+		lastEnemyShotTime = currentEnemyShotTime;
+	}
+
 	// other updates (player, bullet, collisions, etc.)
 	for (auto& enemy : enemies)
 	{
@@ -139,6 +161,13 @@ void Game::update()
 			enemy->update();
 	}
 
+	// update bullet enemy
+	for (Bullet* b : enemyBullets) 
+	{
+		if (b->isActive()) b->update();
+	}
+
+	// bullet hit on enemy
 	if(bullet->isActive() && ufo->isActive() &&
 		checkCollision(bullet->getRect(), ufo->getRect()))
 	{
@@ -149,7 +178,6 @@ void Game::update()
 	}
 		
 	// UFO
-
 	if(currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
 	{
 			if(!ufo->isActive())
@@ -178,6 +206,11 @@ void Game::render()
 	for (auto& enemy : enemies)
 	{
 		if (enemy->isAlive()) enemy->render();
+	}
+
+	for (Bullet* b : enemyBullets) 
+	{
+		if (b->isActive()) b->render();
 	}
 
 	SDL_RenderPresent(renderer);

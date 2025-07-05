@@ -33,6 +33,10 @@ class Game
     unsigned int ufoSpawnInterval = 13000;
     bool hasBounced = false;
 
+    std::vector<Bullet*> enemyBullets;
+    unsigned int lastEnemyShotTime = 0;
+    const unsigned int enemyShootCooldown = 2000; // every 2 seconds
+
 	public:
     Game();
     ~Game();

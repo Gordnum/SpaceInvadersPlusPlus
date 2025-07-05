@@ -10,7 +10,7 @@ SDL_Rect Bullet::getRect() const { return rect; }
 bool Bullet::isActive() const { return active; }
 void Bullet::deactivate() { active = false; }
 
-void Bullet::fire(int x, int y)
+void Bullet::fire(int x, int y) // player
 {
 	if(!active)
 	{
@@ -18,6 +18,13 @@ void Bullet::fire(int x, int y)
 		rect.y = y;
 		active = true;
 	}
+}
+
+void Bullet::fireFrom(int x, int y) // enemy
+{
+	rect.x = x - rect.w / 2;
+	rect.y = y;
+	active = true;
 }
 
 void Bullet::update()

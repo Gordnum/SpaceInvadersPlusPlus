@@ -8,7 +8,7 @@ private:
 SDL_Rect rect;
 SDL_Renderer* renderer;
 bool alive;
-
+int rowIndex;
 
 public:
 Enemy(SDL_Renderer* renderer);
@@ -19,4 +19,6 @@ void destroy();
 bool isAlive() const;
 void setPosition(int x, int y);
 void move(int dx, int dy);
+void setRowIndex(int row) { rowIndex = row; }
+bool isInTopRow() const { return rowIndex == 0; }
 };
