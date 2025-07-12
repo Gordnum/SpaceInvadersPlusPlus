@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <vector>
 #include "Player.h"
 #include "Bullet.h"
@@ -17,6 +18,7 @@ class Game
     SDL_Window* window;
     SDL_Renderer* renderer;
     bool isRunning;
+    bool isGameOver;
 
     Player* player;
     Bullet* bullet;
@@ -36,6 +38,8 @@ class Game
     std::vector<Bullet*> enemyBullets;
     unsigned int lastEnemyShotTime = 0;
     const unsigned int enemyShootCooldown = 2000; // every 2 seconds
+    unsigned int gameOverStartTime;
+    bool highScoreSaved = false;
 
 	public:
     Game();

@@ -4,7 +4,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Enemy::Enemy(SDL_Renderer* renderer)
-	  :renderer(renderer), alive(true)
+	  :renderer(renderer), alive(true), rowIndex(0)
 {
 	rect = { 100, 50, 40, 20 };
 }

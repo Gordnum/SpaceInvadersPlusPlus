@@ -5,7 +5,8 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Game::Game() 
-	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), scoreManager(nullptr){}
+	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
+	scoreManager(nullptr), isGameOver(false), gameOverStartTime(0){}
 
 
 Game::~Game() {clean();}
@@ -36,6 +37,9 @@ bool Game::init()
 	bullet = new Bullet(renderer);
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer, "../Assets/Fonts/space_invaders.ttf", 24);
+
+	scoreManager->loadHighScore("highscore.txt");
+
 	for (int row = 0; row < rows; ++row)
 	{
 		for (int col = 0; col < cols; ++col)
@@ -78,6 +82,8 @@ void Game::handleEvents()
 // ADD
 void Game::update()
 {
+	if (isGameOver) return;
+
 	unsigned int currentTime = SDL_GetTicks();
 	if (currentTime - lastMoveTime >= moveInterval)
 	{
@@ -125,7 +131,7 @@ void Game::update()
 	}
 
 	// Enemy shoot
-	unsigned currentEnemyShotTime = SDL_GetTicks();
+	unsigned int currentEnemyShotTime = SDL_GetTicks();
 	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown) {
 		std::vector<Enemy*> shooters;
 		for (Enemy* e : enemies) {
@@ -139,7 +145,7 @@ void Game::update()
 
 			Bullet* b = new Bullet(renderer);
 			SDL_Rect r = shooter->getRect();
-			b->fireFrom(r.x + r.w / 2, r.y + r.h);
+			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
 			enemyBullets.push_back(b);
 		}
 
@@ -161,13 +167,40 @@ void Game::update()
 			enemy->update();
 	}
 
+	// if hit with bullets
+	for (auto& bullet : enemyBullets)
+	{
+		if (bullet->isActive() && checkCollision(bullet->getRect(), player->getRect()))
+		{
+			bullet->deactivate();
+			player->loseLives();
+
+			if (player->getLives() <= 0)
+			{
+				isGameOver = true;
+				gameOverStartTime = SDL_GetTicks();
+			}
+		}
+	}
+
+	// if enemy gets too close
+	for (auto& enemy : enemies) 
+	{
+		if (enemy->isAlive() && (enemy->getRect().y + enemy->getRect().h >= player->getRect().y)) 
+		{
+			isGameOver = true;
+			gameOverStartTime = SDL_GetTicks();
+			break; // Stop checking after one has triggered
+		}
+	}
+
 	// update bullet enemy
 	for (Bullet* b : enemyBullets) 
 	{
 		if (b->isActive()) b->update();
 	}
 
-	// bullet hit on enemy
+	// bullet hit on ufo
 	if(bullet->isActive() && ufo->isActive() &&
 		checkCollision(bullet->getRect(), ufo->getRect()))
 	{
@@ -185,6 +218,13 @@ void Game::update()
 				ufo->activate();
 				lastUFOSpawnTime = currentTime;
 			}
+	}
+
+	// New Highscore
+	if(isGameOver && !highScoreSaved)
+	{
+		scoreManager->saveHighScore("highscore.txt");
+		highScoreSaved = true;
 	}
 
 	ufo->update();
@@ -211,6 +251,48 @@ void Game::render()
 	for (Bullet* b : enemyBullets) 
 	{
 		if (b->isActive()) b->render();
+	}
+
+	if (isGameOver)
+	{
+		unsigned int gameOverScreen = SDL_GetTicks();
+
+		if(gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
+		{
+			SDL_Color color = { 255, 255, 255 }; // Red
+			TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
+
+			if (!font)
+			{
+				SDL_Log("Failed to load font: %s", TTF_GetError());
+				return;
+			}
+
+			SDL_Surface* surface = TTF_RenderText_Solid(font, "GAME OVER", color);
+			if (!surface)
+			{
+				SDL_Log("Failed to create surface: %s", TTF_GetError());
+				return;
+			}
+
+			SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+			SDL_Rect dest =
+			{
+				SCREEN_WIDTH / 2 - surface->w / 2,
+				SCREEN_HEIGHT / 2 - surface->h / 2,
+				surface->w, surface->h
+			};
+
+			SDL_FreeSurface(surface);
+			SDL_RenderCopy(renderer, texture, NULL, &dest);
+			SDL_DestroyTexture(texture);
+			TTF_CloseFont(font);
+
+			SDL_RenderPresent(renderer);
+			return; // Skip rendering rest of game
+		}
+		
 	}
 
 	SDL_RenderPresent(renderer);
