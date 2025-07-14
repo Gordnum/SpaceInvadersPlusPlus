@@ -6,7 +6,7 @@ const int SCREEN_HEIGHT = 600;
 UFO::UFO(SDL_Renderer* renderer)
 	:renderer(renderer), active(false), speed(5)
 {
-	rect = { -60, 100, 60, 30 };
+	rect = { -60, 100, 40, 20 };
 }
 
 void UFO::update()

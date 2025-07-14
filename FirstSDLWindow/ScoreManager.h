@@ -24,7 +24,7 @@ private:
 	void updateTexture(SDL_Renderer* renderer);
 
 public:
-	ScoreManager(SDL_Renderer* renderer, const std::string& fontPath, int fontSize);
+	ScoreManager(SDL_Renderer* renderer);
 	~ScoreManager();
 
 	void addPoints(int amount);

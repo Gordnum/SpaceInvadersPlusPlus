@@ -1,11 +1,13 @@
 #pragma once
 #include <SDL.h>
+#include <SDL_ttf.h>
 
 class Player
 {
 	private:
 	SDL_Rect rect;
 	SDL_Renderer* renderer;
+	TTF_Font* font;
 	int speed;
 	bool movingLeft;
 	bool movingRight;

@@ -4,10 +4,10 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-ScoreManager::ScoreManager(SDL_Renderer* renderer, const std::string& fontPath, int fontSize)
+ScoreManager::ScoreManager(SDL_Renderer* renderer)
 	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), highscore(0)
 {
-	font = TTF_OpenFont(fontPath.c_str(), fontSize);
+	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
 		SDL_Log("Failed to load font: %s", TTF_GetError());
 

@@ -36,7 +36,7 @@ bool Game::init()
 	player = new Player(renderer);
 	bullet = new Bullet(renderer);
 	ufo = new UFO(renderer);
-	scoreManager = new ScoreManager(renderer, "../Assets/Fonts/space_invaders.ttf", 24);
+	scoreManager = new ScoreManager(renderer);
 
 	scoreManager->loadHighScore("highscore.txt");
 
