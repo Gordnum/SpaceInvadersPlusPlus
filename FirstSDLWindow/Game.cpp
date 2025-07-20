@@ -37,6 +37,8 @@ bool Game::init()
 	bullet = new Bullet(renderer);
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
+	bulletManager = new BulletManager(renderer);
+	pickups.push_back(new Pickup(renderer, 400, 300, WeaponType::PIERCING_SHOT));
 
 	scoreManager->loadHighScore("highscore.txt");
 
@@ -70,9 +72,21 @@ void Game::handleEvents()
 	{
 		if (event.type == SDL_QUIT)
 			isRunning = false;
-		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
+
+		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
 		{
-			bullet->fire(player->getX(), player->getY());
+			if(bullet->getCurrentWeapon() == WeaponType::PIERCING_SHOT && bullet->getAmmo() > 0)
+			{
+				SDL_Log("Firing Piercing Shot");
+				bulletManager->fire(player->getX(), player->getY(), WeaponType::PIERCING_SHOT, 3);
+				bullet->useAmmo();
+			}
+			else
+			{
+				SDL_Log("Firing Default Shot");
+				bulletManager->fire(player->getX(), player->getY(), WeaponType::DEFAULT, 0);
+			}
+				
 		}
 
 		player->handleEvent(event);
@@ -105,7 +119,7 @@ void Game::update()
 			for (auto& enemy: enemies)
 			{
 				if (enemy->isAlive())
-					enemy->move(0, 30);  // go down once
+					enemy->move(0, 20);  // go down once
 			}
 			hasBounced = true; // prevent repeat bounce
 
@@ -152,20 +166,43 @@ void Game::update()
 		lastEnemyShotTime = currentEnemyShotTime;
 	}
 
-	// other updates (player, bullet, collisions, etc.)
-	for (auto& enemy : enemies)
+	// bullet hit enemy
+	for(Bullet* b: bulletManager->getBullets())
 	{
-		if (bullet->isActive() && enemy->isAlive() &&
-			checkCollision(bullet->getRect(), enemy->getRect()))
+		for (auto& enemy : enemies)
 		{
-			bullet->deactivate();
-			enemy->destroy();
-			scoreManager->addPoints(10);
-		}
+			if (!enemy->isAlive())
+			{
+				enemy->update();
+				continue;
+			}
 
-		if (enemy->isAlive())
-			enemy->update();
+			if (b->isActive() && enemy->isAlive() &&
+				checkCollision(b->getRect(), enemy->getRect()))
+			{
+				if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
+				{
+					enemy->destroy();
+					int baseScore = 10;
+					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					scoreManager->addPoints(earnedScore);
+					comboManager.onEnemyKilled();
+				}
+				else
+				{
+					b->deactivate();
+					enemy->destroy();
+					int baseScore = 10;
+					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					scoreManager->addPoints(earnedScore);
+					comboManager.onEnemyKilled();
+					break;
+				}
+			}
+		}
 	}
+
+	
 
 	// if hit with bullets
 	for (auto& bullet : enemyBullets)
@@ -195,21 +232,38 @@ void Game::update()
 	}
 
 	// update bullet enemy
-	for (Bullet* b : enemyBullets) 
+	for (Bullet* bullet : enemyBullets) 
 	{
-		if (b->isActive()) b->update();
+		if (bullet->isActive()) bullet->update();
 	}
 
 	// bullet hit on ufo
-	if(bullet->isActive() && ufo->isActive() &&
-		checkCollision(bullet->getRect(), ufo->getRect()))
+
+	for (Bullet* b : bulletManager->getBullets())
 	{
-		bullet->deactivate();
-		ufo->deactivate();
-		scoreManager->addPoints(100);
-		lastUFOSpawnTime = currentTime; // reset if ufo died
+		if (b->isActive() && ufo->isActive() &&
+			checkCollision(b->getRect(), ufo->getRect()))
+		{
+			if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
+			{
+				ufo->deactivate();
+				int baseScore = 100;
+				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+				scoreManager->addPoints(earnedScore);
+				comboManager.onEnemyKilled();
+			}
+			else
+			{
+				b->deactivate();
+				ufo->deactivate();
+				int baseScore = 100;
+				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+				scoreManager->addPoints(earnedScore);
+				comboManager.onEnemyKilled();
+			}
+		}
 	}
-		
+
 	// UFO
 	if(currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
 	{
@@ -220,7 +274,22 @@ void Game::update()
 			}
 	}
 
-	// New Highscore
+	// PICKUPS
+	for (auto& pickup : pickups)
+	{
+		if (!pickup->isCollected() && checkCollision(player->getRect(), pickup->getRect()))
+		{
+			if (pickup->getType() == WeaponType::PIERCING_SHOT)
+			{
+				bullet->setWeapon(WeaponType::PIERCING_SHOT, 3);
+			}
+
+			pickup->collect();
+		}
+		pickup->update();
+	}
+
+	// NEW HIGHSCORE
 	if(isGameOver && !highScoreSaved)
 	{
 		scoreManager->saveHighScore("highscore.txt");
@@ -230,6 +299,8 @@ void Game::update()
 	ufo->update();
 	player->update();
 	bullet->update();
+	bulletManager->update();
+	comboManager.update();
 }
 
 // ADD
@@ -242,10 +313,17 @@ void Game::render()
 	bullet->render();
 	ufo->render();
 	scoreManager->render(renderer);
+	bulletManager->render();
+	comboManager.render(renderer);
 
 	for (auto& enemy : enemies)
 	{
 		if (enemy->isAlive()) enemy->render();
+	}
+
+	for (auto& pickup : pickups)
+	{
+		pickup->render();
 	}
 
 	for (Bullet* b : enemyBullets) 
@@ -259,7 +337,7 @@ void Game::render()
 
 		if(gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
 		{
-			SDL_Color color = { 255, 255, 255 }; // Red
+			SDL_Color color = { 255, 255, 255 };
 			TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
 
 			if (!font)
@@ -290,7 +368,7 @@ void Game::render()
 			TTF_CloseFont(font);
 
 			SDL_RenderPresent(renderer);
-			return; // Skip rendering rest of game
+			return;
 		}
 		
 	}

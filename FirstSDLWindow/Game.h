@@ -7,6 +7,10 @@
 #include "Enemy.h"
 #include "UFO.h"
 #include "ScoreManager.h"
+#include "ComboManager.h"
+#include "BulletManager.h"
+#include "WeaponType.h"
+#include "Pickup.h"
 
 class Game
 {
@@ -24,8 +28,11 @@ class Game
     Bullet* bullet;
     Enemy* enemy;
     UFO* ufo;
+    ComboManager comboManager;
     ScoreManager* scoreManager;
+    BulletManager* bulletManager;
     std::vector<Enemy*> enemies;
+    std::vector<Pickup*> pickups;
 
     int enemyDirection = 1;
     int enemySpeed = 10;

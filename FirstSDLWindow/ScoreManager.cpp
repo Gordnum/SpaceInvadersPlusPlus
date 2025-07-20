@@ -1,4 +1,5 @@
 #include "ScoreManager.h"
+#include <stdio.h>
 #include <fstream>
 
 const int SCREEN_WIDTH = 800;
@@ -24,7 +25,11 @@ ScoreManager::~ScoreManager()
 	if (font) TTF_CloseFont(font);
 }
 
-void ScoreManager::addPoints(int amount) { score += amount; }
+void ScoreManager::addPoints(int amount) 
+{
+	printf("\t+ %d\n", amount);
+	score += amount;
+}
 
 int ScoreManager::getScore() const { return score; }
 
