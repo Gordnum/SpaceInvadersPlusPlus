@@ -8,6 +8,8 @@ class ScoreManager
 private:
 	int score;
 	int highscore;
+	int nextPickupThreshold;
+	bool shouldSpawnPickup;
 	TTF_Font* font;
 	SDL_Color color;
 	SDL_Rect scoreLabelRect;
@@ -30,7 +32,9 @@ public:
 	void addPoints(int amount);
 	void render(SDL_Renderer* renderer);
 	int getScore() const;
+	bool spawnPickup();
 
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);
+
 };

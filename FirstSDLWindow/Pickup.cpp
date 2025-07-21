@@ -1,9 +1,12 @@
 #include "Pickup.h"
 
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
+
 Pickup::Pickup(SDL_Renderer* renderer, int x, int y, WeaponType type)
 	   :renderer(renderer), type(type), collected(false)
 {
-	rect = { 200, 500, 20, 20 };
+	rect = { x, y, 20, 20 };
 }
 
 void Pickup::render()
@@ -18,7 +21,13 @@ void Pickup::render()
 	
 }
 
-void Pickup::update() { /* to be continued */ }
+void Pickup::update() 
+{ 
+	rect.y += 3;
+
+	if (rect.y > SCREEN_HEIGHT)
+		return;
+}
 
 SDL_Rect Pickup::getRect() const { return rect; }
 WeaponType Pickup::getType() const { return type; }

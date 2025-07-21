@@ -6,7 +6,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 ScoreManager::ScoreManager(SDL_Renderer* renderer)
-	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), highscore(0)
+	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), highscore(0), nextPickupThreshold(500), shouldSpawnPickup(false)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
@@ -29,6 +29,12 @@ void ScoreManager::addPoints(int amount)
 {
 	printf("\t+ %d\n", amount);
 	score += amount;
+
+	if(score >= nextPickupThreshold)
+	{
+		shouldSpawnPickup = true;
+		nextPickupThreshold += 500;
+	}
 }
 
 int ScoreManager::getScore() const { return score; }
@@ -118,5 +124,16 @@ void ScoreManager::render(SDL_Renderer* renderer)
 		SDL_RenderCopy(renderer, highScoreLabelTexture, nullptr, &highScoreLabelRect);
 	if (highScoreNumberTexture)
 		SDL_RenderCopy(renderer, highScoreNumberTexture, nullptr, &highScoreNumberRect);
+}
+
+bool ScoreManager::spawnPickup() 
+{ 
+	if(shouldSpawnPickup)
+	{
+		shouldSpawnPickup = false;
+		return true;
+	}
+	
+	return false;;
 }
 

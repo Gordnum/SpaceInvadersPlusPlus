@@ -35,9 +35,8 @@ void UFO::reset()
 }
 
 void UFO::activate(){ reset(); }
-
 void UFO::deactivate() { active = false; }
-
 bool UFO::isActive() const { return active; }
-
 SDL_Rect UFO::getRect() const{return rect;}
+int UFO::getX() const { return rect.x + rect.w / 2; }
+int UFO::getY() const { return rect.y; }

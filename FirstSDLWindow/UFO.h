@@ -17,5 +17,7 @@ class UFO
 		void activate();
 		void deactivate();
 		bool isActive() const;
+		int getX() const;
+		int getY() const;
 		SDL_Rect getRect() const;
 };

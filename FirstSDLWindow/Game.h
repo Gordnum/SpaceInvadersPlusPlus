@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"

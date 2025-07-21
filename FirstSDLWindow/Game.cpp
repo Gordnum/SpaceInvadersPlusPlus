@@ -6,7 +6,7 @@ const int SCREEN_HEIGHT = 600;
 
 Game::Game() 
 	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
-	scoreManager(nullptr), isGameOver(false), gameOverStartTime(0){}
+	scoreManager(nullptr), bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
 
 
 Game::~Game() {clean();}
@@ -18,6 +18,7 @@ bool Game::init()
 	int cols = 11;
 	int spacingX = 10;
 	int spacingY = 10;
+	srand(static_cast<unsigned int>(time(nullptr)));
 	
 	if(SDL_INIT_EVERYTHING < 0)
 	{
@@ -38,7 +39,7 @@ bool Game::init()
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
 	bulletManager = new BulletManager(renderer);
-	pickups.push_back(new Pickup(renderer, 400, 300, WeaponType::PIERCING_SHOT));
+	pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
 
 	scoreManager->loadHighScore("highscore.txt");
 
@@ -183,21 +184,19 @@ void Game::update()
 				if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
 				{
 					enemy->destroy();
-					int baseScore = 10;
-					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
-					scoreManager->addPoints(earnedScore);
-					comboManager.onEnemyKilled();
 				}
 				else
 				{
 					b->deactivate();
 					enemy->destroy();
-					int baseScore = 10;
-					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
-					scoreManager->addPoints(earnedScore);
-					comboManager.onEnemyKilled();
-					break;
 				}
+
+				int baseScore = 10;
+				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+				scoreManager->addPoints(earnedScore);
+				comboManager.onEnemyKilled();
+				if (scoreManager->spawnPickup())
+					pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
 			}
 		}
 	}
@@ -247,20 +246,19 @@ void Game::update()
 			if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
 			{
 				ufo->deactivate();
-				int baseScore = 100;
-				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
-				scoreManager->addPoints(earnedScore);
-				comboManager.onEnemyKilled();
+				
 			}
 			else
 			{
 				b->deactivate();
 				ufo->deactivate();
-				int baseScore = 100;
-				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
-				scoreManager->addPoints(earnedScore);
-				comboManager.onEnemyKilled();
 			}
+
+			int baseScore = 100;
+			int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+			scoreManager->addPoints(earnedScore);
+			comboManager.onEnemyKilled();
+			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), WeaponType::PIERCING_SHOT));
 		}
 	}
 
