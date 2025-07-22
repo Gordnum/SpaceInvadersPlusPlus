@@ -4,5 +4,6 @@
 enum class WeaponType
 {
 	DEFAULT,
-	PIERCING_SHOT
+	PIERCING_SHOT,
+	BOMB_SHOT
 };

@@ -20,7 +20,6 @@ public:
 	void render();
 	SDL_Rect getRect() const;
 
-	void setWeapon(WeaponType type, int ammoAmount);
 	WeaponType getCurrentWeapon() const;
 	int getAmmo() const;
 	void useAmmo();

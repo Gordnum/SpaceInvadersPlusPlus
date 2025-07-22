@@ -12,6 +12,7 @@
 #include "ComboManager.h"
 #include "BulletManager.h"
 #include "WeaponType.h"
+#include "WeaponInventory.h"
 #include "Pickup.h"
 
 class Game
@@ -31,6 +32,7 @@ class Game
     Enemy* enemy;
     UFO* ufo;
     ComboManager comboManager;
+    WeaponInventory inventory;
     ScoreManager* scoreManager;
     BulletManager* bulletManager;
     std::vector<Enemy*> enemies;

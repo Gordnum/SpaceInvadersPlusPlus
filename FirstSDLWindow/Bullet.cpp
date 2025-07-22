@@ -17,13 +17,20 @@ void Bullet::fire(int x, int y, WeaponType type) // player
 		
 		currentWeapon = type;
 
-		if (type == WeaponType::PIERCING_SHOT && ammo > 0)
+		if (type == WeaponType::PIERCING_SHOT)
 		{
 			rect.x = x - rect.w / 2;
 			rect.y = 0;
 			rect.w = 10;
 			rect.h = 500; // full screen height shot
 			
+		}
+		else if (type == WeaponType::BOMB_SHOT)
+		{
+			rect.x = x - rect.w / 2;
+			rect.y = y;
+			rect.w = 10;
+			rect.h = 10;
 		}
 		else if(type == WeaponType::DEFAULT)
 		{
@@ -68,17 +75,13 @@ void Bullet::render()
 	{
 		if (currentWeapon == WeaponType::PIERCING_SHOT)
 			SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // cyan 
+		else if (currentWeapon == WeaponType::BOMB_SHOT)
+			SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255); // orange
 		else if(currentWeapon == WeaponType::DEFAULT)
 			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // yellow
 
 		SDL_RenderFillRect(renderer, &rect);
 	}
-}
-
-void Bullet::setWeapon(WeaponType type, int ammoAmount)
-{
-	currentWeapon = type;
-	ammo = ammoAmount;
 }
 
 void Bullet::useAmmo() { if (ammo > 0) ammo--; }

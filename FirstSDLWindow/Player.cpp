@@ -87,28 +87,10 @@ void Player::update()
     if (rect.x < 0) rect.x = 0;
     if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
 }
-void Player::loseLives()
-{
-    if(playerLives > 0) playerLives--;
-}
 
-int Player::getX() const
-{
-    return rect.x + rect.w / 2;
-}
-
-int Player::getY() const
-{
-    return rect.y;
-}
-
-int Player::getLives() const
-{
-    return playerLives;
-}
-
-SDL_Rect Player::getRect() const
-{
-    return rect;
-}
+void Player::loseLives() { if(playerLives > 0) playerLives--; }
+int Player::getX() const { return rect.x + rect.w / 2; }
+int Player::getY() const { return rect.y; }
+int Player::getLives() const { return playerLives; }
+SDL_Rect Player::getRect() const { return rect; }
 

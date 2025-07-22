@@ -18,6 +18,11 @@ void Pickup::render()
 		SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 		SDL_RenderFillRect(renderer, &rect);
 	}
+	else if(type == WeaponType::BOMB_SHOT)
+	{
+		SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
+		SDL_RenderFillRect(renderer, &rect);
+	}
 	
 }
 

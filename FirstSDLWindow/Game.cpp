@@ -74,20 +74,25 @@ void Game::handleEvents()
 		if (event.type == SDL_QUIT)
 			isRunning = false;
 
+		if(event.type == SDL_KEYDOWN)
+		{
+			if (event.key.keysym.sym == SDLK_e)
+				inventory.swapToNextWeapon();
+			else if (event.key.keysym.sym == SDLK_q)
+				inventory.swapToPreviousWeapon();
+		}
+
 		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
 		{
-			if(bullet->getCurrentWeapon() == WeaponType::PIERCING_SHOT && bullet->getAmmo() > 0)
+			WeaponType currentWeapon = inventory.getCurrentWeapon();
+			int ammo = inventory.getAmmo(currentWeapon);
+
+			if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
 			{
-				SDL_Log("Firing Piercing Shot");
-				bulletManager->fire(player->getX(), player->getY(), WeaponType::PIERCING_SHOT, 3);
-				bullet->useAmmo();
+				bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
+				if (currentWeapon != WeaponType::DEFAULT)
+					inventory.useAmmo(currentWeapon);
 			}
-			else
-			{
-				SDL_Log("Firing Default Shot");
-				bulletManager->fire(player->getX(), player->getY(), WeaponType::DEFAULT, 0);
-			}
-				
 		}
 
 		player->handleEvent(event);
@@ -102,44 +107,44 @@ void Game::update()
 	unsigned int currentTime = SDL_GetTicks();
 	if (currentTime - lastMoveTime >= moveInterval)
 	{
-		int leftEdge = SCREEN_WIDTH;
-		int rightEdge = 0;
+		bool willBounce = false;
 
-		for (auto& enemy: enemies)
+		// Check if any enemy will go out of bounds on next move
+		for (auto& enemy : enemies)
 		{
 			if (!enemy->isAlive()) continue;
+
 			SDL_Rect r = enemy->getRect();
-			if (r.x < leftEdge) leftEdge = r.x;
-			if (r.x + r.w > rightEdge) rightEdge = r.x + r.w;
+			int nextX = r.x + enemyDirection * enemySpeed;
+
+			if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
+			{
+				willBounce = true;
+				break;
+			}
 		}
 
-		// BOUNCE: Only if at edge and we haven't already bounced
-		if ((leftEdge <= 0 || rightEdge >= SCREEN_WIDTH) && !hasBounced)
+		if (willBounce && !hasBounced)
 		{
 			enemyDirection *= -1;
-			for (auto& enemy: enemies)
+			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
-					enemy->move(0, 20);  // go down once
+					enemy->move(0, 20); // move down instead of sideways
 			}
-			hasBounced = true; // prevent repeat bounce
+			hasBounced = true;
 
-			if (moveInterval > 100) // enemy speed after bounce
-			{
+			if (moveInterval > 100)
 				moveInterval -= 60;
-			}
-				
 		}
 		else
 		{
-			// MOVE: horizontal movement
-			for (auto& enemy: enemies)
+			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
 					enemy->move(enemyDirection * enemySpeed, 0);
 			}
-
-			hasBounced = false; // allow bouncing again next time
+			hasBounced = false;
 		}
 
 		lastMoveTime = currentTime;
@@ -185,6 +190,36 @@ void Game::update()
 				{
 					enemy->destroy();
 				}
+				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
+				{
+					enemy->destroy();
+
+					const int BOMB_RADIUS = 50;
+					SDL_Rect center = enemy->getRect(); // center of explosion
+
+					// Affect nearby enemies
+					for (auto& e2 : enemies)
+					{
+						if (e2 != enemy && e2->isAlive())
+						{
+							SDL_Rect r2 = e2->getRect();
+
+							int dx = abs((r2.x + r2.w / 2) - (center.x + center.w / 2));
+							int dy = abs((r2.y + r2.h / 2) - (center.y + center.h / 2));
+
+							if (dx <= BOMB_RADIUS && dy <= BOMB_RADIUS)
+							{
+								e2->destroy();
+								int baseScore = 10;
+								int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+								scoreManager->addPoints(earnedScore);
+								comboManager.onEnemyKilled();
+							}
+						}
+					}
+
+					b->deactivate();
+				}
 				else
 				{
 					b->deactivate();
@@ -196,7 +231,7 @@ void Game::update()
 				scoreManager->addPoints(earnedScore);
 				comboManager.onEnemyKilled();
 				if (scoreManager->spawnPickup())
-					pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
+					pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::BOMB_SHOT));
 			}
 		}
 	}
@@ -248,6 +283,10 @@ void Game::update()
 				ufo->deactivate();
 				
 			}
+			else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
+			{
+				ufo->deactivate();
+			}
 			else
 			{
 				b->deactivate();
@@ -258,7 +297,8 @@ void Game::update()
 			int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
 			scoreManager->addPoints(earnedScore);
 			comboManager.onEnemyKilled();
-			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), WeaponType::PIERCING_SHOT));
+			if (scoreManager->spawnPickup())
+				pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), WeaponType::PIERCING_SHOT));
 		}
 	}
 
@@ -278,10 +318,11 @@ void Game::update()
 		if (!pickup->isCollected() && checkCollision(player->getRect(), pickup->getRect()))
 		{
 			if (pickup->getType() == WeaponType::PIERCING_SHOT)
-			{
-				bullet->setWeapon(WeaponType::PIERCING_SHOT, 3);
-			}
+				inventory.addWeapon(WeaponType::PIERCING_SHOT, 2); // set ammo
+			else if(pickup->getType() == WeaponType::BOMB_SHOT)
+				inventory.addWeapon(WeaponType::BOMB_SHOT, 1);
 
+			inventory.setCurrentWeapon(pickup->getType());
 			pickup->collect();
 		}
 		pickup->update();
@@ -391,7 +432,9 @@ void Game::clean()
 	delete player;
 	delete bullet;
 	delete enemy;
+	delete ufo;
 	delete scoreManager;
+	delete bulletManager;
 	TTF_Quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
