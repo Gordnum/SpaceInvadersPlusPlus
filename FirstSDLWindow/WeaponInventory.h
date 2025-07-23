@@ -1,7 +1,10 @@
 #pragma once
 #include "WeaponType.h"
+#include "Pickup.h"
 #include <unordered_map>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 
 class WeaponInventory
 {
@@ -22,4 +25,5 @@ class WeaponInventory
 		void swapToNextWeapon();
 		void swapToPreviousWeapon();
 		WeaponType getCurrentWeapon() const;
+		std::vector<WeaponType> randomizeWeapon();
 };

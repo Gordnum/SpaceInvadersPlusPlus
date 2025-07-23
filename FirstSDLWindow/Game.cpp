@@ -39,7 +39,7 @@ bool Game::init()
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
 	bulletManager = new BulletManager(renderer);
-	pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
+	//pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
 
 	scoreManager->loadHighScore("highscore.txt");
 
@@ -231,7 +231,13 @@ void Game::update()
 				scoreManager->addPoints(earnedScore);
 				comboManager.onEnemyKilled();
 				if (scoreManager->spawnPickup())
-					pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::BOMB_SHOT));
+				{
+					int index = rand() % inventory.randomizeWeapon().size();
+					WeaponType randomWeapon = inventory.randomizeWeapon()[index];
+
+					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
+					pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
+				}
 			}
 		}
 	}
@@ -297,8 +303,14 @@ void Game::update()
 			int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
 			scoreManager->addPoints(earnedScore);
 			comboManager.onEnemyKilled();
+
+			int index = rand() % inventory.randomizeWeapon().size();
+			WeaponType randomWeapon = inventory.randomizeWeapon()[index];
+
+			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
+			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), randomWeapon));
 			if (scoreManager->spawnPickup())
-				pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), WeaponType::PIERCING_SHOT));
+				pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
 		}
 	}
 

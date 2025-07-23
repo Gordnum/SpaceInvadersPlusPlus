@@ -1,5 +1,8 @@
 #include "WeaponInventory.h"
 
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
+
 WeaponInventory::WeaponInventory() 
 				:currentIndex(0)
 {
@@ -85,3 +88,14 @@ void WeaponInventory::swapToPreviousWeapon()
 }
 
 WeaponType WeaponInventory::getCurrentWeapon() const { return ownedWeapons[currentIndex]; }
+
+std::vector<WeaponType> WeaponInventory::randomizeWeapon()
+{
+	std::vector<WeaponType> randomType =
+	{
+		WeaponType::PIERCING_SHOT,
+		WeaponType::BOMB_SHOT
+	};
+
+	return randomType;
+};
