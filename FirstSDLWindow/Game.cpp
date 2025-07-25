@@ -34,28 +34,15 @@ bool Game::init()
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+	waveManager.startWaveIntro();
 	player = new Player(renderer);
 	bullet = new Bullet(renderer);
+	if(!waveManager.getWaveIntro()) enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
 	bulletManager = new BulletManager(renderer);
-	//pickups.push_back(new Pickup(renderer, 50 + (rand() % (SCREEN_WIDTH - 50)), -100, WeaponType::PIERCING_SHOT));
-
 	scoreManager->loadHighScore("highscore.txt");
-
-	for (int row = 0; row < rows; ++row)
-	{
-		for (int col = 0; col < cols; ++col)
-		{
-			int x = 50 + col * (40 + spacingX); // change starting position
-			int y = 150 + row * (20 + spacingY); // change starting height
-
-			enemy = new Enemy(renderer);
-			enemy->setRowIndex(row);  // this is key for tracking top row
-			enemy->setPosition(x, y);
-			enemies.push_back(enemy);
-		}
-	}
+	pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::BOMB_SHOT));
 
 	isRunning = true;
 	return true;
@@ -73,6 +60,8 @@ void Game::handleEvents()
 	{
 		if (event.type == SDL_QUIT)
 			isRunning = false;
+
+		if (waveManager.getWaveIntro()) return;
 
 		if(event.type == SDL_KEYDOWN)
 		{
@@ -115,7 +104,7 @@ void Game::update()
 			if (!enemy->isAlive()) continue;
 
 			SDL_Rect r = enemy->getRect();
-			int nextX = r.x + enemyDirection * enemySpeed;
+			int nextX = r.x + enemyDirection * waveManager.getEnemySpeed();
 
 			if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
 			{
@@ -142,7 +131,7 @@ void Game::update()
 			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
-					enemy->move(enemyDirection * enemySpeed, 0);
+					enemy->move(enemyDirection * waveManager.getEnemySpeed(), 0);
 			}
 			hasBounced = false;
 		}
@@ -166,6 +155,7 @@ void Game::update()
 			Bullet* b = new Bullet(renderer);
 			SDL_Rect r = shooter->getRect();
 			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
+			b->setEnemyBulletSpeed(waveManager.getProjectileSpeed());
 			enemyBullets.push_back(b);
 		}
 
@@ -347,6 +337,45 @@ void Game::update()
 		highScoreSaved = true;
 	}
 
+	bool allEnemiesDead = true;
+	for (auto&e : enemies)
+	{
+		if (e->isAlive())
+		{
+			allEnemiesDead = false;
+			break;
+		}
+	}
+
+	if(allEnemiesDead && !waveManager.getWaveIntro())
+	{
+		waveManager.nextWave();
+		waveManager.startWaveIntro();
+
+		for (auto& e : enemies) delete e;
+			enemies.clear();
+		
+		if (enemyDirection == -1) enemyDirection = 1;
+		moveInterval = 700;
+	}
+
+	if (waveManager.getWaveIntro())
+	{
+		int rows = 5;
+		int cols = 11;
+		int spacingX = 10;
+		int spacingY = 10;
+
+		if (SDL_GetTicks() - waveManager.getWaveIntroStartTime() >= waveManager.getWaveIntroDuration())
+		{
+			waveManager.setShowingWaveIntro();
+			enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+			comboManager.reset();
+			bullet->deactivate();
+		}
+		return;
+	}
+
 	ufo->update();
 	player->update();
 	bullet->update();
@@ -380,6 +409,40 @@ void Game::render()
 	for (Bullet* b : enemyBullets) 
 	{
 		if (b->isActive()) b->render();
+	}
+
+	if (waveManager.getWaveIntro())
+	{
+		SDL_Color color = { 255, 255, 255 };
+		TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
+
+		std::string introText = "WAVE " + std::to_string(waveManager.getWave());
+		SDL_Surface* textSurface = TTF_RenderText_Solid(font, introText.c_str(), color);
+		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+		// Base size
+		int baseW = textSurface->w;
+		int baseH = textSurface->h;
+
+		// Calculate pulse scale (between 0.9 and 1.2)
+		float time = SDL_GetTicks() / 100.0f; // make it slower
+		float scale = 1.0f + 0.1f * sin(time); // adjust amplitude
+
+		int scaledW = static_cast<int>(baseW * scale);
+		int scaledH = static_cast<int>(baseH * scale);
+
+		SDL_Rect textRect = 
+		{
+			SCREEN_WIDTH / 2 - scaledW / 2,
+			SCREEN_HEIGHT / 2 - scaledH / 2,
+			scaledW, scaledH
+		};
+
+		SDL_RenderCopyEx(renderer, textTexture, nullptr, &textRect, 0.0, nullptr, SDL_FLIP_NONE);
+
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(textTexture);
+		TTF_CloseFont(font);
 	}
 
 	if (isGameOver)

@@ -9,6 +9,27 @@ Enemy::Enemy(SDL_Renderer* renderer)
 	rect = { 100, 50, 40, 20 };
 }
 
+std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
+{
+	std::vector<Enemy*> formation;
+
+	for (int row = 0; row < rows; ++row)
+	{
+		for (int col = 0; col < cols; ++col)
+		{
+			int x = 30 + col * (40 + spacingX);
+			int y = 150 + row * (20 + spacingY);
+
+			Enemy* enemy = new Enemy(renderer);
+			enemy->setPosition(x, y);
+			enemy->setRowIndex(row);
+			formation.push_back(enemy);
+		}
+	}
+
+	return formation;
+}
+
 // STILL NEED TO BE FIXED BECAUSE IT'S UNUSED
 void Enemy::update()
 {

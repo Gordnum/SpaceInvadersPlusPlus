@@ -57,11 +57,15 @@ void Bullet::update()
 	if(active && !bulletIsFromEnemy)
 	{
 		rect.y -= 5;
-		if (rect.y < 0) active = false;
+		if (currentWeapon == WeaponType::BOMB_SHOT)
+			rect.y += 2;
+
+		if (rect.y < 0) 
+			active = false;
 	}
 
 	if(bulletIsFromEnemy)
-		rect.y += 5;
+		rect.y += enemyBulletspeed;
 
 	if (rect.y < 0 || rect.y > SCREEN_HEIGHT)
 		deactivate();
@@ -91,3 +95,8 @@ int Bullet::getAmmo() const { return ammo; }
 SDL_Rect Bullet::getRect() const { return rect; }
 bool Bullet::isActive() const { return active; }
 void Bullet::deactivate() { active = false; }
+
+void Bullet::setEnemyBulletSpeed(float s)
+{
+	enemyBulletspeed = s;
+}

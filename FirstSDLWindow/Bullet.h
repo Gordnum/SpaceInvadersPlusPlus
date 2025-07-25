@@ -9,6 +9,7 @@ private:
 	SDL_Renderer* renderer;
 	bool active;
 	bool bulletIsFromEnemy;
+	float enemyBulletspeed;
 	WeaponType currentWeapon;
 	int ammo;
 
@@ -16,6 +17,7 @@ public:
 	Bullet(SDL_Renderer* renderer);
 	void fire(int x, int y, WeaponType weapon);
 	void fireFrom(int x, int y, bool fromEnemy); // Declare
+	void setEnemyBulletSpeed(float s);
 	void update();
 	void render();
 	SDL_Rect getRect() const;

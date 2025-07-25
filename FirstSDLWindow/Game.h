@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
@@ -11,6 +12,7 @@
 #include "ScoreManager.h"
 #include "ComboManager.h"
 #include "BulletManager.h"
+#include "WaveManager.h"
 #include "WeaponType.h"
 #include "WeaponInventory.h"
 #include "Pickup.h"
@@ -32,6 +34,7 @@ class Game
     Enemy* enemy;
     UFO* ufo;
     ComboManager comboManager;
+    WaveManager waveManager;
     WeaponInventory inventory;
     ScoreManager* scoreManager;
     BulletManager* bulletManager;
@@ -39,7 +42,6 @@ class Game
     std::vector<Pickup*> pickups;
 
     int enemyDirection = 1;
-    int enemySpeed = 10;
     unsigned int lastMoveTime = 0;
     unsigned int moveInterval = 700;
     unsigned int lastUFOSpawnTime = 0;
