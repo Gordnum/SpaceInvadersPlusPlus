@@ -6,7 +6,8 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 ScoreManager::ScoreManager(SDL_Renderer* renderer)
-	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), highscore(0), nextPickupThreshold(500), shouldSpawnPickup(false)
+	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), 
+	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(1000), shouldSpawnPickup(false)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
@@ -34,6 +35,12 @@ void ScoreManager::addPoints(int amount)
 	{
 		shouldSpawnPickup = true;
 		nextPickupThreshold += 500;
+	}
+
+	if(score >= nextGiveLivesThreshold)
+	{
+		shouldGiveLive = true;
+		nextGiveLivesThreshold += 1000;
 	}
 }
 
@@ -133,7 +140,16 @@ bool ScoreManager::spawnPickup()
 		shouldSpawnPickup = false;
 		return true;
 	}
-	
-	return false;;
+	return false;
+}
+
+bool ScoreManager::giveLive()
+{
+	if(shouldGiveLive)
+	{
+		shouldGiveLive = false;
+		return true;
+	}
+	return false;
 }
 

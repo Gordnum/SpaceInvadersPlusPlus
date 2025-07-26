@@ -89,6 +89,7 @@ void Player::update()
 }
 
 void Player::loseLives() { if(playerLives > 0) playerLives--; }
+void Player::plusLives() { if (playerLives > 0) playerLives++; }
 int Player::getX() const { return rect.x + rect.w / 2; }
 int Player::getY() const { return rect.y; }
 int Player::getLives() const { return playerLives; }

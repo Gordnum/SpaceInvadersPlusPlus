@@ -50,6 +50,10 @@ void ComboManager::onEnemyKilled()
 	comboBarProgress += comboFillPerKill;
 	float previousMultiplier = multiplier;
 
+	lastMultiplierUpdate = SDL_GetTicks();
+	scale = 1.5f;       // grow a bit
+	scaleUp = true;
+
 	if(comboBarProgress >= 1.0f)
 	{
 		if(multiplier < MaxMultiplier)
@@ -88,6 +92,28 @@ void ComboManager::update()
 		comboBarProgress = 0.0f;
 		updateDifficultyScaling();
 	}
+
+	// Handling the shaky animation
+	float intensity = std::min(multiplier, 5.0f); // limit shake strength
+
+	// Random shaking within [-intensity, intensity]
+	shakeOffsetX = ((rand() % 100) / 100.0f - 0.5f) * intensity * 2.0f;
+	shakeOffsetY = ((rand() % 100) / 100.0f - 0.5f) * intensity * 2.0f;
+
+	// Handle scale shrinking back to normal
+	if (scaleUp)
+	{
+		unsigned int elapsed = SDL_GetTicks() - lastMultiplierUpdate;
+		if (elapsed > 300)
+		{
+			scale = 1.0f;
+			scaleUp = false;
+		}
+		else
+		{
+			scale = 1.5f - 0.5f * (elapsed / 300.0f); // interpolate down
+		}
+	}
 }
 
 void ComboManager::render(SDL_Renderer* renderer)
@@ -113,15 +139,23 @@ void ComboManager::render(SDL_Renderer* renderer)
 		return;
 	}
 
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
 	int centerX = outline.x + outline.w / 2;
 	int X = centerX - surface->w / 2;
-	int Y = outline.y + outline.h - 40;
+	int Y = outline.y + outline.h - 45;
 
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_Rect multRect = { X, Y, surface->w, surface->h };
+	int texW = 0, texH = 0;
+	SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
+
+	float finalScale = scale;
+	int scaledW = static_cast<int>(texW * finalScale);
+	int scaledH = static_cast<int>(texH * finalScale);
+
+	SDL_Rect destRect = { X + static_cast<int>(shakeOffsetX), Y + static_cast<int>(shakeOffsetY), scaledW, scaledH };
 
 	SDL_FreeSurface(surface);
-	SDL_RenderCopy(renderer, texture, nullptr, &multRect);
+	SDL_RenderCopy(renderer, texture, nullptr, &destRect);
 	SDL_DestroyTexture(texture);
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

@@ -13,6 +13,13 @@ class ComboManager
 		float comboFillPerKill = 0.0f;
 		float comboBarDecayRate = 0.0f;
 
+		float shakeOffsetX = 0.0f;
+		float shakeOffsetY = 0.0f;
+
+		float scale = 1.0f;               // for pop effect
+		bool scaleUp = false;
+		unsigned int lastMultiplierUpdate = 0; // to time animations
+
 		bool comboActive = false;
 		unsigned int lastUpdateTime = 0;
 

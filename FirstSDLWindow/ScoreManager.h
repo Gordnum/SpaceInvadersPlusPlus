@@ -9,7 +9,9 @@ private:
 	int score;
 	int highscore;
 	int nextPickupThreshold;
+	int nextGiveLivesThreshold;
 	bool shouldSpawnPickup;
+	bool shouldGiveLive;
 	TTF_Font* font;
 	SDL_Color color;
 	SDL_Rect scoreLabelRect;
@@ -33,6 +35,7 @@ public:
 	void render(SDL_Renderer* renderer);
 	int getScore() const;
 	bool spawnPickup();
+	bool giveLive();
 
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);

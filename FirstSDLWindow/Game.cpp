@@ -220,6 +220,7 @@ void Game::update()
 				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
 				scoreManager->addPoints(earnedScore);
 				comboManager.onEnemyKilled();
+
 				if (scoreManager->spawnPickup())
 				{
 					int index = rand() % inventory.randomizeWeapon().size();
@@ -228,6 +229,9 @@ void Game::update()
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 					pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
 				}
+
+				if (scoreManager->giveLive())
+					player->plusLives();
 			}
 		}
 	}
@@ -268,7 +272,6 @@ void Game::update()
 	}
 
 	// bullet hit on ufo
-
 	for (Bullet* b : bulletManager->getBullets())
 	{
 		if (b->isActive() && ufo->isActive() &&
@@ -301,6 +304,8 @@ void Game::update()
 			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), randomWeapon));
 			if (scoreManager->spawnPickup())
 				pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
+			if (scoreManager->giveLive())
+				player->plusLives();
 		}
 	}
 

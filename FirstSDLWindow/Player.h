@@ -19,6 +19,7 @@ class Player
 	void render();
 	void update();
 	void loseLives();
+	void plusLives();
 	int getX() const;
 	int getY() const;
 	int getLives() const;
