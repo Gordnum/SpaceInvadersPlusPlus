@@ -66,21 +66,22 @@ void Game::handleEvents()
 		if(event.type == SDL_KEYDOWN)
 		{
 			if (event.key.keysym.sym == SDLK_e)
-				inventory.swapToNextWeapon();
+				weaponInventory.startWeaponSwapAnimation(1);
+				
 			else if (event.key.keysym.sym == SDLK_q)
-				inventory.swapToPreviousWeapon();
+				weaponInventory.startWeaponSwapAnimation(-1);
 		}
 
 		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
 		{
-			WeaponType currentWeapon = inventory.getCurrentWeapon();
-			int ammo = inventory.getAmmo(currentWeapon);
+			WeaponType currentWeapon = weaponInventory.getCurrentWeapon();
+			int ammo = weaponInventory.getAmmo(currentWeapon);
 
 			if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
 			{
 				bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
 				if (currentWeapon != WeaponType::DEFAULT)
-					inventory.useAmmo(currentWeapon);
+					weaponInventory.useAmmo(currentWeapon);
 			}
 		}
 
@@ -92,6 +93,16 @@ void Game::handleEvents()
 void Game::update()
 {
 	if (isGameOver) return;
+
+	frameCount++;
+	unsigned currentTicks = SDL_GetTicks();
+	if (currentTicks - fpsTimer >= 1000) // 1000 ms = 1 second
+	{
+		std::cout << "FPS: " << frameCount << std::endl;
+
+		frameCount = 0;
+		fpsTimer = currentTicks;
+	}
 
 	unsigned int currentTime = SDL_GetTicks();
 	if (currentTime - lastMoveTime >= moveInterval)
@@ -223,8 +234,8 @@ void Game::update()
 
 				if (scoreManager->spawnPickup())
 				{
-					int index = rand() % inventory.randomizeWeapon().size();
-					WeaponType randomWeapon = inventory.randomizeWeapon()[index];
+					int index = rand() % weaponInventory.randomizeWeapon().size();
+					WeaponType randomWeapon = weaponInventory.randomizeWeapon()[index];
 
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 					pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
@@ -235,8 +246,6 @@ void Game::update()
 			}
 		}
 	}
-
-	
 
 	// if hit with bullets
 	for (auto& bullet : enemyBullets)
@@ -297,8 +306,8 @@ void Game::update()
 			scoreManager->addPoints(earnedScore);
 			comboManager.onEnemyKilled();
 
-			int index = rand() % inventory.randomizeWeapon().size();
-			WeaponType randomWeapon = inventory.randomizeWeapon()[index];
+			int index = rand() % weaponInventory.randomizeWeapon().size();
+			WeaponType randomWeapon = weaponInventory.randomizeWeapon()[index];
 
 			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), randomWeapon));
@@ -325,11 +334,11 @@ void Game::update()
 		if (!pickup->isCollected() && checkCollision(player->getRect(), pickup->getRect()))
 		{
 			if (pickup->getType() == WeaponType::PIERCING_SHOT)
-				inventory.addWeapon(WeaponType::PIERCING_SHOT, 2); // set ammo
+				weaponInventory.addWeapon(WeaponType::PIERCING_SHOT, 2); // set ammo
 			else if(pickup->getType() == WeaponType::BOMB_SHOT)
-				inventory.addWeapon(WeaponType::BOMB_SHOT, 1);
+				weaponInventory.addWeapon(WeaponType::BOMB_SHOT, 1);
 
-			inventory.setCurrentWeapon(pickup->getType());
+			weaponInventory.setCurrentWeapon(pickup->getType());
 			pickup->collect();
 		}
 		pickup->update();
@@ -386,6 +395,7 @@ void Game::update()
 	bullet->update();
 	bulletManager->update();
 	comboManager.update();
+	weaponInventory.update();
 }
 
 // ADD
@@ -400,21 +410,11 @@ void Game::render()
 	scoreManager->render(renderer);
 	bulletManager->render();
 	comboManager.render(renderer);
+	weaponInventory.renderWeaponHUD(renderer);
 
-	for (auto& enemy : enemies)
-	{
-		if (enemy->isAlive()) enemy->render();
-	}
-
-	for (auto& pickup : pickups)
-	{
-		pickup->render();
-	}
-
-	for (Bullet* b : enemyBullets) 
-	{
-		if (b->isActive()) b->render();
-	}
+	for (auto& enemy : enemies) { if (enemy->isAlive()) enemy->render(); }
+	for (auto& pickup : pickups) { pickup->render(); }
+	for (Bullet* b : enemyBullets) { if (b->isActive()) b->render(); }
 
 	if (waveManager.getWaveIntro())
 	{
@@ -497,9 +497,18 @@ void Game::render()
 
 void Game::run()
 {
+	Uint32 lastTime = SDL_GetTicks();
+	float deltaTime = 0.0f;
+
 	while (isRunning)
 	{
+		Uint32 currentTime = SDL_GetTicks();
+		deltaTime = (currentTime - lastTime) / 1000.0f;
+		if (deltaTime > 0.05f) deltaTime = 0.05f;
+		lastTime = currentTime;
+
 		handleEvents();
+		weaponInventory.updateDeltaTime(deltaTime);
 		render();
 		update();
 		SDL_Delay(16);

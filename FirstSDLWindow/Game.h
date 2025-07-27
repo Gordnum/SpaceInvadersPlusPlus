@@ -35,7 +35,7 @@ class Game
     UFO* ufo;
     ComboManager comboManager;
     WaveManager waveManager;
-    WeaponInventory inventory;
+    WeaponInventory weaponInventory;
     ScoreManager* scoreManager;
     BulletManager* bulletManager;
     std::vector<Enemy*> enemies;
@@ -53,6 +53,9 @@ class Game
     const unsigned int enemyShootCooldown = 2000; // every 2 seconds
     unsigned int gameOverStartTime;
     bool highScoreSaved = false;
+
+    unsigned int fpsTimer = SDL_GetTicks();
+    int frameCount = 0;
 
 	public:
     Game();

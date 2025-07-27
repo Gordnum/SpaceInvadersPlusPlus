@@ -104,14 +104,14 @@ void ComboManager::update()
 	if (scaleUp)
 	{
 		unsigned int elapsed = SDL_GetTicks() - lastMultiplierUpdate;
-		if (elapsed > 300)
+		if (elapsed > 500)
 		{
 			scale = 1.0f;
 			scaleUp = false;
 		}
 		else
 		{
-			scale = 1.5f - 0.5f * (elapsed / 300.0f); // interpolate down
+			scale = 1.5f - 0.5f * (elapsed / 500.0f); // interpolate down
 		}
 	}
 }
