@@ -2,7 +2,8 @@
 #include <stdio.h>
 
 ComboManager::ComboManager()
-			:font(nullptr){}
+	:font(nullptr), color{ 255, 255, 255 } {
+}
 
 ComboManager::~ComboManager()
 {
@@ -61,7 +62,11 @@ void ComboManager::onEnemyKilled()
 			multiplier += 1.0f;
 
 			if (multiplier > MaxMultiplier)
+			{
 				multiplier = MaxMultiplier;
+				comboBarProgress = 1.0f;
+			}
+				
 		}
 			
 		comboBarProgress -= 1.0f;

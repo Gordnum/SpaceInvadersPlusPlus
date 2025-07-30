@@ -1,4 +1,5 @@
 #include "WaveManager.h"
+#include <iostream>
 
 WaveManager::WaveManager()
 			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(5.0f), 
@@ -18,8 +19,8 @@ void WaveManager::setShowingWaveIntro() { showingWaveIntro = false; }
 void WaveManager::nextWave() 
 {
     currentWave++;
-    enemySpeedMultiplier += 5.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 0.3f;  // Increase projectile speed (can be more aggressive)
+    enemySpeedMultiplier += 1.0f;        // Increase enemy movement speed
+    projectileSpeedMultiplier += 0.5f;  // Increase projectile speed (can be more aggressive)
 }
 
 int WaveManager::getWave() const { return currentWave; }

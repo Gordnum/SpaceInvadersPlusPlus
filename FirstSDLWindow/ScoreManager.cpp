@@ -1,4 +1,5 @@
 #include "ScoreManager.h"
+#include "ComboManager.h"
 #include <stdio.h>
 #include <fstream>
 

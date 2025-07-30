@@ -151,6 +151,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 			case WeaponType::DEFAULT: currentWeapon = "DEFAULT"; break;
 			case WeaponType::PIERCING_SHOT: currentWeapon = "PIERCING"; break;
 			case WeaponType::BOMB_SHOT: currentWeapon = "BOMB"; break;
+			case WeaponType::TRIPMINE: currentWeapon = "TRIPMINE"; break;
 			default: currentWeapon = "UNKNOWN"; break;
 		}
 
@@ -182,7 +183,8 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 
 	for (const auto& info : renderList)
 	{
-		SDL_Rect dst = {
+		SDL_Rect dst = 
+		{
 			centerX - info.width / 2,
 			static_cast<int>(currentY),
 			info.width,
@@ -212,6 +214,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 	std::string ammoText = "Ammo: " + std::to_string(ammo);
 	SDL_Color ammoColor = { 255, 255, 255, 255 };
 	SDL_Surface* ammoSurface = TTF_RenderText_Solid(font, ammoText.c_str(), ammoColor);
+
 	if(!ammoSurface)
 	{
 		SDL_Log("TTF Render Error: %s", TTF_GetError());
@@ -234,6 +237,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 
 	SDL_DestroyTexture(texture);
 	SDL_DestroyTexture(ammoTexture);
+	TTF_CloseFont(font);
 }
 
 void WeaponInventory::update() { updateAnimation(deltaTime); }
@@ -245,7 +249,8 @@ std::vector<WeaponType> WeaponInventory::randomizeWeapon()
 	std::vector<WeaponType> randomType =
 	{
 		WeaponType::PIERCING_SHOT,
-		WeaponType::BOMB_SHOT
+		WeaponType::BOMB_SHOT,
+		WeaponType::TRIPMINE
 	};
 
 	return randomType;

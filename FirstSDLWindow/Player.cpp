@@ -7,11 +7,13 @@
 Player::Player(SDL_Renderer* renderer)
        :renderer(renderer), font(nullptr), speed(5), movingLeft(false), movingRight(false), playerLives(3)
 {
+    rect = { 400, 500, 50, 20 };
+    
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
     if (!font)
         SDL_Log("Failed to load font: %s", TTF_GetError());
 
-    rect = { 400, 500, 50, 20 };
+    TTF_CloseFont(font);
 }
 
 void Player::handleEvent(const SDL_Event& e)
@@ -77,7 +79,6 @@ void Player::render()
     SDL_FreeSurface(livesSurface);
     SDL_DestroyTexture(labelTexture);
     SDL_DestroyTexture(livesTexture);
-
 }
 
 void Player::update()

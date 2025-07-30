@@ -5,7 +5,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Bullet::Bullet(SDL_Renderer* renderer)
-	:renderer(renderer), active(false), bulletIsFromEnemy(false), currentWeapon(WeaponType::DEFAULT), ammo(0)
+	:renderer(renderer), active(false), bulletIsFromEnemy(false), currentWeapon(WeaponType::DEFAULT), ammo(0), enemyBulletSpeed(0)
 {
 	rect = { 0, 0, 5, 10 };
 }
@@ -30,6 +30,13 @@ void Bullet::fire(int x, int y, WeaponType type) // player
 			rect.x = x - rect.w / 2;
 			rect.y = y;
 			rect.w = 10;
+			rect.h = 10;
+		}
+		else if (type == WeaponType::TRIPMINE)
+		{
+			rect.x = x - rect.w / 2;
+			rect.y = y;
+			rect.w = 5;
 			rect.h = 10;
 		}
 		else if(type == WeaponType::DEFAULT)
@@ -65,7 +72,7 @@ void Bullet::update()
 	}
 
 	if(bulletIsFromEnemy)
-		rect.y += enemyBulletspeed;
+		rect.y += enemyBulletSpeed;
 
 	if (rect.y < 0 || rect.y > SCREEN_HEIGHT)
 		deactivate();
@@ -81,6 +88,8 @@ void Bullet::render()
 			SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // cyan 
 		else if (currentWeapon == WeaponType::BOMB_SHOT)
 			SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255); // orange
+		else if (currentWeapon == WeaponType::TRIPMINE)
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green
 		else if(currentWeapon == WeaponType::DEFAULT)
 			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // yellow
 
@@ -96,7 +105,4 @@ SDL_Rect Bullet::getRect() const { return rect; }
 bool Bullet::isActive() const { return active; }
 void Bullet::deactivate() { active = false; }
 
-void Bullet::setEnemyBulletSpeed(float s)
-{
-	enemyBulletspeed = s;
-}
+void Bullet::setEnemyBulletSpeed(float s) { enemyBulletSpeed = s; }

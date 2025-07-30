@@ -82,7 +82,4 @@ void BulletManager::clear()
     bullets.clear();
 }
 
-std::vector<Bullet*>& BulletManager::getBullets()
-{
-    return bullets;
-}
+std::vector<Bullet*>& BulletManager::getBullets() { return bullets; }

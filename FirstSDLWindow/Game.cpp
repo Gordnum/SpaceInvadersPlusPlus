@@ -3,6 +3,8 @@
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+const int TARGET_FPS = 60;
+const int FRAME_DELAY = 1000 / TARGET_FPS;
 
 Game::Game() 
 	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
@@ -42,7 +44,7 @@ bool Game::init()
 	scoreManager = new ScoreManager(renderer);
 	bulletManager = new BulletManager(renderer);
 	scoreManager->loadHighScore("highscore.txt");
-	pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::BOMB_SHOT));
+	pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::TRIPMINE));
 
 	isRunning = true;
 	return true;
@@ -94,16 +96,17 @@ void Game::update()
 {
 	if (isGameOver) return;
 
+	// FPS Counter
 	frameCount++;
 	unsigned currentTicks = SDL_GetTicks();
 	if (currentTicks - fpsTimer >= 1000) // 1000 ms = 1 second
 	{
 		std::cout << "FPS: " << frameCount << std::endl;
-
 		frameCount = 0;
 		fpsTimer = currentTicks;
 	}
 
+	// Enemy movement
 	unsigned int currentTime = SDL_GetTicks();
 	if (currentTime - lastMoveTime >= moveInterval)
 	{
@@ -115,7 +118,7 @@ void Game::update()
 			if (!enemy->isAlive()) continue;
 
 			SDL_Rect r = enemy->getRect();
-			int nextX = r.x + enemyDirection * waveManager.getEnemySpeed();
+			int nextX = r.x + enemyDirection * static_cast<int>(waveManager.getEnemySpeed());
 
 			if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
 			{
@@ -142,7 +145,7 @@ void Game::update()
 			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
-					enemy->move(enemyDirection * waveManager.getEnemySpeed(), 0);
+					enemy->move(static_cast<int>(enemyDirection * waveManager.getEnemySpeed()), 0);
 			}
 			hasBounced = false;
 		}
@@ -176,6 +179,7 @@ void Game::update()
 	// bullet hit enemy
 	for(Bullet* b: bulletManager->getBullets())
 	{
+		int baseScore = 10;
 		for (auto& enemy : enemies)
 		{
 			if (!enemy->isAlive())
@@ -190,6 +194,9 @@ void Game::update()
 				if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
 				{
 					enemy->destroy();
+					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					scoreManager->addPoints(earnedScore);
+					comboManager.onEnemyKilled();
 				}
 				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 				{
@@ -211,7 +218,6 @@ void Game::update()
 							if (dx <= BOMB_RADIUS && dy <= BOMB_RADIUS)
 							{
 								e2->destroy();
-								int baseScore = 10;
 								int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
 								scoreManager->addPoints(earnedScore);
 								comboManager.onEnemyKilled();
@@ -221,16 +227,36 @@ void Game::update()
 
 					b->deactivate();
 				}
+				else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
+				{
+					int hitY = enemy->getRect().y;
+					const int ROW_THRESHOLD = 10; // adjust based on enemy sprite height
+
+					for (auto& otherEnemy : enemies)
+					{
+						if (!otherEnemy->isAlive()) continue;
+
+						int enemyY = otherEnemy->getRect().y;
+
+						if (std::abs(enemyY - hitY) < ROW_THRESHOLD)
+						{
+							otherEnemy->destroy(); // or setAlive(false), etc.
+							int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+							scoreManager->addPoints(earnedScore);
+							comboManager.onEnemyKilled();
+						}
+					}
+
+					b->deactivate(); // remove tripmine bullet after explosion
+				}
 				else
 				{
 					b->deactivate();
 					enemy->destroy();
+					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					scoreManager->addPoints(earnedScore);
+					comboManager.onEnemyKilled();
 				}
-
-				int baseScore = 10;
-				int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
-				scoreManager->addPoints(earnedScore);
-				comboManager.onEnemyKilled();
 
 				if (scoreManager->spawnPickup())
 				{
@@ -287,12 +313,15 @@ void Game::update()
 			checkCollision(b->getRect(), ufo->getRect()))
 		{
 			if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
-			{
 				ufo->deactivate();
-				
-			}
 			else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 			{
+				b->deactivate();
+				ufo->deactivate();
+			}
+			else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
+			{
+				b->deactivate();
 				ufo->deactivate();
 			}
 			else
@@ -301,7 +330,7 @@ void Game::update()
 				ufo->deactivate();
 			}
 
-			int baseScore = 100;
+			int baseScore = 10;
 			int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
 			scoreManager->addPoints(earnedScore);
 			comboManager.onEnemyKilled();
@@ -335,8 +364,10 @@ void Game::update()
 		{
 			if (pickup->getType() == WeaponType::PIERCING_SHOT)
 				weaponInventory.addWeapon(WeaponType::PIERCING_SHOT, 2); // set ammo
-			else if(pickup->getType() == WeaponType::BOMB_SHOT)
+			else if (pickup->getType() == WeaponType::BOMB_SHOT)
 				weaponInventory.addWeapon(WeaponType::BOMB_SHOT, 1);
+			else if (pickup->getType() == WeaponType::TRIPMINE)
+				weaponInventory.addWeapon(WeaponType::TRIPMINE, 2);
 
 			weaponInventory.setCurrentWeapon(pickup->getType());
 			pickup->collect();
@@ -361,18 +392,6 @@ void Game::update()
 		}
 	}
 
-	if(allEnemiesDead && !waveManager.getWaveIntro())
-	{
-		waveManager.nextWave();
-		waveManager.startWaveIntro();
-
-		for (auto& e : enemies) delete e;
-			enemies.clear();
-		
-		if (enemyDirection == -1) enemyDirection = 1;
-		moveInterval = 700;
-	}
-
 	if (waveManager.getWaveIntro())
 	{
 		int rows = 5;
@@ -389,6 +408,46 @@ void Game::update()
 		}
 		return;
 	}
+
+	if(allEnemiesDead && !waveManager.getWaveIntro())
+	{
+		waveManager.nextWave();
+		waveManager.startWaveIntro();
+
+		for (auto& e : enemies) delete e;
+			enemies.clear();
+		
+		if (enemyDirection == -1) enemyDirection = 1;
+		moveInterval = 700;
+	}
+
+	// Enemy bullets cleanup
+	enemyBullets.erase(
+		std::remove_if(enemyBullets.begin(), enemyBullets.end(),
+			[](Bullet* b) 
+			{
+				if (!b->isActive()) 
+				{
+					delete b;
+					return true;
+				}
+				return false;
+			}),
+		enemyBullets.end()
+	);
+
+	pickups.erase(
+		std::remove_if(pickups.begin(), pickups.end(),
+			[](Pickup* p) 
+			{
+				if (p->isCollected()) 
+				{
+					delete p;
+					return true;
+				}
+				return false;
+			}),
+		pickups.end());
 
 	ufo->update();
 	player->update();
@@ -499,6 +558,8 @@ void Game::run()
 {
 	Uint32 lastTime = SDL_GetTicks();
 	float deltaTime = 0.0f;
+	Uint32 frameStart;
+	int frameTime;
 
 	while (isRunning)
 	{
@@ -507,11 +568,17 @@ void Game::run()
 		if (deltaTime > 0.05f) deltaTime = 0.05f;
 		lastTime = currentTime;
 
+		frameStart = SDL_GetTicks();
+
 		handleEvents();
 		weaponInventory.updateDeltaTime(deltaTime);
 		render();
 		update();
-		SDL_Delay(16);
+		frameTime = SDL_GetTicks() - frameStart;
+		if (FRAME_DELAY > frameTime)
+		{
+			SDL_Delay(FRAME_DELAY - frameTime);
+		}
 	}
 }
 
@@ -524,6 +591,12 @@ void Game::clean()
 	delete ufo;
 	delete scoreManager;
 	delete bulletManager;
+	for (auto& enemy : enemies) delete enemy;
+	enemies.clear();
+	for (auto& b : enemyBullets) delete b;
+	enemyBullets.clear();
+	for (auto& pickup : pickups) delete pickup;
+	pickups.clear();
 	TTF_Quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

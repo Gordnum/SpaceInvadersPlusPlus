@@ -9,7 +9,7 @@ private:
 	SDL_Renderer* renderer;
 	bool active;
 	bool bulletIsFromEnemy;
-	float enemyBulletspeed;
+	float enemyBulletSpeed;
 	WeaponType currentWeapon;
 	int ammo;
 
