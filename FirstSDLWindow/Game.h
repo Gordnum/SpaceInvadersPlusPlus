@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+#include <windows.h>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
@@ -33,9 +34,9 @@ class Game
     Bullet* bullet;
     Enemy* enemy;
     UFO* ufo;
-    ComboManager comboManager;
-    WaveManager waveManager;
-    WeaponInventory weaponInventory;
+    ComboManager* comboManager;
+    WaveManager* waveManager;
+    WeaponInventory* weaponInventory;
     ScoreManager* scoreManager;
     BulletManager* bulletManager;
     std::vector<Enemy*> enemies;

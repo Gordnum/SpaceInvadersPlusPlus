@@ -2,12 +2,16 @@
 #include <stdio.h>
 
 ComboManager::ComboManager()
-	:font(nullptr), color{ 255, 255, 255 } {
+	:font(nullptr), color{ 255, 255, 255 } 
+{
+	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	if (!font)
+		SDL_Log("Failed to load combo font: %s", TTF_GetError());
 }
 
 ComboManager::~ComboManager()
 {
-
+	if(font) TTF_CloseFont(font);
 }
 
 void ComboManager::updateDifficultyScaling()
@@ -130,10 +134,6 @@ void ComboManager::render(SDL_Renderer* renderer)
 	int x = 600, y = 570;
 	SDL_Rect fill = { x, y, static_cast<int>(barWidth * comboBarProgress), barHeight };
 	SDL_Rect outline = { x, y, barWidth, barHeight };
-
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
-	if (!font)
-		SDL_Log("Failed to load combo font: %s", TTF_GetError());
 
 	std::string multText = "x" + std::to_string(multiplier).substr(0, 1);
 	SDL_Surface* surface = TTF_RenderText_Solid(font, multText.c_str(), color);

@@ -3,8 +3,8 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-Enemy::Enemy(SDL_Renderer* renderer)
-	  :renderer(renderer), alive(true), rowIndex(0)
+Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
+	  :renderer(renderer), alive(true), rowIndex(0), enemyType(enemyType)
 {
 	rect = { 100, 50, 40, 20 };
 }
@@ -15,12 +15,20 @@ std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int
 
 	for (int row = 0; row < rows; ++row)
 	{
+		EnemyType type;
+		if (row == 0)
+			type = EnemyType::SQUID;
+		else if (row == 1 || row == 2)
+			type = EnemyType::OCTOPUS;
+		else
+			type = EnemyType::CRAB;
+
 		for (int col = 0; col < cols; ++col)
 		{
 			int x = 30 + col * (40 + spacingX);
 			int y = 150 + row * (20 + spacingY);
 
-			Enemy* enemy = new Enemy(renderer);
+			Enemy* enemy = new Enemy(renderer, type);
 			enemy->setPosition(x, y);
 			enemy->setRowIndex(row);
 			formation.push_back(enemy);
@@ -48,7 +56,19 @@ void Enemy::render()
 {
 	if (!alive) return;
 	
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+	switch(enemyType)
+	{
+        case EnemyType::SQUID:
+			SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+			break;
+		case EnemyType::OCTOPUS:
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+			break;
+		case EnemyType::CRAB:
+			SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+			break;
+	}
+
 	SDL_RenderFillRect(renderer, &rect);
 }
 
@@ -75,3 +95,5 @@ bool Enemy::isAlive() const
 {
 	return alive;
 }
+
+EnemyType Enemy::getType() const { return enemyType; }

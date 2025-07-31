@@ -2,6 +2,13 @@
 #include <SDL.h>
 #include <vector>
 
+enum class EnemyType 
+{ 
+	CRAB, 
+	OCTOPUS, 
+	SQUID 
+};
+
 class Enemy
 {
 private:
@@ -9,9 +16,10 @@ private:
 	SDL_Renderer* renderer;
 	bool alive;
 	int rowIndex;
+	EnemyType enemyType;
 
 public:
-	Enemy(SDL_Renderer* renderer);
+	Enemy(SDL_Renderer* renderer, EnemyType enemyType = EnemyType::CRAB);
 	SDL_Rect getRect() const;
 	void update();
 	void render();
@@ -21,6 +29,7 @@ public:
 	void move(int dx, int dy);
 	void setRowIndex(int row) { rowIndex = row; }
 	bool isInTopRow() const { return rowIndex == 0; }
+	EnemyType getType() const;
 
 	static std::vector<Enemy*> createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX = 10, int spacingY = 10);
 };

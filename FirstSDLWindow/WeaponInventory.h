@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 #include <cstdlib>
@@ -17,6 +18,8 @@ private:
 	std::vector<WeaponType> ownedWeapons;
 	int currentIndex;
 	TTF_Font* font;
+	TTF_Font* smallFont;
+	TTF_Font* largeFont;
 	float animationOffset;
 	float animationSpeed;
 	bool isAnimating;
@@ -25,6 +28,7 @@ private:
 
 public:
 	WeaponInventory();
+	~WeaponInventory();
 
 	void addWeapon(WeaponType type, int ammo);
 	void useAmmo(WeaponType type);

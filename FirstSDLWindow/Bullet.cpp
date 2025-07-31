@@ -39,6 +39,13 @@ void Bullet::fire(int x, int y, WeaponType type) // player
 			rect.w = 5;
 			rect.h = 10;
 		}
+		else if(type == WeaponType::RAPID_SHOT)
+		{
+			rect.x = x - rect.w / 2;
+			rect.y = y;
+			rect.w = 5;
+			rect.h = 10;
+		}
 		else if(type == WeaponType::DEFAULT)
 		{
 			rect.x = x - rect.w / 2;
@@ -90,8 +97,10 @@ void Bullet::render()
 			SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255); // orange
 		else if (currentWeapon == WeaponType::TRIPMINE)
 			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green
+		else if (currentWeapon == WeaponType::RAPID_SHOT)
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		else if(currentWeapon == WeaponType::DEFAULT)
-			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // yellow
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white
 
 		SDL_RenderFillRect(renderer, &rect);
 	}

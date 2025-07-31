@@ -8,7 +8,8 @@ const int FRAME_DELAY = 1000 / TARGET_FPS;
 
 Game::Game() 
 	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
-	scoreManager(nullptr), bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
+	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr),
+	  bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
 
 
 Game::~Game() {clean();}
@@ -22,13 +23,14 @@ bool Game::init()
 	int spacingY = 10;
 	srand(static_cast<unsigned int>(time(nullptr)));
 	
-	if(SDL_INIT_EVERYTHING < 0)
+	if (SDL_INIT_EVERYTHING < 0)
 	{
 		std::cerr << "SDL init failed";
 		return false;
 	}
 
-	if(TTF_Init() < 0) {
+	if (TTF_Init() < 0) 
+	{
 		std::cerr << "TTF could not initialize! " << TTF_GetError() << "\n";
 		return false;
 	}
@@ -36,12 +38,16 @@ bool Game::init()
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	waveManager.startWaveIntro();
+	waveManager = new WaveManager();
+	waveManager->startWaveIntro();
 	player = new Player(renderer);
 	bullet = new Bullet(renderer);
-	if(!waveManager.getWaveIntro()) enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+	if(!waveManager->getWaveIntro()) 
+		enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
+	comboManager = new ComboManager();
+	weaponInventory = new WeaponInventory();
 	bulletManager = new BulletManager(renderer);
 	scoreManager->loadHighScore("highscore.txt");
 	pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::TRIPMINE));
@@ -63,27 +69,27 @@ void Game::handleEvents()
 		if (event.type == SDL_QUIT)
 			isRunning = false;
 
-		if (waveManager.getWaveIntro()) return;
+		if (waveManager->getWaveIntro()) return;
 
 		if(event.type == SDL_KEYDOWN)
 		{
 			if (event.key.keysym.sym == SDLK_e)
-				weaponInventory.startWeaponSwapAnimation(1);
+				weaponInventory->startWeaponSwapAnimation(1);
 				
 			else if (event.key.keysym.sym == SDLK_q)
-				weaponInventory.startWeaponSwapAnimation(-1);
+				weaponInventory->startWeaponSwapAnimation(-1);
 		}
 
 		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
 		{
-			WeaponType currentWeapon = weaponInventory.getCurrentWeapon();
-			int ammo = weaponInventory.getAmmo(currentWeapon);
+			WeaponType currentWeapon = weaponInventory->getCurrentWeapon();
+			int ammo = weaponInventory->getAmmo(currentWeapon);
 
 			if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
 			{
 				bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
 				if (currentWeapon != WeaponType::DEFAULT)
-					weaponInventory.useAmmo(currentWeapon);
+					weaponInventory->useAmmo(currentWeapon);
 			}
 		}
 
@@ -118,7 +124,7 @@ void Game::update()
 			if (!enemy->isAlive()) continue;
 
 			SDL_Rect r = enemy->getRect();
-			int nextX = r.x + enemyDirection * static_cast<int>(waveManager.getEnemySpeed());
+			int nextX = r.x + enemyDirection * static_cast<int>(waveManager->getEnemySpeed());
 
 			if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
 			{
@@ -145,7 +151,7 @@ void Game::update()
 			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
-					enemy->move(static_cast<int>(enemyDirection * waveManager.getEnemySpeed()), 0);
+					enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
 			}
 			hasBounced = false;
 		}
@@ -169,7 +175,7 @@ void Game::update()
 			Bullet* b = new Bullet(renderer);
 			SDL_Rect r = shooter->getRect();
 			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
-			b->setEnemyBulletSpeed(waveManager.getProjectileSpeed());
+			b->setEnemyBulletSpeed(waveManager->getProjectileSpeed());
 			enemyBullets.push_back(b);
 		}
 
@@ -180,6 +186,7 @@ void Game::update()
 	for(Bullet* b: bulletManager->getBullets())
 	{
 		int baseScore = 10;
+
 		for (auto& enemy : enemies)
 		{
 			if (!enemy->isAlive())
@@ -188,15 +195,22 @@ void Game::update()
 				continue;
 			}
 
+			switch (enemy->getType())
+			{
+				case EnemyType::SQUID: baseScore = 50; break;
+				case EnemyType::OCTOPUS: baseScore = 30; break;
+				case EnemyType::CRAB: baseScore = 10; break;
+			}
+
 			if (b->isActive() && enemy->isAlive() &&
 				checkCollision(b->getRect(), enemy->getRect()))
 			{
 				if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
 				{
 					enemy->destroy();
-					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->addPoints(earnedScore);
-					comboManager.onEnemyKilled();
+					comboManager->onEnemyKilled();
 				}
 				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 				{
@@ -218,9 +232,9 @@ void Game::update()
 							if (dx <= BOMB_RADIUS && dy <= BOMB_RADIUS)
 							{
 								e2->destroy();
-								int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 								scoreManager->addPoints(earnedScore);
-								comboManager.onEnemyKilled();
+								comboManager->onEnemyKilled();
 							}
 						}
 					}
@@ -241,27 +255,31 @@ void Game::update()
 						if (std::abs(enemyY - hitY) < ROW_THRESHOLD)
 						{
 							otherEnemy->destroy(); // or setAlive(false), etc.
-							int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+							int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 							scoreManager->addPoints(earnedScore);
-							comboManager.onEnemyKilled();
+							comboManager->onEnemyKilled();
 						}
 					}
 
 					b->deactivate(); // remove tripmine bullet after explosion
 				}
-				else
+				else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 				{
 					b->deactivate();
 					enemy->destroy();
-					int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->addPoints(earnedScore);
-					comboManager.onEnemyKilled();
+					comboManager->onEnemyKilled();
 				}
 
 				if (scoreManager->spawnPickup())
 				{
-					int index = rand() % weaponInventory.randomizeWeapon().size();
-					WeaponType randomWeapon = weaponInventory.randomizeWeapon()[index];
+					auto randomWeapons = weaponInventory->randomizeWeapon();
+					if (randomWeapons.empty())
+						return; // or handle appropriately (e.g., no weapon to give)
+
+					int index = rand() % randomWeapons.size();
+					WeaponType randomWeapon = randomWeapons[index];
 
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 					pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
@@ -324,19 +342,19 @@ void Game::update()
 				b->deactivate();
 				ufo->deactivate();
 			}
-			else
+			else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 			{
 				b->deactivate();
 				ufo->deactivate();
 			}
 
 			int baseScore = 10;
-			int earnedScore = static_cast<int>(baseScore * comboManager.getMultiplier());
+			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 			scoreManager->addPoints(earnedScore);
-			comboManager.onEnemyKilled();
+			comboManager->onEnemyKilled();
 
-			int index = rand() % weaponInventory.randomizeWeapon().size();
-			WeaponType randomWeapon = weaponInventory.randomizeWeapon()[index];
+			int index = rand() % weaponInventory->randomizeWeapon().size();
+			WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
 
 			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), randomWeapon));
@@ -363,13 +381,15 @@ void Game::update()
 		if (!pickup->isCollected() && checkCollision(player->getRect(), pickup->getRect()))
 		{
 			if (pickup->getType() == WeaponType::PIERCING_SHOT)
-				weaponInventory.addWeapon(WeaponType::PIERCING_SHOT, 2); // set ammo
+				weaponInventory->addWeapon(WeaponType::PIERCING_SHOT, 1); // set ammo
 			else if (pickup->getType() == WeaponType::BOMB_SHOT)
-				weaponInventory.addWeapon(WeaponType::BOMB_SHOT, 1);
+				weaponInventory->addWeapon(WeaponType::BOMB_SHOT, 1);
 			else if (pickup->getType() == WeaponType::TRIPMINE)
-				weaponInventory.addWeapon(WeaponType::TRIPMINE, 2);
+				weaponInventory->addWeapon(WeaponType::TRIPMINE, 1);
+			else if (pickup->getType() == WeaponType::RAPID_SHOT)
+				weaponInventory->addWeapon(WeaponType::RAPID_SHOT, 5);
 
-			weaponInventory.setCurrentWeapon(pickup->getType());
+			weaponInventory->setCurrentWeapon(pickup->getType());
 			pickup->collect();
 		}
 		pickup->update();
@@ -392,27 +412,27 @@ void Game::update()
 		}
 	}
 
-	if (waveManager.getWaveIntro())
+	if (waveManager->getWaveIntro())
 	{
 		int rows = 5;
 		int cols = 11;
 		int spacingX = 10;
 		int spacingY = 10;
 
-		if (SDL_GetTicks() - waveManager.getWaveIntroStartTime() >= waveManager.getWaveIntroDuration())
+		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
-			waveManager.setShowingWaveIntro();
+			waveManager->setShowingWaveIntro();
 			enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
-			comboManager.reset();
+			comboManager->reset();
 			bullet->deactivate();
 		}
 		return;
 	}
 
-	if(allEnemiesDead && !waveManager.getWaveIntro())
+	if(allEnemiesDead && !waveManager->getWaveIntro())
 	{
-		waveManager.nextWave();
-		waveManager.startWaveIntro();
+		waveManager->nextWave();
+		waveManager->startWaveIntro();
 
 		for (auto& e : enemies) delete e;
 			enemies.clear();
@@ -436,6 +456,7 @@ void Game::update()
 		enemyBullets.end()
 	);
 
+	//Pickups cleanup
 	pickups.erase(
 		std::remove_if(pickups.begin(), pickups.end(),
 			[](Pickup* p) 
@@ -453,8 +474,8 @@ void Game::update()
 	player->update();
 	bullet->update();
 	bulletManager->update();
-	comboManager.update();
-	weaponInventory.update();
+	comboManager->update();
+	weaponInventory->update();
 }
 
 // ADD
@@ -468,46 +489,15 @@ void Game::render()
 	ufo->render();
 	scoreManager->render(renderer);
 	bulletManager->render();
-	comboManager.render(renderer);
-	weaponInventory.renderWeaponHUD(renderer);
+	comboManager->render(renderer);
+	weaponInventory->renderWeaponHUD(renderer);
 
 	for (auto& enemy : enemies) { if (enemy->isAlive()) enemy->render(); }
 	for (auto& pickup : pickups) { pickup->render(); }
 	for (Bullet* b : enemyBullets) { if (b->isActive()) b->render(); }
 
-	if (waveManager.getWaveIntro())
-	{
-		SDL_Color color = { 255, 255, 255 };
-		TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
-
-		std::string introText = "WAVE " + std::to_string(waveManager.getWave());
-		SDL_Surface* textSurface = TTF_RenderText_Solid(font, introText.c_str(), color);
-		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-
-		// Base size
-		int baseW = textSurface->w;
-		int baseH = textSurface->h;
-
-		// Calculate pulse scale (between 0.9 and 1.2)
-		float time = SDL_GetTicks() / 100.0f; // make it slower
-		float scale = 1.0f + 0.1f * sin(time); // adjust amplitude
-
-		int scaledW = static_cast<int>(baseW * scale);
-		int scaledH = static_cast<int>(baseH * scale);
-
-		SDL_Rect textRect = 
-		{
-			SCREEN_WIDTH / 2 - scaledW / 2,
-			SCREEN_HEIGHT / 2 - scaledH / 2,
-			scaledW, scaledH
-		};
-
-		SDL_RenderCopyEx(renderer, textTexture, nullptr, &textRect, 0.0, nullptr, SDL_FLIP_NONE);
-
-		SDL_FreeSurface(textSurface);
-		SDL_DestroyTexture(textTexture);
-		TTF_CloseFont(font);
-	}
+	if (waveManager->getWaveIntro())
+		waveManager->showWaveIntro(renderer);
 
 	if (isGameOver)
 	{
@@ -560,6 +550,8 @@ void Game::run()
 	float deltaTime = 0.0f;
 	Uint32 frameStart;
 	int frameTime;
+	// Prototype
+	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 	while (isRunning)
 	{
@@ -571,7 +563,7 @@ void Game::run()
 		frameStart = SDL_GetTicks();
 
 		handleEvents();
-		weaponInventory.updateDeltaTime(deltaTime);
+		weaponInventory->updateDeltaTime(deltaTime);
 		render();
 		update();
 		frameTime = SDL_GetTicks() - frameStart;
@@ -589,6 +581,9 @@ void Game::clean()
 	delete bullet;
 	delete enemy;
 	delete ufo;
+	delete comboManager;
+	delete waveManager;
+	delete weaponInventory;
 	delete scoreManager;
 	delete bulletManager;
 	for (auto& enemy : enemies) delete enemy;

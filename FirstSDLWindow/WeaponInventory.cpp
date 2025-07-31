@@ -7,8 +7,24 @@ WeaponInventory::WeaponInventory()
 				:currentIndex(0), font(nullptr), animationOffset(0.0f), 
 				 animationSpeed(5.0f), isAnimating(false), animationDirection(0), deltaTime(0.0f)
 {
+	smallFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 16);
+	largeFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+
+	if (!font)
+		SDL_Log("Failed to load ammo font: %s", TTF_GetError());
+	if (!smallFont || !largeFont)
+		SDL_Log("Failed to load weapon fonts: %s", TTF_GetError());
+	
 	ammoMap[WeaponType::DEFAULT] = 0;
 	ownedWeapons.push_back(WeaponType::DEFAULT);
+}
+
+WeaponInventory::~WeaponInventory()
+{
+	if (smallFont) TTF_CloseFont(smallFont);
+	if (largeFont) TTF_CloseFont(largeFont);
+	if (font) TTF_CloseFont(font);
 }
 
 void WeaponInventory::addWeapon(WeaponType type, int ammo)
@@ -152,13 +168,14 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 			case WeaponType::PIERCING_SHOT: currentWeapon = "PIERCING"; break;
 			case WeaponType::BOMB_SHOT: currentWeapon = "BOMB"; break;
 			case WeaponType::TRIPMINE: currentWeapon = "TRIPMINE"; break;
+			case WeaponType::RAPID_SHOT: currentWeapon = "RPDSHOT"; break;
 			default: currentWeapon = "UNKNOWN"; break;
 		}
 
 		bool isCenter = (i == 0 && !isAnimating);
 		int fontSize = isCenter ? 20 : 16;
 
-		TTF_Font* displayFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", fontSize);
+		TTF_Font* displayFont = isCenter ? largeFont : smallFont;
 		if (!displayFont) continue;
 
 		SDL_Color color = { 255, 255, 255, 255 };
@@ -172,13 +189,13 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 		totalHeight += h + padding;
 
 		SDL_FreeSurface(surface);
-		TTF_CloseFont(displayFont);
 	}
 
 	// Remove last padding
 	totalHeight -= padding;
 
 	// Draw centered vertically
+	if (renderList.empty()) return;
 	float currentY = baseY - totalHeight / 2.0f - animationOffset * (renderList[0].height + padding); // shift up/down based on anim
 
 	for (const auto& info : renderList)
@@ -198,9 +215,6 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 	}
 
 	int ammo = getAmmo(getCurrentWeapon());
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
-	if (!font)
-		SDL_Log("Failed to load font: %s", TTF_GetError());
 
 	std::string text = "Weapon: ";
 	SDL_Color textColor = { 255, 255, 255, 255 };
@@ -237,12 +251,20 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 
 	SDL_DestroyTexture(texture);
 	SDL_DestroyTexture(ammoTexture);
-	TTF_CloseFont(font);
 }
 
 void WeaponInventory::update() { updateAnimation(deltaTime); }
 
-WeaponType WeaponInventory::getCurrentWeapon() const { return ownedWeapons[currentIndex]; }
+WeaponType WeaponInventory::getCurrentWeapon() const 
+{ 
+	try {
+		return ownedWeapons.at(currentIndex);
+	}
+	catch (const std::out_of_range& e) {
+		std::cerr << "[getCurrentWeapon] Out of range: " << e.what() << std::endl;
+		return WeaponType::DEFAULT; // fallback
+	}
+}
 
 std::vector<WeaponType> WeaponInventory::randomizeWeapon()
 {
@@ -250,7 +272,8 @@ std::vector<WeaponType> WeaponInventory::randomizeWeapon()
 	{
 		WeaponType::PIERCING_SHOT,
 		WeaponType::BOMB_SHOT,
-		WeaponType::TRIPMINE
+		WeaponType::TRIPMINE,
+		WeaponType::RAPID_SHOT
 	};
 
 	return randomType;

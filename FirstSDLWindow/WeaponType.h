@@ -6,5 +6,6 @@ enum class WeaponType
 	DEFAULT,
 	PIERCING_SHOT,
 	BOMB_SHOT,
-	TRIPMINE
+	TRIPMINE,
+	RAPID_SHOT
 };
