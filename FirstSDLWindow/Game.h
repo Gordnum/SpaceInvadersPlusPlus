@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
@@ -57,6 +58,11 @@ class Game
 
     unsigned int fpsTimer = SDL_GetTicks();
     int frameCount = 0;
+
+    float deltaTime;
+    unsigned int lastTicks;
+
+    float calculateDeltaTime();
 
 	public:
     Game();

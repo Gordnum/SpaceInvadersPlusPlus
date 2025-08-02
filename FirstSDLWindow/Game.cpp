@@ -14,6 +14,15 @@ Game::Game()
 
 Game::~Game() {clean();}
 
+float Game::calculateDeltaTime() 
+{
+	unsigned int currentTicks = SDL_GetTicks();
+	float dt = (currentTicks - lastTicks) / 1000.0f;
+	if (dt > 0.05f) dt = 0.05f;
+	lastTicks = currentTicks;
+	return dt;
+}
+
 // ADD
 bool Game::init()
 {
@@ -35,6 +44,12 @@ bool Game::init()
 		return false;
 	}
 
+	if (IMG_Init(IMG_INIT_PNG) == 0)
+	{
+		std::cerr << "IMG_Init failed: " << IMG_GetError() << "\n";
+		return false;
+	}
+
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -42,6 +57,7 @@ bool Game::init()
 	waveManager->startWaveIntro();
 	player = new Player(renderer);
 	bullet = new Bullet(renderer);
+	Enemy::LoadTextures(renderer);
 	if(!waveManager->getWaveIntro()) 
 		enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
 	ufo = new UFO(renderer);
@@ -102,6 +118,8 @@ void Game::update()
 {
 	if (isGameOver) return;
 
+	deltaTime = calculateDeltaTime();
+
 	// FPS Counter
 	frameCount++;
 	unsigned currentTicks = SDL_GetTicks();
@@ -139,7 +157,10 @@ void Game::update()
 			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
+				{
 					enemy->move(0, 20); // move down instead of sideways
+					enemy->advanceAnimation();
+				}
 			}
 			hasBounced = true;
 
@@ -151,7 +172,10 @@ void Game::update()
 			for (auto& enemy : enemies)
 			{
 				if (enemy->isAlive())
+				{
 					enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
+					enemy->advanceAnimation();
+				}
 			}
 			hasBounced = false;
 		}
@@ -189,17 +213,13 @@ void Game::update()
 
 		for (auto& enemy : enemies)
 		{
-			if (!enemy->isAlive())
-			{
-				enemy->update();
-				continue;
-			}
+			if (!enemy->isAlive()) continue;
 
 			switch (enemy->getType())
 			{
 				case EnemyType::SQUID: baseScore = 50; break;
-				case EnemyType::OCTOPUS: baseScore = 30; break;
-				case EnemyType::CRAB: baseScore = 10; break;
+				case EnemyType::CRAB: baseScore = 30; break;
+				case EnemyType::OCTOPUS: baseScore = 10; break;
 			}
 
 			if (b->isActive() && enemy->isAlive() &&
@@ -546,20 +566,12 @@ void Game::render()
 
 void Game::run()
 {
-	Uint32 lastTime = SDL_GetTicks();
-	float deltaTime = 0.0f;
-	Uint32 frameStart;
+	unsigned int frameStart;
 	int frameTime;
-	// Prototype
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 	while (isRunning)
 	{
-		Uint32 currentTime = SDL_GetTicks();
-		deltaTime = (currentTime - lastTime) / 1000.0f;
-		if (deltaTime > 0.05f) deltaTime = 0.05f;
-		lastTime = currentTime;
-
+		deltaTime = calculateDeltaTime();
 		frameStart = SDL_GetTicks();
 
 		handleEvents();
@@ -592,7 +604,9 @@ void Game::clean()
 	enemyBullets.clear();
 	for (auto& pickup : pickups) delete pickup;
 	pickups.clear();
+	Enemy::FreeTextures();
 	TTF_Quit();
+	IMG_Quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
