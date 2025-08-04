@@ -4,6 +4,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 std::map<EnemyType, std::vector<SDL_Texture*>> Enemy::textures;
+std::vector<SDL_Texture*> Enemy::deathTextures;
 
 Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
 	  :renderer(renderer), alive(true), rowIndex(0), enemyType(enemyType), animationFrame(0)
@@ -72,6 +73,27 @@ void Enemy::LoadTextures(SDL_Renderer* renderer)
 			}
 		}
 	}
+
+	std::vector<std::string> deathPaths = 
+	{
+		"../Assets/Textures/enemy_death_1.png", // = first image you uploaded
+		"../Assets/Textures/enemy_death_2.png"  // = second image you uploaded
+	};
+
+	for (const std::string& path : deathPaths) 
+	{
+		SDL_Surface* surface = IMG_Load(path.c_str());
+		if (!surface) 
+		{
+			SDL_Log("Failed to load death image: %s", IMG_GetError());
+			continue;
+		}
+
+		SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+		SDL_FreeSurface(surface);
+		if (tex)
+			deathTextures.push_back(tex);
+	}
 }
 
 void Enemy::FreeTextures()
@@ -85,24 +107,46 @@ void Enemy::FreeTextures()
 		pair.second.clear();
 	}
 	textures.clear();
+
+	for (SDL_Texture* tex : deathTextures) 
+	{
+		SDL_DestroyTexture(tex);
+	}
+	deathTextures.clear();
 }
 
 void Enemy::update(float deltaTime)
 {
-	/*if (!alive) return;
-
-	animationTimer += deltaTime;
-
-	if (animationTimer >= animationSpeed)
+	if (dying && !finishedDeathAnimation) 
 	{
-		animationFrame = (animationFrame + 1) % textures[enemyType].size();
-		animationTimer = 0.0f;
-	}*/
+		deathTimer += deltaTime;
+
+		if (deathTimer >= deathFrameDuration) 
+		{
+			deathTimer = 0.0f;
+			deathFrameIndex++;
+
+			if (deathFrameIndex >= static_cast<int>(deathTextures.size())) 
+			{
+				finishedDeathAnimation = true;
+			}
+		}
+	}
 }
 
 void Enemy::render()
 {
-	if (!alive) return;
+	if (dying) 
+	{
+		if (!finishedDeathAnimation && deathFrameIndex < deathTextures.size()) 
+		{
+			SDL_Texture* currentDeathFrame = deathTextures[deathFrameIndex];
+			SDL_RenderCopy(renderer, currentDeathFrame, nullptr, &rect);
+		}
+		return; // Do not render normal enemy texture
+	}
+
+	if (!alive && !dying) return;
 
 	if (!textures[enemyType].empty()) 
 	{
@@ -120,7 +164,13 @@ SDL_Rect Enemy::getRect() const { return rect; }
 
 void Enemy::destroy() 
 {
-	alive = false;
+	if (!dying) 
+	{
+		dying = true;
+		deathTimer = 0.0f;
+		deathFrameIndex = 0;
+		alive = false;
+	}
 }
 
 void Enemy::setPosition(int x, int y)
@@ -141,9 +191,5 @@ void Enemy::advanceAnimation()
 		animationFrame = (animationFrame + 1) % textures[enemyType].size();
 }
 
-bool Enemy::isAlive() const
-{
-	return alive;
-}
-
+bool Enemy::isAlive() const { return alive; }
 EnemyType Enemy::getType() const { return enemyType; }

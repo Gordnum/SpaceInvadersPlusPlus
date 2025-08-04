@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <SDL_image.h>
+#include <iostream>
 
 enum class EnemyType 
 { 
@@ -21,12 +22,17 @@ private:
 	int rowIndex;
 	EnemyType enemyType;
 	int animationFrame;
-	float animationTimer = 0.0f;
-	float animationSpeed = 0.07f;
 	static std::map<EnemyType, std::vector<SDL_Texture*>> textures;
 
+	static std::vector<SDL_Texture*> deathTextures;
+	bool dying = false;
+	float deathTimer = 0.0f;
+	float deathFrameDuration = 0.02f;
+	int deathFrameIndex = 0;
+	bool finishedDeathAnimation = false;
+
 public:
-	Enemy(SDL_Renderer* renderer, EnemyType enemyType = EnemyType::CRAB);
+	Enemy(SDL_Renderer* renderer, EnemyType enemyType = EnemyType::OCTOPUS);
 	~Enemy();
 	SDL_Rect getRect() const;
 	void update(float deltaTime);
@@ -42,6 +48,9 @@ public:
 
 	static void LoadTextures(SDL_Renderer* renderer);
 	static void FreeTextures();
+
+	bool enemyIsDying() const { return dying; }
+	bool enemyIsFinishedDeathAnimation() const { return finishedDeathAnimation; }
 
 	static std::vector<Enemy*> createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX = 10, int spacingY = 10);
 };

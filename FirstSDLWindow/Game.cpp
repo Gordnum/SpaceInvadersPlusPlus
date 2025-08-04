@@ -85,27 +85,28 @@ void Game::handleEvents()
 		if (event.type == SDL_QUIT)
 			isRunning = false;
 
-		if (waveManager->getWaveIntro()) return;
-
-		if(event.type == SDL_KEYDOWN)
+		if (!waveManager->getWaveIntro())
 		{
-			if (event.key.keysym.sym == SDLK_e)
-				weaponInventory->startWeaponSwapAnimation(1);
-				
-			else if (event.key.keysym.sym == SDLK_q)
-				weaponInventory->startWeaponSwapAnimation(-1);
-		}
-
-		if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
-		{
-			WeaponType currentWeapon = weaponInventory->getCurrentWeapon();
-			int ammo = weaponInventory->getAmmo(currentWeapon);
-
-			if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
+			if (event.type == SDL_KEYDOWN)
 			{
-				bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
-				if (currentWeapon != WeaponType::DEFAULT)
-					weaponInventory->useAmmo(currentWeapon);
+				if (event.key.keysym.sym == SDLK_e)
+					weaponInventory->startWeaponSwapAnimation(1);
+
+				else if (event.key.keysym.sym == SDLK_q)
+					weaponInventory->startWeaponSwapAnimation(-1);
+			}
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
+			{
+				WeaponType currentWeapon = weaponInventory->getCurrentWeapon();
+				int ammo = weaponInventory->getAmmo(currentWeapon);
+
+				if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
+				{
+					bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
+					if (currentWeapon != WeaponType::DEFAULT)
+						weaponInventory->useAmmo(currentWeapon);
+				}
 			}
 		}
 
@@ -119,6 +120,11 @@ void Game::update()
 	if (isGameOver) return;
 
 	deltaTime = calculateDeltaTime();
+
+	for (auto& enemy : enemies) 
+	{
+		enemy->update(deltaTime);
+	}
 
 	// FPS Counter
 	frameCount++;
@@ -422,6 +428,7 @@ void Game::update()
 		highScoreSaved = true;
 	}
 
+	// Check enemy
 	bool allEnemiesDead = true;
 	for (auto&e : enemies)
 	{
@@ -432,6 +439,20 @@ void Game::update()
 		}
 	}
 
+	// Reset wave
+	if (allEnemiesDead && !waveManager->getWaveIntro() && !enemies.empty())
+	{
+		waveManager->nextWave();
+		waveManager->startWaveIntro();
+
+		for (auto& e : enemies) delete e;
+		enemies.clear();
+
+		if (enemyDirection == -1) enemyDirection = 1;
+		moveInterval = 700;
+	}
+
+	// New Wave
 	if (waveManager->getWaveIntro())
 	{
 		int rows = 5;
@@ -446,19 +467,6 @@ void Game::update()
 			comboManager->reset();
 			bullet->deactivate();
 		}
-		return;
-	}
-
-	if(allEnemiesDead && !waveManager->getWaveIntro())
-	{
-		waveManager->nextWave();
-		waveManager->startWaveIntro();
-
-		for (auto& e : enemies) delete e;
-			enemies.clear();
-		
-		if (enemyDirection == -1) enemyDirection = 1;
-		moveInterval = 700;
 	}
 
 	// Enemy bullets cleanup
@@ -474,6 +482,21 @@ void Game::update()
 				return false;
 			}),
 		enemyBullets.end()
+	);
+
+	// Enemies cleanup
+	enemies.erase(
+		std::remove_if(enemies.begin(), enemies.end(),
+			[](Enemy* e) 
+			{
+				if (e->enemyIsDying() && e->enemyIsFinishedDeathAnimation()) 
+				{
+					delete e;
+					return true;
+				}
+				return false;
+			}),
+		enemies.end()
 	);
 
 	//Pickups cleanup
@@ -512,7 +535,11 @@ void Game::render()
 	comboManager->render(renderer);
 	weaponInventory->renderWeaponHUD(renderer);
 
-	for (auto& enemy : enemies) { if (enemy->isAlive()) enemy->render(); }
+	for (auto& enemy : enemies) 
+	{
+		if (enemy->isAlive() || enemy->enemyIsDying()) enemy->render();
+	}
+
 	for (auto& pickup : pickups) { pickup->render(); }
 	for (Bullet* b : enemyBullets) { if (b->isActive()) b->render(); }
 
