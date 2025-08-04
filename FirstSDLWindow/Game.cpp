@@ -55,11 +55,11 @@ bool Game::init()
 
 	waveManager = new WaveManager();
 	waveManager->startWaveIntro();
-	player = new Player(renderer);
-	bullet = new Bullet(renderer);
+	UFO::LoadTextures(renderer);
 	Enemy::LoadTextures(renderer);
-	if(!waveManager->getWaveIntro()) 
-		enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+	player = new Player(renderer);
+	player->loadWeaponTextures(renderer);
+	bullet = new Bullet(renderer);
 	ufo = new UFO(renderer);
 	scoreManager = new ScoreManager(renderer);
 	comboManager = new ComboManager();
@@ -126,6 +126,8 @@ void Game::update()
 		enemy->update(deltaTime);
 	}
 
+	ufo->update(deltaTime);
+
 	// FPS Counter
 	frameCount++;
 	unsigned currentTicks = SDL_GetTicks();
@@ -164,7 +166,7 @@ void Game::update()
 			{
 				if (enemy->isAlive())
 				{
-					enemy->move(0, 20); // move down instead of sideways
+					enemy->move(0, 15); // move down instead of sideways
 					enemy->advanceAnimation();
 				}
 			}
@@ -242,7 +244,7 @@ void Game::update()
 				{
 					enemy->destroy();
 
-					const int BOMB_RADIUS = 50;
+					const int BOMB_RADIUS = 60;
 					SDL_Rect center = enemy->getRect(); // center of explosion
 
 					// Affect nearby enemies
@@ -357,24 +359,30 @@ void Game::update()
 			checkCollision(b->getRect(), ufo->getRect()))
 		{
 			if (b->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
+			{
+				ufo->startDeathAnimation();
 				ufo->deactivate();
+			}
 			else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 			{
 				b->deactivate();
+				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
 			else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
 			{
 				b->deactivate();
+				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
 			else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 			{
 				b->deactivate();
+				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
 
-			int baseScore = 10;
+			int baseScore = 200;
 			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 			scoreManager->addPoints(earnedScore);
 			comboManager->onEnemyKilled();
@@ -416,6 +424,7 @@ void Game::update()
 				weaponInventory->addWeapon(WeaponType::RAPID_SHOT, 5);
 
 			weaponInventory->setCurrentWeapon(pickup->getType());
+			player->setWeaponTexture(pickup->getType());
 			pickup->collect();
 		}
 		pickup->update();
@@ -457,8 +466,8 @@ void Game::update()
 	{
 		int rows = 5;
 		int cols = 11;
-		int spacingX = 10;
-		int spacingY = 10;
+		int spacingX = 15;
+		int spacingY = 15;
 
 		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
@@ -513,12 +522,12 @@ void Game::update()
 			}),
 		pickups.end());
 
-	ufo->update();
 	player->update();
 	bullet->update();
 	bulletManager->update();
 	comboManager->update();
 	weaponInventory->update();
+	player->setWeaponTexture(weaponInventory->getCurrentWeapon());
 }
 
 // ADD
@@ -529,7 +538,7 @@ void Game::render()
 
 	player->render();
 	bullet->render();
-	ufo->render();
+	if(ufo->isActive() || ufo->UFOIsDying()) ufo->render();
 	scoreManager->render(renderer);
 	bulletManager->render();
 	comboManager->render(renderer);
@@ -631,7 +640,6 @@ void Game::clean()
 	enemyBullets.clear();
 	for (auto& pickup : pickups) delete pickup;
 	pickups.clear();
-	Enemy::FreeTextures();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_DestroyRenderer(renderer);

@@ -9,11 +9,7 @@ std::vector<SDL_Texture*> Enemy::deathTextures;
 Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
 	  :renderer(renderer), alive(true), rowIndex(0), enemyType(enemyType), animationFrame(0)
 {
-	rect = { 100, 50, 40, 20 };
-}
-
-Enemy::~Enemy()
-{
+	rect = { 100, 50, 45, 22 };
 }
 
 std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
@@ -76,8 +72,8 @@ void Enemy::LoadTextures(SDL_Renderer* renderer)
 
 	std::vector<std::string> deathPaths = 
 	{
-		"../Assets/Textures/enemy_death_1.png", // = first image you uploaded
-		"../Assets/Textures/enemy_death_2.png"  // = second image you uploaded
+		"../Assets/Textures/enemy_death_1.png",
+		"../Assets/Textures/enemy_death_2.png"
 	};
 
 	for (const std::string& path : deathPaths) 

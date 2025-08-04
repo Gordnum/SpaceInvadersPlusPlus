@@ -5,15 +5,25 @@
 // note kalo dia function yang ngereturn sesuatu, valuenya gabisa diubah. Tapi kalo functionnya void, valuenya bisa diubah.
 
 Player::Player(SDL_Renderer* renderer)
-       :renderer(renderer), font(nullptr), speed(5), movingLeft(false), movingRight(false), playerLives(3)
+       :renderer(renderer), font(nullptr), speed(5), movingLeft(false), movingRight(false), playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
 {
-    rect = { 400, 500, 50, 20 };
+    rect = { 400, 500, 60, 30 };
     
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
     if (!font)
         SDL_Log("Failed to load font: %s", TTF_GetError());
 
     TTF_CloseFont(font);
+}
+
+Player::~Player()
+{
+    for (auto& pair : weaponTextures)
+    {
+        if (pair.second)
+            SDL_DestroyTexture(pair.second);
+    }
+    weaponTextures.clear();
 }
 
 void Player::handleEvent(const SDL_Event& e)
@@ -48,10 +58,33 @@ void Player::handleEvent(const SDL_Event& e)
     }
 }
 
+void Player::loadWeaponTextures(SDL_Renderer* renderer)
+{
+    weaponTextures[WeaponType::DEFAULT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
+    weaponTextures[WeaponType::PIERCING_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_2.png");
+    weaponTextures[WeaponType::BOMB_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_2.png");
+    weaponTextures[WeaponType::TRIPMINE] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
+    weaponTextures[WeaponType::RAPID_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
+
+    // Fallback default
+    currentTexture = weaponTextures[WeaponType::DEFAULT];
+}
+
+void Player::setWeaponTexture(WeaponType type)
+{
+    if (weaponTextures.count(type) && currentTexture != weaponTextures[type])
+        currentTexture = weaponTextures[type];
+}
+
 void Player::render()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
-    SDL_RenderFillRect(renderer, &rect);
+    if (currentTexture)
+        SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
+    else
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &rect);
+    }
 
     std::string labelText = "<LIVES>";
     SDL_Surface* labelSurface = TTF_RenderText_Solid(font, labelText.c_str(), {255, 255, 255});

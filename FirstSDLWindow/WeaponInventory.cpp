@@ -257,7 +257,8 @@ void WeaponInventory::update() { updateAnimation(deltaTime); }
 
 WeaponType WeaponInventory::getCurrentWeapon() const 
 { 
-	try {
+	try 
+	{
 		return ownedWeapons.at(currentIndex);
 	}
 	catch (const std::out_of_range& e) {

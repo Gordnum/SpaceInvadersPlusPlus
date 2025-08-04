@@ -23,7 +23,6 @@ private:
 	EnemyType enemyType;
 	int animationFrame;
 	static std::map<EnemyType, std::vector<SDL_Texture*>> textures;
-
 	static std::vector<SDL_Texture*> deathTextures;
 	bool dying = false;
 	float deathTimer = 0.0f;
@@ -33,7 +32,6 @@ private:
 
 public:
 	Enemy(SDL_Renderer* renderer, EnemyType enemyType = EnemyType::OCTOPUS);
-	~Enemy();
 	SDL_Rect getRect() const;
 	void update(float deltaTime);
 	void render();

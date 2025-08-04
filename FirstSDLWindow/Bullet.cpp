@@ -98,7 +98,7 @@ void Bullet::render()
 		else if (currentWeapon == WeaponType::TRIPMINE)
 			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green
 		else if (currentWeapon == WeaponType::RAPID_SHOT)
-			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // yellow
 		else if(currentWeapon == WeaponType::DEFAULT)
 			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white
 
