@@ -8,7 +8,7 @@ const int SCREEN_HEIGHT = 600;
 
 ScoreManager::ScoreManager(SDL_Renderer* renderer)
 	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), 
-	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false)
+	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(2000), shouldSpawnPickup(false)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
@@ -41,7 +41,7 @@ void ScoreManager::addPoints(int amount)
 	if(score >= nextGiveLivesThreshold)
 	{
 		shouldGiveLive = true;
-		nextGiveLivesThreshold += 5000;
+		nextGiveLivesThreshold += 2000;
 	}
 }
 

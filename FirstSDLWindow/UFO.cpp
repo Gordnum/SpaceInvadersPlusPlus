@@ -9,7 +9,7 @@ std::vector<SDL_Texture*> UFO::deathTextures;
 UFO::UFO(SDL_Renderer* renderer)
 	:renderer(renderer), active(false), speed(4)
 {
-	rect = { -60, 100, 50, 25 };
+	rect = { -60, 75, 50, 25 };
 }
 
 void UFO::LoadTextures(SDL_Renderer* renderer)

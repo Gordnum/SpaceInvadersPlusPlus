@@ -15,9 +15,16 @@
 #include "ComboManager.h"
 #include "BulletManager.h"
 #include "WaveManager.h"
+#include "MenuManager.h"
 #include "WeaponType.h"
 #include "WeaponInventory.h"
 #include "Pickup.h"
+
+enum class GameMode 
+{
+    CAMPAIGN,
+    ENDLESS
+};
 
 class Game
 {
@@ -26,6 +33,7 @@ class Game
     void update();
     void render();
 
+    GameMode currentMode;
     SDL_Window* window;
     SDL_Renderer* renderer;
     bool isRunning;
@@ -40,6 +48,7 @@ class Game
     WeaponInventory* weaponInventory;
     ScoreManager* scoreManager;
     BulletManager* bulletManager;
+    MenuManager* menuManager;
     std::vector<Enemy*> enemies;
     std::vector<Pickup*> pickups;
 
@@ -71,12 +80,3 @@ class Game
     void run();
     void clean();
 };
-
-/*
-enum class GameState
-{
-    PLAY,
-    EXIT
-};
-GameState state;
-*/

@@ -9,7 +9,7 @@ std::vector<SDL_Texture*> Enemy::deathTextures;
 Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
 	  :renderer(renderer), alive(true), rowIndex(0), enemyType(enemyType), animationFrame(0)
 {
-	rect = { 100, 50, 45, 22 };
+	rect = { 100, 50, 40, 20 };
 }
 
 std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
@@ -29,7 +29,7 @@ std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int
 		for (int col = 0; col < cols; ++col)
 		{
 			int x = 30 + col * (40 + spacingX);
-			int y = 150 + row * (20 + spacingY);
+			int y = 125 + row * (20 + spacingY);
 
 			Enemy* enemy = new Enemy(renderer, type);
 			enemy->setPosition(x, y);

@@ -8,7 +8,7 @@ const int FRAME_DELAY = 1000 / TARGET_FPS;
 
 Game::Game() 
 	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
-	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr),
+	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
 	  bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
 
 
@@ -53,8 +53,8 @@ bool Game::init()
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+	menuManager = new MenuManager(renderer);
 	waveManager = new WaveManager();
-	waveManager->startWaveIntro();
 	UFO::LoadTextures(renderer);
 	Enemy::LoadTextures(renderer);
 	player = new Player(renderer);
@@ -66,7 +66,6 @@ bool Game::init()
 	weaponInventory = new WeaponInventory();
 	bulletManager = new BulletManager(renderer);
 	scoreManager->loadHighScore("highscore.txt");
-	pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::TRIPMINE));
 
 	isRunning = true;
 	return true;
@@ -79,6 +78,36 @@ static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b)
 
 void Game::handleEvents() 
 {
+	if (menuManager->isInMainMenu())
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			bool startCampaign = false;
+			bool startEndless = false;
+			bool quitGame = false;
+
+			menuManager->handleEvent(event, startCampaign, startEndless, quitGame);
+
+			if (quitGame || event.type == SDL_QUIT)
+				isRunning = false;
+			else if (startCampaign)
+			{
+				currentMode = GameMode::CAMPAIGN;
+				menuManager->setInMainMenu(false);
+				waveManager->startWaveIntro();
+				pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::PIERCING_SHOT));
+			}
+			else if (startEndless)
+			{
+				currentMode = GameMode::ENDLESS;
+				menuManager->setInMainMenu(false);
+				waveManager->startWaveIntro();
+			}
+			return;
+		}
+	}
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
@@ -466,8 +495,8 @@ void Game::update()
 	{
 		int rows = 5;
 		int cols = 11;
-		int spacingX = 15;
-		int spacingY = 15;
+		int spacingX = 13;
+		int spacingY = 13;
 
 		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
@@ -536,6 +565,11 @@ void Game::render()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
+	if (menuManager->isInMainMenu())
+	{
+		menuManager->render();
+		return;
+	}
 	player->render();
 	bullet->render();
 	if(ufo->isActive() || ufo->UFOIsDying()) ufo->render();
@@ -634,6 +668,7 @@ void Game::clean()
 	delete weaponInventory;
 	delete scoreManager;
 	delete bulletManager;
+	delete menuManager;
 	for (auto& enemy : enemies) delete enemy;
 	enemies.clear();
 	for (auto& b : enemyBullets) delete b;

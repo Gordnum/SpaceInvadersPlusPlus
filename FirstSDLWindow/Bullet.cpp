@@ -19,10 +19,10 @@ void Bullet::fire(int x, int y, WeaponType type) // player
 
 		if (type == WeaponType::PIERCING_SHOT)
 		{
-			rect.x = x - rect.w / 2;
+			rect.x = x - (rect.w + 4) / 2;
 			rect.y = 0;
 			rect.w = 10;
-			rect.h = 500; // full screen height shot
+			rect.h = 480; // full screen height shot
 			
 		}
 		else if (type == WeaponType::BOMB_SHOT)

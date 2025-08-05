@@ -7,7 +7,7 @@
 Player::Player(SDL_Renderer* renderer)
        :renderer(renderer), font(nullptr), speed(5), movingLeft(false), movingRight(false), playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
 {
-    rect = { 400, 500, 60, 30 };
+    rect = { 400, 475, 55, 28 };
     
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
     if (!font)
