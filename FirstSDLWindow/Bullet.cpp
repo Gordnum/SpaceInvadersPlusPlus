@@ -5,7 +5,8 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Bullet::Bullet(SDL_Renderer* renderer)
-	:renderer(renderer), active(false), bulletIsFromEnemy(false), currentWeapon(WeaponType::DEFAULT), ammo(0), enemyBulletSpeed(0)
+	:renderer(renderer), active(false), bulletIsFromEnemy(false), currentWeapon(WeaponType::DEFAULT), 
+	 ammo(0), enemyBulletSpeed(0.0f), playerBulletSpeed(300.0f)
 {
 	rect = { 0, 0, 5, 10 };
 }
@@ -66,20 +67,21 @@ void Bullet::fireFrom(int x, int y, bool fromEnemy) // enemy
 	active = true;
 }
 
-void Bullet::update()
+void Bullet::update(float deltaTime)
 {
 	if(active && !bulletIsFromEnemy)
 	{
-		rect.y -= 5;
 		if (currentWeapon == WeaponType::BOMB_SHOT)
-			rect.y += 2;
+			rect.y -= static_cast<int>((playerBulletSpeed - 150.0f) * deltaTime);
+		else
+			rect.y -= static_cast<int>(playerBulletSpeed * deltaTime);
 
-		if (rect.y < 0) 
+		if (rect.y < 0)
 			active = false;
 	}
 
-	if(bulletIsFromEnemy)
-		rect.y += enemyBulletSpeed;
+	if (bulletIsFromEnemy)
+		rect.y += static_cast<int>(enemyBulletSpeed * deltaTime);
 
 	if (rect.y < 0 || rect.y > SCREEN_HEIGHT)
 		deactivate();

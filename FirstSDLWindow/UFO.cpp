@@ -7,7 +7,7 @@ SDL_Texture* UFO::textures;
 std::vector<SDL_Texture*> UFO::deathTextures;
 
 UFO::UFO(SDL_Renderer* renderer)
-	:renderer(renderer), active(false), speed(4)
+	:renderer(renderer), active(false), speed(200.0f)
 {
 	rect = { -60, 75, 50, 25 };
 }
@@ -76,7 +76,7 @@ void UFO::update(float deltaTime)
 
 	if (!active) return;
 
-	rect.x += speed;
+	rect.x += static_cast<int>(speed * deltaTime);
 
 	if (rect.x > SCREEN_WIDTH)
 		deactivate();

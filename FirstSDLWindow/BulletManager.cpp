@@ -46,12 +46,12 @@ void BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
     bullets.push_back(bullet);
 }
 
-void BulletManager::update()
+void BulletManager::update(float deltaTime)
 {
     for (auto it = bullets.begin(); it != bullets.end();)
     {
         Bullet* bullet = *it;
-        bullet->update();
+        bullet->update(deltaTime);
 
         if (!bullet->isActive()) 
         {

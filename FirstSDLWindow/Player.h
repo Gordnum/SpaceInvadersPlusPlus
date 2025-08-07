@@ -11,7 +11,7 @@ class Player
 		SDL_Rect rect;
 		SDL_Renderer* renderer;
 		TTF_Font* font;
-		int speed;
+		float speed;
 		bool movingLeft;
 		bool movingRight;
 		int playerLives;
@@ -23,7 +23,7 @@ class Player
 		~Player();
 		void handleEvent(const SDL_Event& e);
 		void render();
-		void update();
+		void update(float deltaTime);
 		void loseLives();
 		void plusLives();
 		void loadWeaponTextures(SDL_Renderer* renderer);

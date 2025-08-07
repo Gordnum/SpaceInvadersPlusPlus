@@ -5,7 +5,8 @@
 // note kalo dia function yang ngereturn sesuatu, valuenya gabisa diubah. Tapi kalo functionnya void, valuenya bisa diubah.
 
 Player::Player(SDL_Renderer* renderer)
-       :renderer(renderer), font(nullptr), speed(5), movingLeft(false), movingRight(false), playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
+       :renderer(renderer), font(nullptr), speed(300.0f), movingLeft(false), movingRight(false), 
+        playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
 {
     rect = { 400, 475, 55, 28 };
     
@@ -114,10 +115,11 @@ void Player::render()
     SDL_DestroyTexture(livesTexture);
 }
 
-void Player::update()
+void Player::update(float deltaTime)
 {    
-    if (movingLeft) rect.x -= speed;
-    if (movingRight) rect.x += speed;
+    if (movingLeft) rect.x -= static_cast<int>(speed * deltaTime);
+    if (movingRight) rect.x += static_cast<int>(speed * deltaTime);
+
     if (rect.x < 0) rect.x = 0;
     if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
 }

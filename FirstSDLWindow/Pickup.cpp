@@ -4,7 +4,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 Pickup::Pickup(SDL_Renderer* renderer, int x, int y, WeaponType type)
-	   :renderer(renderer), type(type), collected(false)
+	   :renderer(renderer), type(type), collected(false), dropSpeed(200.0f)
 {
 	rect = { x, y, 20, 20 };
 }
@@ -36,9 +36,9 @@ void Pickup::render()
 	
 }
 
-void Pickup::update() 
+void Pickup::update(float deltaTime)
 { 
-	rect.y += 3;
+	rect.y += static_cast<int>(dropSpeed * deltaTime);
 
 	if (rect.y > SCREEN_HEIGHT)
 		return;

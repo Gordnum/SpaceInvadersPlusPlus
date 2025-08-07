@@ -113,25 +113,6 @@ void WeaponInventory::startWeaponSwapAnimation(int direction)
 	animationOffset = 0.0f;
 }
 
-void WeaponInventory::updateAnimation(float deltaTime)
-{
-    if (!isAnimating) return;
-
-    float direction = animationDirection;
-    animationOffset += direction * animationSpeed * deltaTime;
-
-    if (std::abs(animationOffset) >= 1.0f) {
-		isAnimating = false;
-        animationOffset = 0.0f;
-        if (direction > 0) 
-			swapToNextWeapon();
-        else 
-			swapToPreviousWeapon();
-    }
-}
-
-void WeaponInventory::updateDeltaTime(float dt) { deltaTime = dt; }
-
 void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 {
 	if (ownedWeapons.size() <= 0) return; // no wheel for 1 weapon
@@ -253,7 +234,23 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 	SDL_DestroyTexture(ammoTexture);
 }
 
-void WeaponInventory::update() { updateAnimation(deltaTime); }
+void WeaponInventory::update(float deltaTime) 
+{
+	if (!isAnimating) return;
+
+	float direction = animationDirection;
+	animationOffset += direction * animationSpeed * deltaTime;
+
+	if (std::abs(animationOffset) >= 1.0f - 0.001f)
+	{
+		isAnimating = false;
+		animationOffset = 0.0f;
+		if (direction > 0)
+			swapToNextWeapon();
+		else
+			swapToPreviousWeapon();
+	}
+}
 
 WeaponType WeaponInventory::getCurrentWeapon() const 
 { 

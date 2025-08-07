@@ -84,13 +84,9 @@ void ComboManager::onEnemyKilled()
 	lastUpdateTime = SDL_GetTicks();
 }
 
-void ComboManager::update()
+void ComboManager::update(float deltaTime)
 {
 	if (!comboActive) return;
-
-	unsigned int now = SDL_GetTicks();
-	float deltaTime = (now - lastUpdateTime) / 1000.0f;
-	lastUpdateTime = now;
 
 	comboBarProgress -= deltaTime * comboBarDecayRate;
 

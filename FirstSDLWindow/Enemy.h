@@ -26,7 +26,7 @@ private:
 	static std::vector<SDL_Texture*> deathTextures;
 	bool dying = false;
 	float deathTimer = 0.0f;
-	float deathFrameDuration = 0.02f;
+	float deathFrameDuration = 0.08f;
 	int deathFrameIndex = 0;
 	bool finishedDeathAnimation = false;
 

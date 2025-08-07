@@ -7,7 +7,7 @@
 class UFO
 {
 	private:
-		int speed;
+		float speed;
 		bool active;
 		SDL_Rect rect;
 		SDL_Renderer* renderer;
@@ -16,7 +16,7 @@ class UFO
 		static SDL_Texture* textures;
 		bool dying = false;
 		float deathTimer = 0.0f;
-		float deathFrameDuration = 0.02f;
+		float deathFrameDuration = 0.08f;
 		int deathFrameIndex = 0;
 		bool finishedDeathAnimation = false;
 		

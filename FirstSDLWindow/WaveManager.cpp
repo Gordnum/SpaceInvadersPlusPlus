@@ -5,7 +5,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 WaveManager::WaveManager()
-			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(5.0f), 
+			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(300.0f), 
              showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000)
 {
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
@@ -61,8 +61,8 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 void WaveManager::nextWave() 
 {
     currentWave++;
-    enemySpeedMultiplier += 1.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 0.5f;  // Increase projectile speed (can be more aggressive)
+    enemySpeedMultiplier += 10.0f;        // Increase enemy movement speed
+    projectileSpeedMultiplier += 25.0f;  // Increase projectile speed (can be more aggressive)
 }
 
 int WaveManager::getWave() const { return currentWave; }

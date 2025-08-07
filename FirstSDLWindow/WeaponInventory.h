@@ -40,9 +40,7 @@ public:
 	void swapToNextWeapon();
 	void swapToPreviousWeapon();
 	void startWeaponSwapAnimation(int direction);
-	void update();
-	void updateAnimation(float deltaTime);
-	void updateDeltaTime(float dt);
+	void update(float deltaTime);
 	WeaponType getCurrentWeapon() const;
 	std::vector<WeaponType> randomizeWeapon();
 };
