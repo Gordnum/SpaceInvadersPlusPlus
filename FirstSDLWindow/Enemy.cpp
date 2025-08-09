@@ -12,9 +12,9 @@ Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
 	rect = { 100, 50, 40, 20 };
 }
 
-std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
+std::vector<std::unique_ptr<Enemy>> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
 {
-	std::vector<Enemy*> formation;
+	std::vector<std::unique_ptr<Enemy>> formation;
 
 	for (int row = 0; row < rows; ++row)
 	{
@@ -31,10 +31,10 @@ std::vector<Enemy*> Enemy::createFormation(SDL_Renderer* renderer, int rows, int
 			int x = 30 + col * (40 + spacingX);
 			int y = 125 + row * (20 + spacingY);
 
-			Enemy* enemy = new Enemy(renderer, type);
+			auto enemy = std::make_unique<Enemy>(renderer, type);
 			enemy->setPosition(x, y);
 			enemy->setRowIndex(row);
-			formation.push_back(enemy);
+			formation.push_back(std::move(enemy));
 		}
 	}
 
@@ -128,6 +128,16 @@ void Enemy::update(float deltaTime)
 			}
 		}
 	}
+
+	if (origin == EnemyOrigin::BOSS_SPAWNED)
+	{
+		rect.x += static_cast<int>(sidewaysSpeed * deltaTime);
+
+		if (rect.x + rect.w < 0 || rect.x > SCREEN_WIDTH)
+		{
+			destroy();
+		}
+	}
 }
 
 void Enemy::render()
@@ -181,6 +191,7 @@ void Enemy::move(int dx, int dy)
 	rect.y += dy;
 }
 
+void Enemy::setOrigin(EnemyOrigin o) { origin = o; }
 void Enemy::advanceAnimation()
 {
 	if (!textures[enemyType].empty())
@@ -189,3 +200,4 @@ void Enemy::advanceAnimation()
 
 bool Enemy::isAlive() const { return alive; }
 EnemyType Enemy::getType() const { return enemyType; }
+EnemyOrigin Enemy::getOrigin() const { return origin; }
