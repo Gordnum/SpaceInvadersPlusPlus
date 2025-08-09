@@ -8,7 +8,7 @@ BulletManager::BulletManager(SDL_Renderer* renderer)
     const int MAX_BULLETS = 200;
     for (int i = 0; i < MAX_BULLETS; ++i) 
     {
-        bullets.push_back(new Bullet(renderer));
+        bullets.push_back(std::make_unique<Bullet>(renderer));
     }
 
 }
@@ -17,14 +17,14 @@ BulletManager::~BulletManager() { clear(); }
 
 void BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
 {
-    Bullet* bullet = new Bullet(renderer);
+    auto bullet = std::make_unique<Bullet>(renderer);
     WeaponInventory inventory;
 
     if (currentWeapon != WeaponType::DEFAULT)
         inventory.addWeapon(currentWeapon, ammo);  // assign ammo
     else
     {
-        for (auto& bullet : bullets)
+        for (const auto& bullet : bullets)
         {
             if (bullet->isActive() && bullet->getCurrentWeapon() == WeaponType::DEFAULT)
             {
@@ -42,44 +42,31 @@ void BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
         }
     }
 
+    bullets.push_back(std::make_unique<Bullet>(renderer));
     bullet->fire(x, y, currentWeapon);
-    bullets.push_back(bullet);
 }
 
 void BulletManager::update(float deltaTime)
 {
-    for (auto it = bullets.begin(); it != bullets.end();)
+    for (auto& bullet : bullets)
     {
-        Bullet* bullet = *it;
-        bullet->update(deltaTime);
-
-        if (!bullet->isActive()) 
-        {
-            delete bullet;
-            it = bullets.erase(it);
-        }
-        else 
-        {
-            ++it;
-        }
+        if (bullet->isActive())
+            bullet->update(deltaTime);
     }
 }
 
 void BulletManager::render()
 {
-    for (Bullet* bullet : bullets)
+    for (const auto& bullet : bullets)
     {
-        bullet->render();
+        if (bullet->isActive())
+            bullet->render();
     }
 }
 
 void BulletManager::clear()
 {
-    for (Bullet* bullet : bullets)
-    {
-        delete bullet;
-    }
     bullets.clear();
 }
 
-std::vector<Bullet*>& BulletManager::getBullets() { return bullets; }
+std::vector<std::unique_ptr<Bullet>>& BulletManager::getBullets() { return bullets; }
