@@ -7,7 +7,7 @@ const int TARGET_FPS = 60;
 const int FRAME_DELAY = 1000 / TARGET_FPS;
 
 Game::Game() 
-	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), 
+	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
 	  bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
 
@@ -26,10 +26,6 @@ float Game::calculateDeltaTime()
 // ADD
 bool Game::init()
 {
-	int rows = 5;
-	int cols = 11;
-	int spacingX = 10;
-	int spacingY = 10;
 	srand(static_cast<unsigned int>(time(nullptr)));
 	
 	if (SDL_INIT_EVERYTHING < 0)
@@ -53,18 +49,19 @@ bool Game::init()
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	menuManager = new MenuManager(renderer);
-	waveManager = new WaveManager();
+	menuManager = std::make_unique<MenuManager>(renderer);
+	waveManager = std::make_unique<WaveManager>();
 	UFO::LoadTextures(renderer);
 	Enemy::LoadTextures(renderer);
-	player = new Player(renderer);
+	player = std::make_unique<Player>(renderer);
 	player->loadWeaponTextures(renderer);
-	bullet = new Bullet(renderer);
-	ufo = new UFO(renderer);
-	scoreManager = new ScoreManager(renderer);
-	comboManager = new ComboManager();
-	weaponInventory = new WeaponInventory();
-	bulletManager = new BulletManager(renderer);
+	bullet = std::make_unique<Bullet>(renderer);
+	ufo = std::make_unique<UFO>(renderer);
+	boss = std::make_unique<Boss>(renderer);
+	scoreManager = std::make_unique<ScoreManager>(renderer);
+	comboManager = std::make_unique<ComboManager>();
+	weaponInventory = std::make_unique<WeaponInventory>();
+	bulletManager = std::make_unique<BulletManager>(renderer);
 	scoreManager->loadHighScore("highscore.txt");
 
 	isRunning = true;
@@ -96,7 +93,7 @@ void Game::handleEvents()
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
-				pickups.push_back(new Pickup(renderer, 400, -100, WeaponType::PIERCING_SHOT));
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, -100, WeaponType::TRIPMINE)));
 			}
 			else if (startEndless)
 			{
@@ -125,7 +122,7 @@ void Game::handleEvents()
 					weaponInventory->startWeaponSwapAnimation(-1);
 			}
 
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && bullet->isActive() == false)
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && !bullet->isActive())
 			{
 				WeaponType currentWeapon = weaponInventory->getCurrentWeapon();
 				int ammo = weaponInventory->getAmmo(currentWeapon);
@@ -148,15 +145,6 @@ void Game::update()
 {
 	if (isGameOver) return;
 
-	deltaTime = calculateDeltaTime();
-
-	for (auto& enemy : enemies) 
-	{
-		enemy->update(deltaTime);
-	}
-
-	ufo->update(deltaTime);
-
 	// FPS Counter
 	frameCount++;
 	unsigned currentTicks = SDL_GetTicks();
@@ -165,6 +153,94 @@ void Game::update()
 		std::cout << "FPS: " << frameCount << std::endl;
 		frameCount = 0;
 		fpsTimer = currentTicks;
+	}
+
+	// Boss update + bullet hit boss
+	if (boss->isActive())
+	{
+		boss->update(deltaTime, renderer, bossBullets);
+
+		for (auto& b : bulletManager->getBullets())
+		{
+			if (b->isActive() && checkCollision(b->getRect(), boss->getRect()))
+			{
+				int damage = 1;
+
+				// You can modify damage based on weapon type
+				switch (b->getCurrentWeapon())
+				{
+					case WeaponType::DEFAULT:
+					case WeaponType::RAPID_SHOT:
+						damage = 10;
+						break;
+					case WeaponType::PIERCING_SHOT:
+					case WeaponType::TRIPMINE:
+						damage = 20;
+						break;
+					case WeaponType::BOMB_SHOT:
+						damage = 30;
+						break;
+				}
+
+				boss->takeDamage(damage);
+				b->deactivate();
+
+				if (boss->isDefeated() && currentMode == GameMode::CAMPAIGN)
+				{
+					boss->deactivate();
+					waveManager->setShowingWaveIntro(false);
+
+					// Win logic / trigger end screen (prototype)
+					isGameOver = true;
+					gameOverStartTime = SDL_GetTicks();
+				}
+			}
+		}
+	}
+
+	// Boss spawn enemy
+	if (boss->isActive() && boss->shouldSpawnEnemies())
+	{
+		EnemyType type;
+		int typeRoll = rand() % 3;
+		switch (typeRoll)
+		{
+			case 0: type = EnemyType::CRAB; break;
+			case 1: type = EnemyType::OCTOPUS; break;
+			case 2: type = EnemyType::SQUID; break;
+		}
+
+		int enemyAmount = 2 + rand() % 3; // 2 to 4 enemies
+
+		// Direction and start position
+		bool fromLeft = (rand() % 2) == 0;
+		int startX = fromLeft ? 70 : SCREEN_WIDTH - 100;
+		if (enemyAmount > 2 && fromLeft)
+			startX = 150;
+		else if (enemyAmount > 2 && !fromLeft)
+			startX = SCREEN_WIDTH - 200;
+
+		int y = 175 + rand() % 150;
+		int speed = fromLeft ? 20 : -20;
+
+		for (int i = 0; i < enemyAmount; ++i)
+		{
+			auto enemy = std::make_unique<Enemy>(renderer, type);
+
+			SDL_Rect r = enemy->getRect();
+			if (fromLeft)
+				r.x = startX - i * (r.w + 13); // If starting off-screen left, space them leftward
+			else
+				r.x = startX + i * (r.w + 13); // If starting off-screen right, space them rightward
+
+			r.y = y;
+			enemy->setRect(r);
+
+			enemy->setOrigin(EnemyOrigin::BOSS_SPAWNED);
+			enemy->setEnemyBossSpeed(speed);
+
+			enemies.push_back(std::move(enemy));
+		}
 	}
 
 	// Enemy movement
@@ -177,6 +253,7 @@ void Game::update()
 		for (auto& enemy : enemies)
 		{
 			if (!enemy->isAlive()) continue;
+			if (enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED) continue;
 
 			SDL_Rect r = enemy->getRect();
 			int nextX = r.x + enemyDirection * static_cast<int>(waveManager->getEnemySpeed());
@@ -193,7 +270,7 @@ void Game::update()
 			enemyDirection *= -1;
 			for (auto& enemy : enemies)
 			{
-				if (enemy->isAlive())
+				if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
 				{
 					enemy->move(0, 15); // move down instead of sideways
 					enemy->advanceAnimation();
@@ -208,9 +285,14 @@ void Game::update()
 		{
 			for (auto& enemy : enemies)
 			{
-				if (enemy->isAlive())
+				if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
 				{
 					enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
+					enemy->advanceAnimation();
+				}
+				else if(enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED)
+				{
+					enemy->move(enemy->getEnemyBossSpeed(), 0);
 					enemy->advanceAnimation();
 				}
 			}
@@ -222,29 +304,36 @@ void Game::update()
 
 	// Enemy shoot
 	unsigned int currentEnemyShotTime = SDL_GetTicks();
-	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown) {
+	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown) 
+	{
 		std::vector<Enemy*> shooters;
-		for (Enemy* e : enemies) {
-			if (e->isAlive() && e->isInTopRow()) {
-				shooters.push_back(e);
+
+		for (const auto& e : enemies) 
+		{
+			if (!e->isAlive()) continue;
+
+			if (e->getType() == EnemyType::SQUID)
+			{
+				shooters.push_back(e.get());  // get raw pointer from unique_ptr
 			}
 		}
 
-		if (!shooters.empty()) {
+		if (!shooters.empty()) 
+		{
 			Enemy* shooter = shooters[rand() % shooters.size()];
 
-			Bullet* b = new Bullet(renderer);
+			auto b = std::make_unique<Bullet>(renderer);
 			SDL_Rect r = shooter->getRect();
 			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
 			b->setEnemyBulletSpeed(waveManager->getProjectileSpeed());
-			enemyBullets.push_back(b);
+			enemyBullets.push_back(std::move(b));
 		}
 
 		lastEnemyShotTime = currentEnemyShotTime;
 	}
 
 	// bullet hit enemy
-	for(Bullet* b: bulletManager->getBullets())
+	for(auto& b: bulletManager->getBullets())
 	{
 		int baseScore = 10;
 
@@ -339,7 +428,7 @@ void Game::update()
 					WeaponType randomWeapon = randomWeapons[index];
 
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
-					pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
+					pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
 				}
 
 				if (scoreManager->giveLive())
@@ -364,6 +453,22 @@ void Game::update()
 		}
 	}
 
+	// if hit with boss bullets
+	for (auto& b : bossBullets)
+	{
+		if (b->isActive() && checkCollision(b->getRect(), player->getRect()))
+		{
+			b->deactivate();
+			player->loseLives();
+
+			if (player->getLives() <= 0)
+			{
+				isGameOver = true;
+				gameOverStartTime = SDL_GetTicks();
+			}
+		}
+	}
+
 	// if enemy gets too close
 	for (auto& enemy : enemies) 
 	{
@@ -376,13 +481,19 @@ void Game::update()
 	}
 
 	// update bullet enemy
-	for (Bullet* bullet : enemyBullets) 
+	for (auto& bullet : enemyBullets) 
 	{
-		if (bullet->isActive()) bullet->update();
+		if (bullet->isActive()) bullet->update(deltaTime);
+	}
+
+	// update boss bullet
+	for (auto& b : bossBullets)
+	{
+		if (b->isActive()) b->update(deltaTime);
 	}
 
 	// bullet hit on ufo
-	for (Bullet* b : bulletManager->getBullets())
+	for (auto& b : bulletManager->getBullets())
 	{
 		if (b->isActive() && ufo->isActive() &&
 			checkCollision(b->getRect(), ufo->getRect()))
@@ -420,16 +531,16 @@ void Game::update()
 			WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
 
 			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
-			pickups.push_back(new Pickup(renderer, ufo->getX(), ufo->getY(), randomWeapon));
+			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), WeaponType::TRIPMINE)));
 			if (scoreManager->spawnPickup())
-				pickups.push_back(new Pickup(renderer, randomX, -100, randomWeapon));
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
 			if (scoreManager->giveLive())
 				player->plusLives();
 		}
 	}
 
 	// UFO
-	if(currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
+	if(!boss->isActive() && currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
 	{
 			if(!ufo->isActive())
 			{
@@ -456,7 +567,7 @@ void Game::update()
 			player->setWeaponTexture(pickup->getType());
 			pickup->collect();
 		}
-		pickup->update();
+		pickup->update(deltaTime);
 	}
 
 	// NEW HIGHSCORE
@@ -466,10 +577,12 @@ void Game::update()
 		highScoreSaved = true;
 	}
 
-	// Check enemy
+	// Check enemy status
 	bool allEnemiesDead = true;
 	for (auto&e : enemies)
 	{
+		if (e->getOrigin() == EnemyOrigin::BOSS_SPAWNED) continue;
+
 		if (e->isAlive())
 		{
 			allEnemiesDead = false;
@@ -478,20 +591,28 @@ void Game::update()
 	}
 
 	// Reset wave
-	if (allEnemiesDead && !waveManager->getWaveIntro() && !enemies.empty())
+	if (allEnemiesDead && !waveManager->getWaveIntro() && !enemies.empty() && !boss->isActive())
 	{
 		waveManager->nextWave();
-		waveManager->startWaveIntro();
 
-		for (auto& e : enemies) delete e;
-		enemies.clear();
+		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
+		{
+			boss->activate();
+			ufo->deactivate();
+			enemies.clear();
+		}
+		else
+		{
+			waveManager->startWaveIntro();
+			enemies.clear();
 
-		if (enemyDirection == -1) enemyDirection = 1;
-		moveInterval = 700;
+			if (enemyDirection == -1) enemyDirection = 1;
+			moveInterval = 700;
+		}
 	}
 
 	// New Wave
-	if (waveManager->getWaveIntro())
+	if (waveManager->getWaveIntro() && !boss->isActive())
 	{
 		int rows = 5;
 		int cols = 11;
@@ -500,7 +621,7 @@ void Game::update()
 
 		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
-			waveManager->setShowingWaveIntro();
+			waveManager->setShowingWaveIntro(false);
 			enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
 			comboManager->reset();
 			bullet->deactivate();
@@ -510,52 +631,48 @@ void Game::update()
 	// Enemy bullets cleanup
 	enemyBullets.erase(
 		std::remove_if(enemyBullets.begin(), enemyBullets.end(),
-			[](Bullet* b) 
+			[](const std::unique_ptr<Bullet>& b)
 			{
-				if (!b->isActive()) 
-				{
-					delete b;
-					return true;
-				}
-				return false;
+				return !b->isActive();
 			}),
 		enemyBullets.end()
 	);
 
+
 	// Enemies cleanup
 	enemies.erase(
 		std::remove_if(enemies.begin(), enemies.end(),
-			[](Enemy* e) 
+			[](const std::unique_ptr<Enemy>& e) 
 			{
-				if (e->enemyIsDying() && e->enemyIsFinishedDeathAnimation()) 
-				{
-					delete e;
-					return true;
-				}
-				return false;
+				return e->enemyIsDying() && e->enemyIsFinishedDeathAnimation();
 			}),
-		enemies.end()
-	);
+		enemies.end());
 
 	//Pickups cleanup
 	pickups.erase(
 		std::remove_if(pickups.begin(), pickups.end(),
-			[](Pickup* p) 
+			[](const std::unique_ptr<Pickup>& p)
 			{
-				if (p->isCollected()) 
-				{
-					delete p;
-					return true;
-				}
-				return false;
+				return p->isCollected();
 			}),
 		pickups.end());
 
-	player->update();
-	bullet->update();
-	bulletManager->update();
-	comboManager->update();
-	weaponInventory->update();
+	//Boss bullets cleanup
+	bossBullets.erase(
+		std::remove_if(bossBullets.begin(), bossBullets.end(),
+			[](const std::unique_ptr<BossBullet>& b)
+			{
+				return !b->isActive();
+			}),
+		bossBullets.end());
+
+	player->update(deltaTime);
+	for (auto& enemy : enemies) { enemy->update(deltaTime); }
+	ufo->update(deltaTime);
+	bullet->update(deltaTime);
+	bulletManager->update(deltaTime);
+	comboManager->update(deltaTime);
+	weaponInventory->update(deltaTime);
 	player->setWeaponTexture(weaponInventory->getCurrentWeapon());
 }
 
@@ -573,20 +690,17 @@ void Game::render()
 	player->render();
 	bullet->render();
 	if(ufo->isActive() || ufo->UFOIsDying()) ufo->render();
+	if (boss->isActive()) { boss->render(renderer); }
 	scoreManager->render(renderer);
 	bulletManager->render();
 	comboManager->render(renderer);
 	weaponInventory->renderWeaponHUD(renderer);
 
-	for (auto& enemy : enemies) 
-	{
-		if (enemy->isAlive() || enemy->enemyIsDying()) enemy->render();
-	}
-
+	for (auto& enemy : enemies) { if (enemy->isAlive() || enemy->enemyIsDying()) enemy->render(); }
 	for (auto& pickup : pickups) { pickup->render(); }
-	for (Bullet* b : enemyBullets) { if (b->isActive()) b->render(); }
-
-	if (waveManager->getWaveIntro())
+	for (auto& b : enemyBullets) { if (b->isActive()) b->render(); }
+	for (auto& b : bossBullets) { if (b->isActive()) b->render(renderer); }
+	if (waveManager->getWaveIntro() && !isGameOver) //prototype game win
 		waveManager->showWaveIntro(renderer);
 
 	if (isGameOver)
@@ -645,7 +759,6 @@ void Game::run()
 		frameStart = SDL_GetTicks();
 
 		handleEvents();
-		weaponInventory->updateDeltaTime(deltaTime);
 		render();
 		update();
 		frameTime = SDL_GetTicks() - frameStart;
@@ -656,28 +769,28 @@ void Game::run()
 	}
 }
 
-// DELETE
 void Game::clean() 
 {
-	delete player;
-	delete bullet;
-	delete enemy;
-	delete ufo;
-	delete comboManager;
-	delete waveManager;
-	delete weaponInventory;
-	delete scoreManager;
-	delete bulletManager;
-	delete menuManager;
-	for (auto& enemy : enemies) delete enemy;
 	enemies.clear();
-	for (auto& b : enemyBullets) delete b;
 	enemyBullets.clear();
-	for (auto& pickup : pickups) delete pickup;
 	pickups.clear();
-	TTF_Quit();
-	IMG_Quit();
+	bulletManager->clear();
+	bossBullets.clear();
+
+	menuManager.reset();
+	waveManager.reset();
+	player.reset();
+	bullet.reset();
+	ufo.reset();
+	boss.reset();
+	scoreManager.reset();
+	comboManager.reset();
+	weaponInventory.reset();
+	bulletManager.reset();
+
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	IMG_Quit();
+	TTF_Quit();
 	SDL_Quit();
 }

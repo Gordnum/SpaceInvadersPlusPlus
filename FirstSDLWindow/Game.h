@@ -11,6 +11,7 @@
 #include "Bullet.h"
 #include "Enemy.h"
 #include "UFO.h"
+#include "Boss.h"
 #include "ScoreManager.h"
 #include "ComboManager.h"
 #include "BulletManager.h"
@@ -39,18 +40,22 @@ class Game
     bool isRunning;
     bool isGameOver;
 
-    Player* player;
-    Bullet* bullet;
-    Enemy* enemy;
-    UFO* ufo;
-    ComboManager* comboManager;
-    WaveManager* waveManager;
-    WeaponInventory* weaponInventory;
-    ScoreManager* scoreManager;
-    BulletManager* bulletManager;
-    MenuManager* menuManager;
-    std::vector<Enemy*> enemies;
-    std::vector<Pickup*> pickups;
+    std::unique_ptr<Player> player;
+    std::unique_ptr<Bullet> bullet;
+    std::unique_ptr<Enemy> enemy;
+    std::unique_ptr<UFO> ufo;
+    std::unique_ptr<Boss> boss;
+    std::unique_ptr<ComboManager> comboManager;
+    std::unique_ptr<WaveManager> waveManager;
+    std::unique_ptr<WeaponInventory> weaponInventory;
+    std::unique_ptr<ScoreManager> scoreManager;
+    std::unique_ptr<BulletManager> bulletManager;
+    std::unique_ptr<MenuManager> menuManager;
+
+    std::vector<std::unique_ptr<Enemy>> enemies;
+    std::vector<std::unique_ptr<Pickup>> pickups;
+    std::vector<std::unique_ptr<Bullet>> enemyBullets;
+    std::vector<std::unique_ptr<BossBullet>> bossBullets;
 
     int enemyDirection = 1;
     unsigned int lastMoveTime = 0;
@@ -59,7 +64,6 @@ class Game
     unsigned int ufoSpawnInterval = 13000;
     bool hasBounced = false;
 
-    std::vector<Bullet*> enemyBullets;
     unsigned int lastEnemyShotTime = 0;
     const unsigned int enemyShootCooldown = 2000; // every 2 seconds
     unsigned int gameOverStartTime;
