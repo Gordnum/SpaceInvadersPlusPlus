@@ -1,0 +1,63 @@
+#include <iostream>
+#include "SoundManager.h"
+
+std::map<SoundID, Mix_Chunk*> SoundManager::sounds;
+
+void SoundManager::init() 
+{
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) 
+    {
+        SDL_Log("SDL_mixer could not initialize! SDL_mixer Error: %s", Mix_GetError());
+        return;
+    }
+    loadAllSounds(); // automatically load all sounds
+}
+
+
+void SoundManager::loadSound(SoundID id, const std::string& filePath) 
+{
+    Mix_Chunk* sound = Mix_LoadWAV(filePath.c_str());
+    if (!sound) 
+    {
+        SDL_Log("Failed to load sound %s: %s", filePath.c_str(), Mix_GetError());
+        return;
+    }
+    sounds[id] = sound;
+}
+
+void SoundManager::playSound(SoundID id) 
+{
+    if (sounds.count(id)) 
+    {
+        Mix_PlayChannel(-1, sounds[id], 0);
+    }
+}
+
+void SoundManager::loadAllSounds() 
+{
+    loadSound(SoundID::WEAPON_DEFAULT, "../Assets/SoundEffects/DEFAULT_SHOT.wav");
+    loadSound(SoundID::WEAPON_BOMB, "../Assets/SoundEffects/bomb.wav");
+    loadSound(SoundID::ENEMY_DEATH, "../Assets/SoundEffects/enemy_death.wav");
+    loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
+    /*
+    loadSound(SoundID::WEAPON_PIERCING, "../Assets/Sounds/piercing.wav");
+    loadSound(SoundID::WEAPON_BOMB, "../Assets/Sounds/bomb.wav");
+    loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/Sounds/tripmine.wav");
+    loadSound(SoundID::WEAPON_RAPID, "../Assets/Sounds/rapid.wav");
+    loadSound(SoundID::ENEMY_SHOOT, "../Assets/Sounds/enemy_shoot.wav");
+    loadSound(SoundID::ENEMY_DEATH, "../Assets/Sounds/enemy_death.wav");
+    loadSound(SoundID::PLAYER_HIT, "../Assets/Sounds/player_hit.wav");
+    loadSound(SoundID::BOSS_SHOOT, "../Assets/Sounds/boss_shoot.wav");
+    loadSound(SoundID::PICKUP_COLLECT, "../Assets/Sounds/pickup.wav");
+    */
+}
+
+void SoundManager::clean() 
+{
+    for (auto& pair : sounds) 
+    {
+        Mix_FreeChunk(pair.second);
+    }
+    sounds.clear();
+    Mix_CloseAudio();
+}

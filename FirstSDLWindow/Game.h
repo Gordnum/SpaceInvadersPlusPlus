@@ -17,6 +17,7 @@
 #include "BulletManager.h"
 #include "WaveManager.h"
 #include "MenuManager.h"
+#include "SoundManager.h"
 #include "WeaponType.h"
 #include "WeaponInventory.h"
 #include "Pickup.h"

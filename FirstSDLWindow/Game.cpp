@@ -46,6 +46,8 @@ bool Game::init()
 		return false;
 	}
 
+	SoundManager::init();
+
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -129,9 +131,12 @@ void Game::handleEvents()
 
 				if (currentWeapon == WeaponType::DEFAULT || ammo > 0)
 				{
-					bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo);
-					if (currentWeapon != WeaponType::DEFAULT)
-						weaponInventory->useAmmo(currentWeapon);
+					if (bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo))
+					{
+						SoundManager::playSound(weaponTypeToSoundID(currentWeapon));
+						if (currentWeapon != WeaponType::DEFAULT)
+							weaponInventory->useAmmo(currentWeapon);
+					}
 				}
 			}
 		}
@@ -357,6 +362,7 @@ void Game::update()
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->addPoints(earnedScore);
 					comboManager->onEnemyKilled();
+					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
 				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 				{
@@ -381,10 +387,11 @@ void Game::update()
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 								scoreManager->addPoints(earnedScore);
 								comboManager->onEnemyKilled();
+								SoundManager::playSound(SoundID::ENEMY_DEATH);
 							}
 						}
 					}
-
+					SoundManager::playSound(SoundID::BOMB_EXPLODE);
 					b->deactivate();
 				}
 				else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
@@ -404,6 +411,7 @@ void Game::update()
 							int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 							scoreManager->addPoints(earnedScore);
 							comboManager->onEnemyKilled();
+							SoundManager::playSound(SoundID::ENEMY_DEATH);
 						}
 					}
 
@@ -416,6 +424,7 @@ void Game::update()
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->addPoints(earnedScore);
 					comboManager->onEnemyKilled();
+					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
 
 				if (scoreManager->spawnPickup())
@@ -771,6 +780,7 @@ void Game::run()
 
 void Game::clean() 
 {
+	SoundManager::clean();
 	enemies.clear();
 	enemyBullets.clear();
 	pickups.clear();
