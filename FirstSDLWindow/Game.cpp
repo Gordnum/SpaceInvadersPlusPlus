@@ -77,7 +77,7 @@ static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b)
 
 void Game::handleEvents() 
 {
-	if (menuManager->isInMainMenu())
+	if(menuManager->isInMainMenu())
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -88,16 +88,16 @@ void Game::handleEvents()
 
 			menuManager->handleEvent(event, startCampaign, startEndless, quitGame);
 
-			if (quitGame || event.type == SDL_QUIT)
+			if(quitGame || event.type == SDL_QUIT)
 				isRunning = false;
-			else if (startCampaign)
+			else if(startCampaign)
 			{
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
 				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, -100, WeaponType::BOMB_SHOT)));
 			}
-			else if (startEndless)
+			else if(startEndless)
 			{
 				currentMode = GameMode::ENDLESS;
 				menuManager->setInMainMenu(false);
@@ -134,6 +134,13 @@ void Game::handleEvents()
 					if (bulletManager->fire(player->getX(), player->getY(), currentWeapon, ammo))
 					{
 						SoundManager::playSound(weaponTypeToSoundID(currentWeapon));
+
+						if (currentWeapon == WeaponType::PIERCING_SHOT)
+						{
+							flashActive = true;
+							flashStartTime = SDL_GetTicks();
+						}
+
 						if (currentWeapon != WeaponType::DEFAULT)
 							weaponInventory->useAmmo(currentWeapon);
 					}
@@ -272,39 +279,36 @@ void Game::update()
 
 		if (willBounce)
 		{
-			if (!hasBounced)
-			{
-				enemyDirection *= -1;
-				for (auto& enemy : enemies)
-				{
-					if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
-					{
-						enemy->move(0, 15); // move down instead of sideways
-						enemy->advanceAnimation();
-					}
-				}
-			}
-			
-			hasBounced = true;
-			if (moveInterval > 100)
-				moveInterval -= 60;
-		}
-		else
-		{
+			enemyDirection *= -1;
+
 			for (auto& enemy : enemies)
 			{
-				if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
-				{
-					enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
-					enemy->advanceAnimation();
-				}
-				else if(enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED)
-				{
-					enemy->move(enemy->getEnemyBossSpeed(), 0);
-					enemy->advanceAnimation();
-				}
+				if (!enemy->isAlive()) continue;
+				if (enemy->getOrigin() != EnemyOrigin::NORMAL) continue;
+
+				enemy->move(0, 15);
+				enemy->advanceAnimation();
 			}
-			hasBounced = false;
+
+			if (moveInterval > 100)
+				moveInterval -= 60;
+
+			lastMoveTime = currentTime;
+			return;
+		}
+
+		for (auto& enemy : enemies)
+		{
+			if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
+			{
+				enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
+				enemy->advanceAnimation();
+			}
+			else if(enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED)
+			{
+				enemy->move(enemy->getEnemyBossSpeed(), 0);
+				enemy->advanceAnimation();
+			}
 		}
 		lastMoveTime = currentTime;
 	}
@@ -399,11 +403,14 @@ void Game::update()
 				}
 				else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
 				{
-					TripmineExplosion explosion;
-					explosion.rowY = enemy->getRect().y;
-					explosion.triggerTime = SDL_GetTicks() + 500; // how long to trigger the tripmine explosion 
-
-					pendingTripmines.push_back(explosion);
+					pendingTripmines.push_back(
+						{
+							enemy->getRect().y,          // rowY
+							SDL_GetTicks() + 500,         // trigger time
+							false,                        // exploded or not
+							0                             // renderUntil
+						}
+					);
 
 					b->deactivate(); // remove tripmine bullet after explosion
 				}
@@ -421,13 +428,13 @@ void Game::update()
 				{
 					auto randomWeapons = weaponInventory->randomizeWeapon();
 					if (randomWeapons.empty())
-						return; // or handle appropriately (e.g., no weapon to give)
+						continue;
 
 					int index = rand() % randomWeapons.size();
 					WeaponType randomWeapon = randomWeapons[index];
 
-					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
-					pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
+					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100));
+					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon));
 				}
 
 				if (scoreManager->giveLive())
@@ -459,6 +466,18 @@ void Game::update()
 				scoreManager->addPoints(earned);
 				comboManager->onEnemyKilled();
 				SoundManager::playSound(SoundID::ENEMY_DEATH);
+
+				if (scoreManager->spawnPickup())
+				{
+					auto weapons = weaponInventory->randomizeWeapon();
+					if (!weapons.empty())
+					{
+						WeaponType w = weapons[rand() % weapons.size()];
+						int x = 50 + rand() % (SCREEN_WIDTH - 100);
+						pickups.push_back(std::make_unique<Pickup>(renderer, x, -100, w)
+						);
+					}
+				}
 			}
 		}
 
@@ -624,7 +643,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
+		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20)
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -767,6 +786,30 @@ void Game::render()
 		SDL_RenderFillRect(renderer, &beam);
 	}
 
+	// White flash effect
+	if (flashActive)
+	{
+		unsigned int flashNow = SDL_GetTicks();
+		unsigned int flashElapsed = flashNow - flashStartTime;
+
+		if (flashElapsed >= flashDuration)
+		{
+			flashActive = false;
+		}
+		else
+		{
+			float t = 1.0f - (float)flashElapsed / flashDuration;
+			Uint8 alpha = static_cast<Uint8>(255 * t);
+
+			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, alpha);
+
+			SDL_Rect screen = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+			SDL_RenderFillRect(renderer, &screen);
+		}
+	}
+
+	//render game over
 	if (isGameOver)
 	{
 		unsigned int gameOverScreen = SDL_GetTicks();

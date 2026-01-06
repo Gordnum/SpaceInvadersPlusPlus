@@ -88,6 +88,16 @@ class Game
 
         std::vector<TripmineExplosion> pendingTripmines;
 
+        //bounce threshold
+        const int enemyMinX = 20;
+        const int enemyMaxX = 780;
+        const int enemyDropY = 15;
+
+        //piercing shot flash screen
+        bool flashActive = false;
+        unsigned int flashStartTime = 0;
+        const unsigned int flashDuration = 1500;
+
 	public:
         Game();
         ~Game();
