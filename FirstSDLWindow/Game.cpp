@@ -399,24 +399,11 @@ void Game::update()
 				}
 				else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
 				{
-					int hitY = enemy->getRect().y;
-					const int ROW_THRESHOLD = 10; // adjust based on enemy sprite height
+					TripmineExplosion explosion;
+					explosion.rowY = enemy->getRect().y;
+					explosion.triggerTime = SDL_GetTicks() + 500; // how long to trigger the tripmine explosion 
 
-					for (auto& otherEnemy : enemies)
-					{
-						if (!otherEnemy->isAlive()) continue;
-
-						int enemyY = otherEnemy->getRect().y;
-
-						if (std::abs(enemyY - hitY) < ROW_THRESHOLD)
-						{
-							otherEnemy->destroy(); // or setAlive(false), etc.
-							int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-							scoreManager->addPoints(earnedScore);
-							comboManager->onEnemyKilled();
-							SoundManager::playSound(SoundID::ENEMY_DEATH);
-						}
-					}
+					pendingTripmines.push_back(explosion);
 
 					b->deactivate(); // remove tripmine bullet after explosion
 				}
@@ -447,6 +434,36 @@ void Game::update()
 					player->plusLives();
 			}
 		}
+	}
+
+	// TRIPMINE delay explosion
+	unsigned int explodeNow = SDL_GetTicks();
+	const int ROW_THRESHOLD = 10;
+
+	for (auto& explosion : pendingTripmines)
+	{
+		if (explosion.exploded) continue;
+		if (explodeNow < explosion.triggerTime) continue;
+
+		for (auto& enemy : enemies)
+		{
+			if (!enemy->isAlive()) continue;
+
+			int enemyY = enemy->getRect().y;
+			if (std::abs(enemyY - explosion.rowY) < ROW_THRESHOLD)
+			{
+				enemy->destroy();
+
+				int baseScore = 30;
+				int earned = static_cast<int>(baseScore * comboManager->getMultiplier());
+				scoreManager->addPoints(earned);
+				comboManager->onEnemyKilled();
+				SoundManager::playSound(SoundID::ENEMY_DEATH);
+			}
+		}
+
+		explosion.exploded = true;
+		explosion.renderUntil = SDL_GetTicks() + 50; // how long the tripmine line stays
 	}
 
 	// if hit with bullets
@@ -678,6 +695,17 @@ void Game::update()
 			}),
 		bossBullets.end());
 
+	//TRIPMINE delay cleanup
+	pendingTripmines.erase(
+		std::remove_if(pendingTripmines.begin(), pendingTripmines.end(),
+			[](const TripmineExplosion& e)
+			{
+				return e.exploded && SDL_GetTicks() > e.renderUntil;
+			}),
+		pendingTripmines.end()
+	);
+
+
 	player->update(deltaTime);
 	for (auto& enemy : enemies) { enemy->update(deltaTime); }
 	ufo->update(deltaTime);
@@ -714,6 +742,30 @@ void Game::render()
 	for (auto& b : bossBullets) { if (b->isActive()) b->render(renderer); }
 	if (waveManager->getWaveIntro() && !isGameOver) //prototype game win
 		waveManager->showWaveIntro(renderer);
+
+	//render TRIPMINE exploding line
+	unsigned int renderExplodingNow = SDL_GetTicks();
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // tripmine green
+	
+	for (const auto& explosion : pendingTripmines)
+	{
+		if (!explosion.exploded) continue;
+		if (renderExplodingNow > explosion.renderUntil) continue;
+
+		int y = explosion.rowY + 10; // center-ish of enemy row
+
+		const int LINE_THICKNESS = 6;
+
+		SDL_Rect beam
+		{
+			0,
+			y - LINE_THICKNESS / 2,
+			SCREEN_WIDTH,
+			LINE_THICKNESS
+		};
+
+		SDL_RenderFillRect(renderer, &beam);
+	}
 
 	if (isGameOver)
 	{
