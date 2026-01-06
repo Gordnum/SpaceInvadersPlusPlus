@@ -20,6 +20,8 @@ class UFO
 		int deathFrameIndex = 0;
 		bool finishedDeathAnimation = false;
 		
+		int hoverChannel = -1;
+
 	public:
 		UFO(SDL_Renderer* renderer);
 		void update(float deltaTime);

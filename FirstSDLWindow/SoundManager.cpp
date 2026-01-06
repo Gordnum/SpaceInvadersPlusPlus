@@ -11,8 +11,9 @@ void SoundManager::init()
         return;
     }
     loadAllSounds(); // automatically load all sounds
-}
 
+    Mix_AllocateChannels(64);
+}
 
 void SoundManager::loadSound(SoundID id, const std::string& filePath) 
 {
@@ -33,19 +34,32 @@ void SoundManager::playSound(SoundID id)
     }
 }
 
+int SoundManager::playLoop(SoundID id)
+{
+    if (!sounds.count(id))
+        return -1;
+
+    return Mix_PlayChannel(-1, sounds[id], -1); // loop forever
+}
+
+void SoundManager::stopChannel(int channel, int fadeMs)
+{
+    if (channel != -1)
+        Mix_HaltChannel(channel);
+}
+
 void SoundManager::loadAllSounds() 
 {
     loadSound(SoundID::WEAPON_DEFAULT, "../Assets/SoundEffects/DEFAULT_SHOT.wav");
     loadSound(SoundID::WEAPON_BOMB, "../Assets/SoundEffects/bomb.wav");
     loadSound(SoundID::ENEMY_DEATH, "../Assets/SoundEffects/enemy_death.wav");
     loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
+    loadSound(SoundID::ENEMY_SHOOT, "../Assets/SoundEffects/enemy_shoot.wav");
+    loadSound(SoundID::UFO_HOVER, "../Assets/SoundEffects/ufo_hover.wav");
     /*
     loadSound(SoundID::WEAPON_PIERCING, "../Assets/Sounds/piercing.wav");
-    loadSound(SoundID::WEAPON_BOMB, "../Assets/Sounds/bomb.wav");
     loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/Sounds/tripmine.wav");
     loadSound(SoundID::WEAPON_RAPID, "../Assets/Sounds/rapid.wav");
-    loadSound(SoundID::ENEMY_SHOOT, "../Assets/Sounds/enemy_shoot.wav");
-    loadSound(SoundID::ENEMY_DEATH, "../Assets/Sounds/enemy_death.wav");
     loadSound(SoundID::PLAYER_HIT, "../Assets/Sounds/player_hit.wav");
     loadSound(SoundID::BOSS_SHOOT, "../Assets/Sounds/boss_shoot.wav");
     loadSound(SoundID::PICKUP_COLLECT, "../Assets/Sounds/pickup.wav");

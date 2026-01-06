@@ -9,7 +9,7 @@ std::vector<SDL_Texture*> Enemy::deathTextures;
 Enemy::Enemy(SDL_Renderer* renderer, EnemyType enemyType)
 	  :renderer(renderer), alive(true), rowIndex(0), enemyType(enemyType), animationFrame(0)
 {
-	rect = { 100, 50, 40, 20 };
+	rect = { 100, 50, 40, 22 };
 }
 
 std::vector<std::unique_ptr<Enemy>> Enemy::createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY)
@@ -131,12 +131,8 @@ void Enemy::update(float deltaTime)
 
 	if (origin == EnemyOrigin::BOSS_SPAWNED)
 	{
-		rect.x += static_cast<int>(sidewaysSpeed * deltaTime);
-
 		if (rect.x + rect.w < 0 || rect.x > SCREEN_WIDTH)
-		{
 			destroy();
-		}
 	}
 }
 
@@ -165,6 +161,8 @@ void Enemy::render()
 		SDL_RenderFillRect(renderer, &rect);
 	}
 }
+
+void Enemy::setRect(SDL_Rect r) { rect = r; }
 
 SDL_Rect Enemy::getRect() const { return rect; }
 

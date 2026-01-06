@@ -24,7 +24,7 @@ void WaveManager::startWaveIntro()
     waveIntroStartTime = SDL_GetTicks();
 }
 
-void WaveManager::setShowingWaveIntro() { showingWaveIntro = false; }
+void WaveManager::setShowingWaveIntro(bool state) { showingWaveIntro = state; }
 
 void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 {
@@ -61,8 +61,8 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 void WaveManager::nextWave() 
 {
     currentWave++;
-    enemySpeedMultiplier += 10.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 25.0f;  // Increase projectile speed (can be more aggressive)
+    enemySpeedMultiplier += 2.0f;        // Increase enemy movement speed
+    projectileSpeedMultiplier += 25.0f;  // Increase projectile speed
 }
 
 int WaveManager::getWave() const { return currentWave; }

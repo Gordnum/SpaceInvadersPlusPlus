@@ -6,6 +6,7 @@ BulletManager::BulletManager(SDL_Renderer* renderer)
 {
     // Object Pooling 
     const int MAX_BULLETS = 200;
+    bullets.reserve(MAX_BULLETS);
     for (int i = 0; i < MAX_BULLETS; ++i) 
     {
         bullets.push_back(std::make_unique<Bullet>(renderer));
@@ -15,35 +16,33 @@ BulletManager::BulletManager(SDL_Renderer* renderer)
 
 BulletManager::~BulletManager() { clear(); }
 
-void BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
+bool BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
 {
     auto bullet = std::make_unique<Bullet>(renderer);
     WeaponInventory inventory;
 
-    if (currentWeapon != WeaponType::DEFAULT)
-        inventory.addWeapon(currentWeapon, ammo);  // assign ammo
-    else
+    if (currentWeapon == WeaponType::DEFAULT)
     {
-        for (const auto& bullet : bullets)
+        for (const auto& b : bullets)
         {
-            if (bullet->isActive() && bullet->getCurrentWeapon() == WeaponType::DEFAULT)
-            {
-                return; // makes it so only 1 bullet is active on the screen
-            }
+            if (b->isActive() && b->getCurrentWeapon() == WeaponType::DEFAULT)
+                return false;
         }
     }
 
-    for (auto& bullet : bullets)
+    for (auto& b : bullets)
     {
-        if (!bullet->isActive())
+        if (!b->isActive())
         {
-            bullet->fire(x, y, currentWeapon);
-            break;
+            b->fire(x, y, currentWeapon);
+            return true; // fired successfully
         }
     }
 
     bullets.push_back(std::make_unique<Bullet>(renderer));
     bullet->fire(x, y, currentWeapon);
+
+    return false;
 }
 
 void BulletManager::update(float deltaTime)

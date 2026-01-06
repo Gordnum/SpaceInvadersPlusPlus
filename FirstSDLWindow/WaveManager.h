@@ -22,7 +22,7 @@ class WaveManager
 		bool getWaveIntro() const;
 		unsigned int getWaveIntroStartTime() const;
 		const unsigned int getWaveIntroDuration() const;
-		void setShowingWaveIntro();
+		void setShowingWaveIntro(bool state);
 		void showWaveIntro(SDL_Renderer* renderer);
 		void nextWave();
 		int getWave() const;

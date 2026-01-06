@@ -1,4 +1,5 @@
 #include "UFO.h"
+#include "SoundManager.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -9,7 +10,7 @@ std::vector<SDL_Texture*> UFO::deathTextures;
 UFO::UFO(SDL_Renderer* renderer)
 	:renderer(renderer), active(false), speed(200.0f)
 {
-	rect = { -60, 75, 50, 25 };
+	rect = { -60, 85, 50, 25 };
 }
 
 void UFO::LoadTextures(SDL_Renderer* renderer)
@@ -117,14 +118,30 @@ void UFO::reset()
 
 void UFO::startDeathAnimation()
 {
+	SoundManager::stopChannel(hoverChannel);
+	hoverChannel = -1;
+
 	dying = true;
 	finishedDeathAnimation = false;
 	deathFrameIndex = 0;
 	deathTimer = 0.0f;
 }
 
-void UFO::activate(){ reset(); }
-void UFO::deactivate() { active = false; }
+void UFO::activate()
+{ 
+	if (hoverChannel != -1) return;
+
+	reset(); 
+	hoverChannel = SoundManager::playLoop(SoundID::UFO_HOVER);
+}
+
+void UFO::deactivate() 
+{ 
+	active = false;
+	SoundManager::stopChannel(hoverChannel);
+	hoverChannel = -1;
+}
+
 bool UFO::isActive() const { return active; }
 SDL_Rect UFO::getRect() const{return rect;}
 int UFO::getX() const { return rect.x + rect.w / 2; }

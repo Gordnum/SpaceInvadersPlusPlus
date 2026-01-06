@@ -14,7 +14,7 @@ class BulletManager
 		~BulletManager();
 
 		std::vector<std::unique_ptr<Bullet>>& getBullets();
-		void fire(int x, int y, WeaponType weaponType, int ammo);
+		bool fire(int x, int y, WeaponType weaponType, int ammo);
 		void update(float deltaTime);
 		void render();
 		void clear();

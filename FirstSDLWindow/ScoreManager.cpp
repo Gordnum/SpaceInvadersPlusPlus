@@ -12,7 +12,10 @@ ScoreManager::ScoreManager(SDL_Renderer* renderer)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
+	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
+		return; 
+	}
 
 	updateTexture(renderer);
 }
@@ -69,8 +72,18 @@ void ScoreManager::loadHighScore(const std::string& filename)
 
 SDL_Texture* ScoreManager::renderText(SDL_Renderer* renderer, const std::string& text, SDL_Rect& outRect, int y, bool centerX, int fixedX)
 {
+	if (!font)
+	{
+		SDL_Log("Font not loaded; skipping renderText for '%s'", text.c_str());
+		return nullptr;
+	}
+
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
-	if (!surface) return nullptr;
+	if (!surface)
+	{
+		SDL_Log("Failed to render text: %s", TTF_GetError());
+		return nullptr;
+	}
 
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
 
@@ -91,7 +104,7 @@ void ScoreManager::updateTexture(SDL_Renderer* renderer)
 	scoreLabelTexture = renderText(renderer, "<SCORE>", scoreLabelRect, 20, false, 100); // left-aligned at x=100
 
 	if(highScoreLabelTexture)  SDL_DestroyTexture(highScoreLabelTexture);
-	highScoreLabelTexture = renderText(renderer, "<HISCORE>", highScoreLabelRect, 20, true, 100);
+	highScoreLabelTexture = renderText(renderer, "<HI-SCORE>", highScoreLabelRect, 20, true, 100);
 
 	// --- Render score number under the label ---
 	if (scoreNumberTexture) SDL_DestroyTexture(scoreNumberTexture);

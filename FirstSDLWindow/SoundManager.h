@@ -17,7 +17,8 @@ enum class SoundID
     PLAYER_HIT,
     BOSS_SHOOT,
     PICKUP_COLLECT,
-    BOMB_EXPLODE
+    BOMB_EXPLODE,
+    UFO_HOVER
 };
 
 inline SoundID weaponTypeToSoundID(WeaponType weapon) 
@@ -40,6 +41,8 @@ class SoundManager
         static void loadSound(SoundID id, const std::string& filePath);
         static void playSound(SoundID id);
         static void clean();
+        static int playLoop(SoundID id);
+        static void stopChannel(int channel, int fadeMs = 250);
 
     private:
         static void loadAllSounds();

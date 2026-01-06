@@ -36,8 +36,8 @@ class Enemy
 		float deathTimer = 0.0f;
 		float deathFrameDuration = 0.08f;
 		int deathFrameIndex = 0;
-		float sidewaysSpeed = 0.0f;
 		bool finishedDeathAnimation = false;
+		int enemyBossSpeed = 0;
 
 	public:
 		Enemy(SDL_Renderer* renderer, EnemyType enemyType = EnemyType::OCTOPUS);
@@ -53,10 +53,11 @@ class Enemy
 		bool isInTopRow() const { return rowIndex == 0; }
 		void setOrigin(EnemyOrigin o);
 		EnemyOrigin getOrigin() const;
+		void setRect(SDL_Rect r);
 		EnemyType getType() const;
 
-		void setSidewaysSpeed(float speed) { sidewaysSpeed = speed; }
-		float getSidewaysSpeed() const { return sidewaysSpeed; }
+		void setEnemyBossSpeed(int speed) { enemyBossSpeed = speed; }
+		float getEnemyBossSpeed() const { return enemyBossSpeed; }
 
 		static void LoadTextures(SDL_Renderer* renderer);
 		static void FreeTextures();
@@ -64,5 +65,5 @@ class Enemy
 		bool enemyIsDying() const { return dying; }
 		bool enemyIsFinishedDeathAnimation() const { return finishedDeathAnimation; }
 
-		static std::vector<std::unique_ptr<Enemy>> createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX = 10, int spacingY = 10);
+		static std::vector<std::unique_ptr<Enemy>> createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY);
 };

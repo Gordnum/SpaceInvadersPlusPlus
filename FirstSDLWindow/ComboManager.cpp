@@ -67,8 +67,8 @@ void ComboManager::onEnemyKilled()
 
 			if (multiplier > MaxMultiplier)
 			{
-				multiplier = MaxMultiplier;
 				comboBarProgress = 1.0f;
+				multiplier = MaxMultiplier;
 			}
 				
 		}

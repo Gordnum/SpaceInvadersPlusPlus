@@ -121,7 +121,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 	const int baseY = SCREEN_HEIGHT - 36;
 	const int padding = -2;
 
-	int numWeapons = ownedWeapons.size();
+	unsigned int numWeapons = ownedWeapons.size();
 	int halfRange = std::min(1, (int)numWeapons / 2);
 
 	struct WeaponRenderInfo 

@@ -72,7 +72,7 @@ void Bullet::update(float deltaTime)
 	if(active && !bulletIsFromEnemy)
 	{
 		if (currentWeapon == WeaponType::BOMB_SHOT)
-			rect.y -= static_cast<int>((playerBulletSpeed - 150.0f) * deltaTime);
+			rect.y -= static_cast<int>((playerBulletSpeed - 100.0f) * deltaTime);
 		else
 			rect.y -= static_cast<int>(playerBulletSpeed * deltaTime);
 

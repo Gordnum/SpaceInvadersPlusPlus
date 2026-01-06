@@ -13,8 +13,6 @@ Player::Player(SDL_Renderer* renderer)
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
     if (!font)
         SDL_Log("Failed to load font: %s", TTF_GetError());
-
-    TTF_CloseFont(font);
 }
 
 Player::~Player()
@@ -25,6 +23,9 @@ Player::~Player()
             SDL_DestroyTexture(pair.second);
     }
     weaponTextures.clear();
+
+    if (font)
+        TTF_CloseFont(font);
 }
 
 void Player::handleEvent(const SDL_Event& e)
@@ -79,6 +80,12 @@ void Player::setWeaponTexture(WeaponType type)
 
 void Player::render()
 {
+    if (!font)
+    {
+        SDL_Log("Font not loaded; skipping text render");
+        return;
+    }
+
     if (currentTexture)
         SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
     else

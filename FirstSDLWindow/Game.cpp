@@ -95,7 +95,7 @@ void Game::handleEvents()
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
-				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, -100, WeaponType::TRIPMINE)));
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, -100, WeaponType::BOMB_SHOT)));
 			}
 			else if (startEndless)
 			{
@@ -117,10 +117,10 @@ void Game::handleEvents()
 		{
 			if (event.type == SDL_KEYDOWN)
 			{
-				if (event.key.keysym.sym == SDLK_e)
+				if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_e)
 					weaponInventory->startWeaponSwapAnimation(1);
 
-				else if (event.key.keysym.sym == SDLK_q)
+				else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_q)
 					weaponInventory->startWeaponSwapAnimation(-1);
 			}
 
@@ -270,19 +270,22 @@ void Game::update()
 			}
 		}
 
-		if (willBounce && !hasBounced)
+		if (willBounce)
 		{
-			enemyDirection *= -1;
-			for (auto& enemy : enemies)
+			if (!hasBounced)
 			{
-				if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
+				enemyDirection *= -1;
+				for (auto& enemy : enemies)
 				{
-					enemy->move(0, 15); // move down instead of sideways
-					enemy->advanceAnimation();
+					if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::NORMAL)
+					{
+						enemy->move(0, 15); // move down instead of sideways
+						enemy->advanceAnimation();
+					}
 				}
 			}
+			
 			hasBounced = true;
-
 			if (moveInterval > 100)
 				moveInterval -= 60;
 		}
@@ -303,7 +306,6 @@ void Game::update()
 			}
 			hasBounced = false;
 		}
-
 		lastMoveTime = currentTime;
 	}
 
@@ -332,6 +334,7 @@ void Game::update()
 			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
 			b->setEnemyBulletSpeed(waveManager->getProjectileSpeed());
 			enemyBullets.push_back(std::move(b));
+			SoundManager::playSound(SoundID::ENEMY_SHOOT);
 		}
 
 		lastEnemyShotTime = currentEnemyShotTime;
@@ -387,10 +390,10 @@ void Game::update()
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 								scoreManager->addPoints(earnedScore);
 								comboManager->onEnemyKilled();
-								SoundManager::playSound(SoundID::ENEMY_DEATH);
 							}
 						}
 					}
+					SoundManager::playSound(SoundID::ENEMY_DEATH);
 					SoundManager::playSound(SoundID::BOMB_EXPLODE);
 					b->deactivate();
 				}
