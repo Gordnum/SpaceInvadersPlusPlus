@@ -579,7 +579,7 @@ void Game::update()
 			WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
 
 			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
-			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), WeaponType::TRIPMINE)));
+			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon)));
 			if (scoreManager->spawnPickup())
 				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
 			if (scoreManager->giveLive())
@@ -775,7 +775,7 @@ void Game::render()
 
 		const int LINE_THICKNESS = 6;
 
-		SDL_Rect beam
+		SDL_Rect horizontalBeam
 		{
 			0,
 			y - LINE_THICKNESS / 2,
@@ -783,7 +783,30 @@ void Game::render()
 			LINE_THICKNESS
 		};
 
-		SDL_RenderFillRect(renderer, &beam);
+		SDL_RenderFillRect(renderer, &horizontalBeam);
+	}
+
+	//render laser pointer for piercing
+	if (weaponInventory->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
+	{
+		auto renderPiercingLaser = [&](const SDL_Rect& p)
+			{
+				SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+				SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+
+				int x = p.x + p.w / 2;
+				SDL_Rect laserPointer
+				{
+					x - 1,
+					0,
+					3,
+					p.y + 4
+				};
+
+				SDL_RenderFillRect(renderer, &laserPointer);
+			};
+
+		renderPiercingLaser(player->getRect());
 	}
 
 	// White flash effect
