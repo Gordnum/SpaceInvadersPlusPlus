@@ -52,17 +52,24 @@ void SoundManager::loadAllSounds()
 {
     loadSound(SoundID::WEAPON_DEFAULT, "../Assets/SoundEffects/DEFAULT_SHOT.wav");
     loadSound(SoundID::WEAPON_BOMB, "../Assets/SoundEffects/bomb.wav");
+    loadSound(SoundID::WEAPON_PIERCING, "../Assets/SoundEffects/piercing.wav");
+    loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/SoundEffects/tripmine.wav");
     loadSound(SoundID::ENEMY_DEATH, "../Assets/SoundEffects/enemy_death.wav");
-    loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
+    loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode2.wav");
     loadSound(SoundID::ENEMY_SHOOT, "../Assets/SoundEffects/enemy_shoot.wav");
     loadSound(SoundID::UFO_HOVER, "../Assets/SoundEffects/ufo_hover.wav");
+    loadSound(SoundID::CHANGE_TO_DEFAULT, "../Assets/SoundEffects/change_to_default.wav");
+    loadSound(SoundID::CHANGE_TO_PIERCING, "../Assets/SoundEffects/change_to_piercing.wav");
+    loadSound(SoundID::CHANGE_TO_RAPID, "../Assets/SoundEffects/change_to_rapid.wav");
+    loadSound(SoundID::CHANGE_TO_BOMB, "../Assets/SoundEffects/change_to_bomb.wav");
+    loadSound(SoundID::CHANGE_TO_TRIPMINE, "../Assets/SoundEffects/change_to_tripmine.wav");
+    loadSound(SoundID::TRIPMINE_SET, "../Assets/SoundEffects/tripmine_set_and_explode.wav");
     /*
-    loadSound(SoundID::WEAPON_PIERCING, "../Assets/Sounds/piercing.wav");
-    loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/Sounds/tripmine.wav");
-    loadSound(SoundID::WEAPON_RAPID, "../Assets/Sounds/rapid.wav");
-    loadSound(SoundID::PLAYER_HIT, "../Assets/Sounds/player_hit.wav");
-    loadSound(SoundID::BOSS_SHOOT, "../Assets/Sounds/boss_shoot.wav");
-    loadSound(SoundID::PICKUP_COLLECT, "../Assets/Sounds/pickup.wav");
+
+    loadSound(SoundID::WEAPON_RAPID, "../Assets/SoundEffects/rapid.wav");
+    loadSound(SoundID::PLAYER_HIT, "../Assets/SoundEffects/player_hit.wav");
+    loadSound(SoundID::BOSS_SHOOT, "../Assets/SoundEffects/boss_shoot.wav");
+    loadSound(SoundID::PICKUP_COLLECT, "../Assets/SoundEffects/pickup.wav");
     */
 }
 

@@ -48,6 +48,14 @@ void ScoreManager::addPoints(int amount)
 	}
 }
 
+void ScoreManager::awardScore(int points, Player& player)
+{
+	addPoints(points);
+
+	if (giveLive())
+		player.plusLives();
+}
+
 int ScoreManager::getScore() const { return score; }
 
 void ScoreManager::saveHighScore(const std::string& filename)

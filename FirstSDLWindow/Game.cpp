@@ -351,6 +351,8 @@ void Game::update()
 
 		for (auto& enemy : enemies)
 		{
+			bool killedByPiercing = false;
+
 			if (!enemy->isAlive()) continue;
 
 			switch (enemy->getType())
@@ -367,8 +369,9 @@ void Game::update()
 				{
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->addPoints(earnedScore);
+					scoreManager->awardScore(earnedScore, *player);
 					comboManager->onEnemyKilled();
+					killedByPiercing = true;
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
 				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
@@ -392,7 +395,7 @@ void Game::update()
 							{
 								e2->destroy();
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-								scoreManager->addPoints(earnedScore);
+								scoreManager->awardScore(earnedScore, *player);
 								comboManager->onEnemyKilled();
 							}
 						}
@@ -406,20 +409,21 @@ void Game::update()
 					pendingTripmines.push_back(
 						{
 							enemy->getRect().y,          // rowY
-							SDL_GetTicks() + 500,         // trigger time
+							SDL_GetTicks() + 700,         // trigger time
 							false,                        // exploded or not
 							0                             // renderUntil
 						}
 					);
 
-					b->deactivate(); // remove tripmine bullet after explosion
+					b->deactivate(); // remove tripmine bullet after collision
+					SoundManager::playSound(SoundID::TRIPMINE_SET);
 				}
 				else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 				{
 					b->deactivate();
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->addPoints(earnedScore);
+					scoreManager->awardScore(earnedScore, *player);
 					comboManager->onEnemyKilled();
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
@@ -436,9 +440,6 @@ void Game::update()
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100));
 					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon));
 				}
-
-				if (scoreManager->giveLive())
-					player->plusLives();
 			}
 		}
 	}
@@ -463,9 +464,8 @@ void Game::update()
 
 				int baseScore = 30;
 				int earned = static_cast<int>(baseScore * comboManager->getMultiplier());
-				scoreManager->addPoints(earned);
+				scoreManager->awardScore(baseScore, *player);
 				comboManager->onEnemyKilled();
-				SoundManager::playSound(SoundID::ENEMY_DEATH);
 
 				if (scoreManager->spawnPickup())
 				{
@@ -478,6 +478,7 @@ void Game::update()
 						);
 					}
 				}
+				SoundManager::playSound(SoundID::ENEMY_DEATH);
 			}
 		}
 
@@ -572,7 +573,7 @@ void Game::update()
 
 			int baseScore = 200;
 			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-			scoreManager->addPoints(earnedScore);
+			scoreManager->awardScore(earnedScore, *player);
 			comboManager->onEnemyKilled();
 
 			int index = rand() % weaponInventory->randomizeWeapon().size();
@@ -582,8 +583,6 @@ void Game::update()
 			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon)));
 			if (scoreManager->spawnPickup())
 				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
-			if (scoreManager->giveLive())
-				player->plusLives();
 		}
 	}
 
@@ -789,7 +788,7 @@ void Game::render()
 	//render laser pointer for piercing
 	if (weaponInventory->getCurrentWeapon() == WeaponType::PIERCING_SHOT)
 	{
-		auto renderPiercingLaser = [&](const SDL_Rect& p)
+		auto renderPiercingLaser = [&](const SDL_Rect p)
 			{
 				SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 				SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
