@@ -56,6 +56,14 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
     loadSound(SoundID::ENEMY_SHOOT, "../Assets/SoundEffects/enemy_shoot.wav");
     loadSound(SoundID::UFO_HOVER, "../Assets/SoundEffects/ufo_hover.wav");
+    loadSound(SoundID::CHANGE_TO_DEFAULT, "../Assets/SoundEffects/change_to_default.wav");
+    loadSound(SoundID::CHANGE_TO_PIERCING, "../Assets/SoundEffects/change_to_piercing.wav");
+    loadSound(SoundID::CHANGE_TO_BOMB, "../Assets/SoundEffects/change_to_bomb.wav");
+    loadSound(SoundID::CHANGE_TO_RAPID, "../Assets/SoundEffects/change_to_rapid.wav");
+    loadSound(SoundID::CHANGE_TO_TRIPMINE, "../Assets/SoundEffects/change_to_tripmine.wav");
+    loadSound(SoundID::TRIPMINE_SET_AND_EXPLODE, "../Assets/SoundEffects/tripmine_set_and_explode.wav");
+    //will add more
+
     /*
     loadSound(SoundID::WEAPON_PIERCING, "../Assets/Sounds/piercing.wav");
     loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/Sounds/tripmine.wav");
