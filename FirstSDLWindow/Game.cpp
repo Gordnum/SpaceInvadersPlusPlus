@@ -367,7 +367,7 @@ void Game::update()
 				{
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->addPoints(earnedScore);
+					scoreManager->awardScore(earnedScore, *player);
 					comboManager->onEnemyKilled();
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
@@ -392,7 +392,7 @@ void Game::update()
 							{
 								e2->destroy();
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-								scoreManager->addPoints(earnedScore);
+								scoreManager->awardScore(earnedScore, *player);
 								comboManager->onEnemyKilled();
 							}
 						}
@@ -420,7 +420,7 @@ void Game::update()
 					b->deactivate();
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->addPoints(earnedScore);
+					scoreManager->awardScore(earnedScore, *player);
 					comboManager->onEnemyKilled();
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
@@ -437,9 +437,6 @@ void Game::update()
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100));
 					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon));
 				}
-
-				if (scoreManager->giveLive())
-					player->plusLives();
 			}
 		}
 	}
@@ -463,10 +460,9 @@ void Game::update()
 				enemy->destroy();
 
 				int baseScore = 30;
-				int earned = static_cast<int>(baseScore * comboManager->getMultiplier());
-				scoreManager->addPoints(earned);
+				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
+				scoreManager->awardScore(earnedScore, *player);
 				comboManager->onEnemyKilled();
-				SoundManager::playSound(SoundID::ENEMY_DEATH);
 
 				if (scoreManager->spawnPickup())
 				{
@@ -479,6 +475,7 @@ void Game::update()
 						);
 					}
 				}
+				SoundManager::playSound(SoundID::ENEMY_DEATH);
 			}
 		}
 
@@ -573,7 +570,7 @@ void Game::update()
 
 			int baseScore = 200;
 			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-			scoreManager->addPoints(earnedScore);
+			scoreManager->awardScore(earnedScore, *player);
 			comboManager->onEnemyKilled();
 
 			int index = rand() % weaponInventory->randomizeWeapon().size();

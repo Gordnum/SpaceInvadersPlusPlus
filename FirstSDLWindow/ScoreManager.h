@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>
+#include "Player.h"
 
 class ScoreManager
 {
@@ -36,6 +37,8 @@ public:
 	int getScore() const;
 	bool spawnPickup();
 	bool giveLive();
+
+	void awardScore(int points, Player& player);
 
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);
