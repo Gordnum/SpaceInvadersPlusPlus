@@ -4,6 +4,7 @@
 #include <SDL_image.h>
 #include <map>
 #include "WeaponType.h"
+#include "SoundManager.h"
 
 class Player
 {
@@ -17,6 +18,13 @@ class Player
 		int playerLives;
 		std::map<WeaponType, SDL_Texture*> weaponTextures;
 		SDL_Texture* currentTexture;
+		bool isInvincible = false;
+		unsigned int invincibleStartTime = 0;
+		unsigned int lastBlinkTime = 0;
+		bool visible = true;
+
+		static constexpr unsigned int INVINCIBLE_DURATION = 1200;
+		static constexpr unsigned int BLINK_INTERVAL = 100;
 
 	public:
 		Player(SDL_Renderer* renderer);

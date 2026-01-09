@@ -86,12 +86,15 @@ void Player::render()
         return;
     }
 
-    if (currentTexture)
-        SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
-    else
+    if (visible)
     {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        if (currentTexture)
+            SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
+        else
+        {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderFillRect(renderer, &rect);
+        }
     }
 
     std::string labelText = "<LIVES>";
@@ -124,6 +127,23 @@ void Player::render()
 
 void Player::update(float deltaTime)
 {    
+    if (isInvincible)
+    {
+        unsigned int now = SDL_GetTicks();
+
+        if (now - lastBlinkTime >= BLINK_INTERVAL)
+        {
+            visible = !visible;
+            lastBlinkTime = now;
+        }
+
+        if (now - invincibleStartTime >= INVINCIBLE_DURATION)
+        {
+            isInvincible = false;
+            visible = true;
+        }
+    }
+
     if (movingLeft) rect.x -= static_cast<int>(speed * deltaTime);
     if (movingRight) rect.x += static_cast<int>(speed * deltaTime);
 
@@ -131,10 +151,21 @@ void Player::update(float deltaTime)
     if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
 }
 
-void Player::loseLives() { if(playerLives > 0) playerLives--; }
+void Player::loseLives() 
+{
+    if (isInvincible || playerLives <= 0) return;
+
+    if (!isInvincible)
+        SoundManager::playSound(SoundID::PLAYER_HIT);
+
+    playerLives--;
+    isInvincible = true;
+    invincibleStartTime = SDL_GetTicks();
+    lastBlinkTime = invincibleStartTime;
+    visible = false;
+}
 void Player::plusLives() { if (playerLives > 0) playerLives++; }
 int Player::getX() const { return rect.x + rect.w / 2; }
 int Player::getY() const { return rect.y; }
 int Player::getLives() const { return playerLives; }
 SDL_Rect Player::getRect() const { return rect; }
-

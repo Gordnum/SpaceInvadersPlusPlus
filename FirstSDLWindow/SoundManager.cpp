@@ -64,10 +64,10 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::CHANGE_TO_RAPID, "../Assets/SoundEffects/change_to_rapid.wav");
     loadSound(SoundID::CHANGE_TO_TRIPMINE, "../Assets/SoundEffects/change_to_tripmine.wav");
     loadSound(SoundID::TRIPMINE_SET_AND_EXPLODE, "../Assets/SoundEffects/tripmine_set_and_explode.wav");
+    loadSound(SoundID::PLAYER_HIT, "../Assets/SoundEffects/player_hit.wav");
 
     /*
-    loadSound(SoundID::WEAPON_RAPID, "../Assets/Sounds/rapid.wav");
-    loadSound(SoundID::PLAYER_HIT, "../Assets/Sounds/player_hit.wav");
+
     loadSound(SoundID::BOSS_SHOOT, "../Assets/Sounds/boss_shoot.wav");
     loadSound(SoundID::PICKUP_COLLECT, "../Assets/Sounds/pickup.wav");
     */
