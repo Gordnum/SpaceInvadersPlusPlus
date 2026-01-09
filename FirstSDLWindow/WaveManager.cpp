@@ -61,8 +61,8 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 void WaveManager::nextWave() 
 {
     currentWave++;
-    enemySpeedMultiplier += 1.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 20.0f;  // Increase projectile speed
+    enemySpeedMultiplier += 2.0f;        // Increase enemy movement speed
+    projectileSpeedMultiplier += 25.0f;  // Increase projectile speed
 }
 
 int WaveManager::getWave() const { return currentWave; }

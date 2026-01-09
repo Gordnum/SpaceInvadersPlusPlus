@@ -12,12 +12,6 @@ enum class SoundID
     WEAPON_BOMB,
     WEAPON_TRIPMINE,
     WEAPON_RAPID,
-    CHANGE_TO_DEFAULT,
-    CHANGE_TO_PIERCING,
-    CHANGE_TO_RAPID,
-    CHANGE_TO_BOMB,
-    CHANGE_TO_TRIPMINE,
-    TRIPMINE_SET,
     ENEMY_SHOOT,
     ENEMY_DEATH,
     PLAYER_HIT,
@@ -35,21 +29,8 @@ inline SoundID weaponTypeToSoundID(WeaponType weapon)
         case WeaponType::PIERCING_SHOT:  return SoundID::WEAPON_PIERCING;
         case WeaponType::BOMB_SHOT:      return SoundID::WEAPON_BOMB;
         case WeaponType::TRIPMINE:       return SoundID::WEAPON_TRIPMINE;
-        case WeaponType::RAPID_SHOT:     return SoundID::WEAPON_DEFAULT;
+        case WeaponType::RAPID_SHOT:     return SoundID::WEAPON_RAPID;
         default:                         return SoundID::WEAPON_DEFAULT;
-    }
-}
-
-inline SoundID weaponTypeToSwitchSound(WeaponType type)
-{
-    switch (type)
-    {
-        case WeaponType::DEFAULT:        return SoundID::CHANGE_TO_DEFAULT;
-        case WeaponType::PIERCING_SHOT:  return SoundID::CHANGE_TO_PIERCING;
-        case WeaponType::BOMB_SHOT:      return SoundID::CHANGE_TO_BOMB;
-        case WeaponType::TRIPMINE:       return SoundID::CHANGE_TO_TRIPMINE;
-        case WeaponType::RAPID_SHOT:     return SoundID::CHANGE_TO_RAPID;
-        default:                         return SoundID::CHANGE_TO_DEFAULT;
     }
 }
 
