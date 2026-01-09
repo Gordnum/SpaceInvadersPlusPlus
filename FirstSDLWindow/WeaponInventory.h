@@ -10,6 +10,7 @@
 #include <string>
 #include "WeaponType.h"
 #include "Pickup.h"
+#include "SoundManager.h"
 
 class WeaponInventory
 {
@@ -25,6 +26,9 @@ private:
 	bool isAnimating;
 	int animationDirection;
 	float deltaTime;
+
+	unsigned int lastWeaponSwitchSoundTime = 0;
+	static constexpr unsigned int WEAPON_SWITCH_SOUND_COOLDOWN_MS = 120;
 
 public:
 	WeaponInventory();

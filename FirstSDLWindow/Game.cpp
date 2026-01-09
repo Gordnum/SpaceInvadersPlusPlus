@@ -406,13 +406,14 @@ void Game::update()
 					pendingTripmines.push_back(
 						{
 							enemy->getRect().y,          // rowY
-							SDL_GetTicks() + 500,         // trigger time
+							SDL_GetTicks() + 700,         // trigger time
 							false,                        // exploded or not
 							0                             // renderUntil
 						}
 					);
 
 					b->deactivate(); // remove tripmine bullet after explosion
+					SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
 				}
 				else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 				{

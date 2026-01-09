@@ -37,6 +37,16 @@ void WeaponInventory::addWeapon(WeaponType type, int ammo)
 
 void WeaponInventory::useAmmo(WeaponType type)
 {
+	static auto canPlayWeaponSwitchSound = [&](unsigned int lastTime)
+	{
+		unsigned int now = SDL_GetTicks();
+		if (now - lastTime < WEAPON_SWITCH_SOUND_COOLDOWN_MS)
+			return false;
+
+		lastTime = now;
+		return true;
+	};
+
 	if (ammoMap[type] > 0)
 	{
 		ammoMap[type]--;
@@ -44,6 +54,8 @@ void WeaponInventory::useAmmo(WeaponType type)
 		// auto-remove when ammo is depleted
 		if (ammoMap[type] == 0 && type != WeaponType::DEFAULT)
 		{
+			bool wasCurrentWeapon = (getCurrentWeapon() == type);
+
 			// Remove from ownedWeapons
 			for (auto it = ownedWeapons.begin(); it != ownedWeapons.end(); ++it)
 			{
@@ -61,6 +73,12 @@ void WeaponInventory::useAmmo(WeaponType type)
 			}
 
 			ammoMap.erase(type);
+
+			if (wasCurrentWeapon && !ownedWeapons.empty())
+			{
+				if (canPlayWeaponSwitchSound(lastWeaponSwitchSoundTime))
+					SoundManager::playSound(weaponTypeToSwitchSound(getCurrentWeapon()));
+			}
 		}
 	}
 }
@@ -236,6 +254,16 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 
 void WeaponInventory::update(float deltaTime) 
 {
+	static auto canPlayWeaponSwitchSound = [&](unsigned int lastTime)
+	{
+		unsigned int now = SDL_GetTicks();
+		if (now - lastTime < WEAPON_SWITCH_SOUND_COOLDOWN_MS)
+			return false;
+
+		lastTime = now;
+		return true;
+	};
+
 	if (!isAnimating) return;
 
 	float direction = animationDirection;
@@ -249,6 +277,9 @@ void WeaponInventory::update(float deltaTime)
 			swapToNextWeapon();
 		else
 			swapToPreviousWeapon();
+
+		if (canPlayWeaponSwitchSound(lastWeaponSwitchSoundTime))
+			SoundManager::playSound(weaponTypeToSwitchSound(getCurrentWeapon()));
 	}
 }
 
