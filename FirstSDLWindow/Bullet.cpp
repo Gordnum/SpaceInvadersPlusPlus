@@ -1,8 +1,12 @@
 #include "Bullet.h"
 
 // note: if rect.y + == going upward, else if rect.y - == going downwards
-const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+constexpr int PLAYFIELD_UPPER_MARGIN = 75;
+constexpr int PLAYFIELD_BOTTOM_MARGIN = 90;
+constexpr int BORDER_THICKNESS = 4;
+constexpr int PLAYFIELD_TOP_Y = PLAYFIELD_UPPER_MARGIN + BORDER_THICKNESS;
+constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 
 Bullet::Bullet(SDL_Renderer* renderer)
 	:renderer(renderer), active(false), bulletIsFromEnemy(false), currentWeapon(WeaponType::DEFAULT), 
@@ -83,7 +87,7 @@ void Bullet::update(float deltaTime)
 	if (bulletIsFromEnemy)
 		rect.y += static_cast<int>(enemyBulletSpeed * deltaTime);
 
-	if (rect.y < 0 || rect.y > SCREEN_HEIGHT)
+	if (rect.y < PLAYFIELD_TOP_Y || rect.y + rect.h > PLAYFIELD_BOTTOM_Y)
 		deactivate();
 }
 

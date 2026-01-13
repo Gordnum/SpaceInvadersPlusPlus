@@ -6,6 +6,12 @@ const int SCREEN_HEIGHT = 600;
 const int TARGET_FPS = 60;
 const int FRAME_DELAY = 1000 / TARGET_FPS;
 
+constexpr int PLAYFIELD_UPPER_MARGIN = 75;
+constexpr int PLAYFIELD_BOTTOM_MARGIN = 90;
+constexpr int BORDER_THICKNESS = 4;
+constexpr int PLAYFIELD_TOP_Y = PLAYFIELD_UPPER_MARGIN + BORDER_THICKNESS;
+constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
+
 Game::Game() 
 	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
@@ -95,7 +101,7 @@ void Game::handleEvents()
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
-				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, -100, WeaponType::BOMB_SHOT)));
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
 			}
 			else if(startEndless)
 			{
@@ -435,7 +441,7 @@ void Game::update()
 					WeaponType randomWeapon = randomWeapons[index];
 
 					int randomX = 50 + (rand() % (SCREEN_WIDTH - 100));
-					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon));
+					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, PLAYFIELD_UPPER_MARGIN, randomWeapon));
 				}
 			}
 		}
@@ -471,7 +477,7 @@ void Game::update()
 					{
 						WeaponType w = weapons[rand() % weapons.size()];
 						int x = 50 + rand() % (SCREEN_WIDTH - 100);
-						pickups.push_back(std::make_unique<Pickup>(renderer, x, -100, w)
+						pickups.push_back(std::make_unique<Pickup>(renderer, x, PLAYFIELD_UPPER_MARGIN, w)
 						);
 					}
 				}
@@ -579,7 +585,7 @@ void Game::update()
 			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
 			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon)));
 			if (scoreManager->spawnPickup())
-				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, -100, randomWeapon)));
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, PLAYFIELD_UPPER_MARGIN, randomWeapon)));
 			if (scoreManager->giveLive())
 				player->plusLives();
 		}
@@ -642,7 +648,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20)
+		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -740,17 +746,53 @@ void Game::render()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
+	//game border
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+	SDL_Rect topBorder
+	{
+		0,
+		PLAYFIELD_TOP_Y - BORDER_THICKNESS,
+		SCREEN_WIDTH,
+		BORDER_THICKNESS
+	};
+
+	SDL_Rect bottomBorder
+	{
+		0,
+		PLAYFIELD_BOTTOM_Y,
+		SCREEN_WIDTH,
+		BORDER_THICKNESS
+	};
+
+	SDL_RenderFillRect(renderer, &topBorder);
+	SDL_RenderFillRect(renderer, &bottomBorder);
+
+	//clip game objects
+	SDL_Rect playfieldClip
+	{
+		0,
+		PLAYFIELD_TOP_Y,
+		SCREEN_WIDTH,
+		PLAYFIELD_BOTTOM_Y - PLAYFIELD_TOP_Y
+	};
+
+	SDL_RenderSetClipRect(renderer, &playfieldClip);
+
 	if (menuManager->isInMainMenu())
 	{
 		menuManager->render();
 		return;
 	}
-	player->render();
 	bullet->render();
 	if(ufo->isActive() || ufo->UFOIsDying()) ufo->render();
 	if (boss->isActive()) { boss->render(renderer); }
-	scoreManager->render(renderer);
 	bulletManager->render();
+
+	SDL_RenderSetClipRect(renderer, nullptr);
+
+	player->render();
+	scoreManager->render(renderer);
 	comboManager->render(renderer);
 	weaponInventory->renderWeaponHUD(renderer);
 
@@ -758,6 +800,7 @@ void Game::render()
 	for (auto& pickup : pickups) { pickup->render(); }
 	for (auto& b : enemyBullets) { if (b->isActive()) b->render(); }
 	for (auto& b : bossBullets) { if (b->isActive()) b->render(renderer); }
+
 	if (waveManager->getWaveIntro() && !isGameOver) //prototype game win
 		waveManager->showWaveIntro(renderer);
 
@@ -797,9 +840,9 @@ void Game::render()
 				SDL_Rect laserPointer
 				{
 					x - 1,
-					0,
+					PLAYFIELD_TOP_Y,
 					3,
-					p.y + 4
+					(p.y + 4) - PLAYFIELD_TOP_Y
 				};
 
 				SDL_RenderFillRect(renderer, &laserPointer);

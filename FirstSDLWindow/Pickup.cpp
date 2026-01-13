@@ -1,12 +1,16 @@
 #include "Pickup.h"
 
-const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+constexpr int PLAYFIELD_UPPER_MARGIN = 75;
+constexpr int PLAYFIELD_BOTTOM_MARGIN = 90;
+constexpr int BORDER_THICKNESS = 4;
+constexpr int PLAYFIELD_TOP_Y = PLAYFIELD_UPPER_MARGIN + BORDER_THICKNESS;
+constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 
 Pickup::Pickup(SDL_Renderer* renderer, int x, int y, WeaponType type)
-	   :renderer(renderer), type(type), collected(false), dropSpeed(200.0f)
+	   :renderer(renderer), type(type), collected(false), dropSpeed(175.0f)
 {
-	rect = { x, y, 20, 20 };
+	rect = { x, y, 15, 15};
 }
 
 void Pickup::render()
@@ -38,10 +42,12 @@ void Pickup::render()
 
 void Pickup::update(float deltaTime)
 { 
+	if (collected) return;
+
 	rect.y += static_cast<int>(dropSpeed * deltaTime);
 
-	if (rect.y > SCREEN_HEIGHT)
-		return;
+	if (rect.y + rect.h >= PLAYFIELD_BOTTOM_Y)
+		collected = true;
 }
 
 SDL_Rect Pickup::getRect() const { return rect; }

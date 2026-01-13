@@ -1,5 +1,13 @@
 #include "BossBullet.h"
 
+const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 800;
+constexpr int PLAYFIELD_UPPER_MARGIN = 75;
+constexpr int PLAYFIELD_BOTTOM_MARGIN = 90;
+constexpr int BORDER_THICKNESS = 4;
+constexpr int PLAYFIELD_TOP_Y = PLAYFIELD_UPPER_MARGIN + BORDER_THICKNESS;
+constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
+
 BossBullet::BossBullet(SDL_Renderer* renderer, int startX, int startY, float velX, float velY)
 		   :x(static_cast<float>(startX)), y(static_cast<float>(startY)), vx(velX), vy(velY), active(true), texture(nullptr)
 {
@@ -22,7 +30,7 @@ void BossBullet::update(float deltaTime)
     rect.y = static_cast<int>(y);
 
     // deactivate if off screen
-    if (x < 0 || x > 800 || y < 0 || y > 600)
+    if (rect.y < PLAYFIELD_TOP_Y - rect.h || rect.y > PLAYFIELD_BOTTOM_Y || rect.x < -rect.w || rect.x > SCREEN_WIDTH)
         deactivate();
 }
 
