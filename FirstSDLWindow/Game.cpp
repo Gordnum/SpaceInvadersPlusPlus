@@ -612,6 +612,7 @@ void Game::update()
 			weaponInventory->setCurrentWeapon(pickup->getType());
 			player->setWeaponTexture(pickup->getType());
 			pickup->collect();
+			SoundManager::playSound(SoundID::PICKUP_COLLECT);
 		}
 		pickup->update(deltaTime);
 	}
