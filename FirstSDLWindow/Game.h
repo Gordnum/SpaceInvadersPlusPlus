@@ -84,6 +84,7 @@ class Game
             unsigned int triggerTime;
             unsigned int renderUntil;
             bool exploded = false;
+            bool hitBoss = false;
         };
 
         std::vector<TripmineExplosion> pendingTripmines;

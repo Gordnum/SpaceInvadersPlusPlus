@@ -17,7 +17,7 @@ private:
 public:
 	Bullet(SDL_Renderer* renderer);
 	void fire(int x, int y, WeaponType weapon);
-	void fireFrom(int x, int y, bool fromEnemy); // Declare
+	void fireFrom(int x, int y, bool fromEnemy);
 	void setEnemyBulletSpeed(float s);
 	void update(float deltaTime);
 	void render();

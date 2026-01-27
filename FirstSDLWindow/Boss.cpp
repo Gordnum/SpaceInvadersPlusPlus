@@ -110,7 +110,6 @@ void Boss::render(SDL_Renderer* renderer)
     // Draw boss
     SDL_RenderCopy(renderer, texture, nullptr, &rect);
 
-    /*
     // Draw health bar
     SDL_Rect border = { rect.x, rect.y - 20, rect.w, 10 };
     SDL_Rect fill = { rect.x, rect.y - 20, rect.w * health / maxHealth, 10 };
@@ -119,5 +118,5 @@ void Boss::render(SDL_Renderer* renderer)
     SDL_RenderFillRect(renderer, &fill);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white border
     SDL_RenderDrawRect(renderer, &border);
-    */
+    
 }

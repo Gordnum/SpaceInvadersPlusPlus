@@ -182,6 +182,24 @@ void Game::update()
 		{
 			if (b->isActive() && checkCollision(b->getRect(), boss->getRect()))
 			{
+				if (b->getCurrentWeapon() == WeaponType::TRIPMINE)
+				{
+					pendingTripmines.push_back
+					(
+						{
+							boss->getRect().y + 20,     // rowY
+							SDL_GetTicks() + 700,       // delay
+							0,                          // renderUntil
+							false,                      // exploded
+							true                        // hitBoss
+						}
+					);
+
+					b->deactivate();
+					SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
+					continue;
+				}
+
 				int damage = 1;
 
 				// You can modify damage based on weapon type
@@ -192,7 +210,6 @@ void Game::update()
 						damage = 10;
 						break;
 					case WeaponType::PIERCING_SHOT:
-					case WeaponType::TRIPMINE:
 						damage = 20;
 						break;
 					case WeaponType::BOMB_SHOT:
@@ -201,7 +218,9 @@ void Game::update()
 				}
 
 				boss->takeDamage(damage);
-				b->deactivate();
+
+				if (b->getCurrentWeapon() != WeaponType::PIERCING_SHOT)
+					b->deactivate();
 
 				if (boss->isDefeated() && currentMode == GameMode::CAMPAIGN)
 				{
@@ -477,12 +496,17 @@ void Game::update()
 					{
 						WeaponType w = weapons[rand() % weapons.size()];
 						int x = 50 + rand() % (SCREEN_WIDTH - 100);
-						pickups.push_back(std::make_unique<Pickup>(renderer, x, PLAYFIELD_UPPER_MARGIN, w)
-						);
+						pickups.push_back(std::make_unique<Pickup>(renderer, x, PLAYFIELD_UPPER_MARGIN, w));
 					}
 				}
 				SoundManager::playSound(SoundID::ENEMY_DEATH);
 			}
+		}
+
+		if (explosion.hitBoss && boss->isActive())
+		{
+			const int TRIPMINE_BOSS_DAMAGE = 30;
+			boss->takeDamage(TRIPMINE_BOSS_DAMAGE);
 		}
 
 		explosion.exploded = true;
