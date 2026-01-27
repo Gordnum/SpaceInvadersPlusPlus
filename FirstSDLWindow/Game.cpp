@@ -218,6 +218,7 @@ void Game::update()
 				}
 
 				boss->takeDamage(damage);
+				SoundManager::playSound(SoundID::BOSS_TAKE_DAMAGE);
 
 				if (b->getCurrentWeapon() != WeaponType::PIERCING_SHOT)
 					b->deactivate();
@@ -507,6 +508,7 @@ void Game::update()
 		{
 			const int TRIPMINE_BOSS_DAMAGE = 30;
 			boss->takeDamage(TRIPMINE_BOSS_DAMAGE);
+			SoundManager::playSound(SoundID::BOSS_TAKE_DAMAGE);
 		}
 
 		explosion.exploded = true;

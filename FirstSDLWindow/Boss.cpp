@@ -100,6 +100,8 @@ void Boss::update(float deltaTime, SDL_Renderer* renderer, std::vector<std::uniq
 
             bullets.push_back(std::move(std::make_unique<BossBullet>(renderer, originX, originY, vx, vy)));
         }
+
+        SoundManager::playSound(SoundID::BOSS_SHOOT);
     }
 }
 

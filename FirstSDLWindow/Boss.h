@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "BossBullet.h"
+#include "SoundManager.h"
 
 class Boss
 {
