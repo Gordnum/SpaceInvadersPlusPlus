@@ -166,7 +166,7 @@ void Game::update()
 	// FPS Counter
 	frameCount++;
 	unsigned currentTicks = SDL_GetTicks();
-	if (currentTicks - fpsTimer >= 1000) // 1000 ms = 1 second
+	if (currentTicks - fpsTimer >= 1000)
 	{
 		std::cout << "FPS: " << frameCount << std::endl;
 		frameCount = 0;
@@ -186,7 +186,7 @@ void Game::update()
 			// Spawn enemies if not in boss intro
 			if (!boss->isActive())
 			{
-				int rows = 5;
+				int rows = (waveManager->getWave() >= 11) ? 6 : 5;
 				int cols = 11;
 				int spacingX = 13;
 				int spacingY = 13;
@@ -343,6 +343,8 @@ void Game::update()
 
 			if (moveInterval > 100)
 				moveInterval -= 60;
+
+			std::cout << "DROP\n";
 
 			lastMoveTime = currentTime;
 			return;
@@ -704,7 +706,6 @@ void Game::update()
 			boss->activate();
 			ufo->deactivate();
 			enemies.clear();
-
 			waveManager->startWaveIntro(waveIntroType::BOSS);
 		}
 		else
@@ -720,7 +721,7 @@ void Game::update()
 	// New Wave
 	if (waveManager->getWaveIntro() && !boss->isActive())
 	{
-		int rows = 5;
+		int rows = (waveManager->getWave() >= 11) ? 6 : 5;
 		int cols = 11;
 		int spacingX = 13;
 		int spacingY = 13;
@@ -743,7 +744,6 @@ void Game::update()
 			}),
 		enemyBullets.end()
 	);
-
 
 	// Enemies cleanup
 	enemies.erase(
@@ -781,7 +781,6 @@ void Game::update()
 			}),
 		pendingTripmines.end()
 	);
-
 
 	player->update(deltaTime);
 	for (auto& enemy : enemies) { enemy->update(deltaTime); }
@@ -851,8 +850,6 @@ void Game::render()
 
 		if (boss->isActive()) boss->render(renderer);
 
-		if (ufo->isActive() || ufo->UFOIsDying()) ufo->render();
-
 		for (auto& b : enemyBullets)
 		{
 			if (b->isActive()) b->render();
@@ -864,6 +861,8 @@ void Game::render()
 			if (b->isActive()) b->render(renderer);
 		}
 	}
+
+	if (ufo->isActive() || ufo->UFOIsDying()) ufo->render();
 
 	SDL_RenderSetClipRect(renderer, nullptr);
 

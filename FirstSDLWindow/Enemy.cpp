@@ -19,12 +19,25 @@ std::vector<std::unique_ptr<Enemy>> Enemy::createFormation(SDL_Renderer* rendere
 	for (int row = 0; row < rows; ++row)
 	{
 		EnemyType type;
-		if (row == 0)
-			type = EnemyType::SQUID;
-		else if (row == 1 || row == 2)
-			type = EnemyType::CRAB;
-		else
-			type = EnemyType::OCTOPUS;
+
+		if (rows == 6)
+		{
+			if (row == 0 || row == 1)
+				type = EnemyType::SQUID;
+			else if (row == 2 || row == 3)
+				type = EnemyType::CRAB;
+			else
+				type = EnemyType::OCTOPUS;
+		}
+		else 
+		{
+			if (row == 0)
+				type = EnemyType::SQUID;
+			else if (row == 1 || row == 2)
+				type = EnemyType::CRAB;
+			else
+				type = EnemyType::OCTOPUS;
+		}
 
 		for (int col = 0; col < cols; ++col)
 		{

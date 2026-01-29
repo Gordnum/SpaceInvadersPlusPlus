@@ -26,7 +26,7 @@ void WaveManager::startWaveIntro(waveIntroType type)
 	introType = type;
 
     if (type == waveIntroType::BOSS)
-        waveIntroDuration = bossWaveIntroDuration;   // 4200
+        waveIntroDuration = bossWaveIntroDuration;
 }
 
 waveIntroType WaveManager::getIntroType() const
@@ -55,7 +55,7 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 	int baseW = textSurface->w;
 	int baseH = textSurface->h;
 
-	// Calculate pulse scale (between 0.9 and 1.2)
+	// pulse scale (between 0.9 and 1.2)
 	float time = SDL_GetTicks() / 100.0f; // make it slower
 	float scale = 1.0f + 0.1f * sin(time); // adjust amplitude
 
@@ -95,8 +95,8 @@ void WaveManager::renderBossIntro(SDL_Renderer* renderer)
         SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
         SDL_SetTextureAlphaMod(tex, alpha);
 
-        float scale = 0.75f; //to change font size
-
+        float scale = 0.75f; //change font size
+       
         int w = static_cast<int>(s->w * scale);
         int h = static_cast<int>(s->h * scale);
 
@@ -122,7 +122,7 @@ void WaveManager::nextWave()
 {
     currentWave++;
     enemySpeedMultiplier += 2.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 25.0f;  // Increase projectile speed
+    projectileSpeedMultiplier += 25.0f;  // Increase enemy projectile speed
 }
 
 int WaveManager::getWave() const { return currentWave; }
