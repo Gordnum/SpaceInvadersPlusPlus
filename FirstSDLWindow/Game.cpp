@@ -173,8 +173,33 @@ void Game::update()
 		fpsTimer = currentTicks;
 	}
 
+	bool inWaveIntro = waveManager->getWaveIntro();
+
+	if (inWaveIntro)
+	{
+		// Still allow the intro timer to move
+		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >=
+			waveManager->getWaveIntroDuration())
+		{
+			waveManager->setShowingWaveIntro(false);
+
+			// Spawn enemies if not in boss intro
+			if (!boss->isActive())
+			{
+				int rows = 5;
+				int cols = 11;
+				int spacingX = 13;
+				int spacingY = 13;
+
+				enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+				comboManager->reset();
+				bullet->deactivate();
+			}
+		}
+	}
+
 	// Boss update + bullet hit boss
-	if (boss->isActive())
+	if (boss->isActive() && !waveManager->getWaveIntro())
 	{
 		boss->update(deltaTime, renderer, bossBullets);
 
@@ -237,7 +262,7 @@ void Game::update()
 	}
 
 	// Boss spawn enemy
-	if (boss->isActive() && boss->shouldSpawnEnemies())
+	if (boss->isActive() && !waveManager->getWaveIntro() && boss->shouldSpawnEnemies())
 	{
 		EnemyType type;
 		int typeRoll = rand() % 3;
@@ -679,6 +704,8 @@ void Game::update()
 			boss->activate();
 			ufo->deactivate();
 			enemies.clear();
+
+			waveManager->startWaveIntro(waveIntroType::BOSS);
 		}
 		else
 		{
@@ -769,6 +796,8 @@ void Game::update()
 // ADD
 void Game::render()
 {
+	bool inWaveIntro = waveManager->getWaveIntro();
+
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
@@ -811,9 +840,30 @@ void Game::render()
 		return;
 	}
 	bullet->render();
-	if(ufo->isActive() || ufo->UFOIsDying()) ufo->render();
-	if (boss->isActive()) { boss->render(renderer); }
 	bulletManager->render();
+	if (!inWaveIntro)
+	{
+		for (auto& enemy : enemies)
+		{
+			if (enemy->isAlive() || enemy->enemyIsDying())
+				enemy->render();
+		}
+
+		if (boss->isActive()) boss->render(renderer);
+
+		if (ufo->isActive() || ufo->UFOIsDying()) ufo->render();
+
+		for (auto& b : enemyBullets)
+		{
+			if (b->isActive()) b->render();
+		}
+
+
+		for (auto& b : bossBullets)
+		{
+			if (b->isActive()) b->render(renderer);
+		}
+	}
 
 	SDL_RenderSetClipRect(renderer, nullptr);
 

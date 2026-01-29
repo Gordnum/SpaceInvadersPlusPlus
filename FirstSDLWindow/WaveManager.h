@@ -3,6 +3,12 @@
 #include <SDL_ttf.h>
 #include <string>
 
+enum class waveIntroType
+{
+	NORMAL,
+	BOSS
+};
+
 class WaveManager
 {
 	private:
@@ -11,14 +17,17 @@ class WaveManager
 		float projectileSpeedMultiplier;
 		bool showingWaveIntro;
 		unsigned int waveIntroStartTime;
-		const unsigned waveIntroDuration;
+		unsigned waveIntroDuration;
+		const unsigned bossWaveIntroDuration;
 		TTF_Font* font;
+		waveIntroType introType;
 
 	public:
 		WaveManager();
 		~WaveManager();
 
-		void startWaveIntro();
+		void startWaveIntro(waveIntroType type = waveIntroType::NORMAL);
+		waveIntroType getIntroType() const;
 		bool getWaveIntro() const;
 		unsigned int getWaveIntroStartTime() const;
 		const unsigned int getWaveIntroDuration() const;
@@ -27,6 +36,9 @@ class WaveManager
 		void nextWave();
 		int getWave() const;
 
+
 		float getEnemySpeed() const;
 		float getProjectileSpeed() const;
+
+		void renderBossIntro(SDL_Renderer* renderer);
 };

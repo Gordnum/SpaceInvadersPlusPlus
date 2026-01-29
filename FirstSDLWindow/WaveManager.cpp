@@ -6,7 +6,8 @@ const int SCREEN_HEIGHT = 600;
 
 WaveManager::WaveManager()
 			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(300.0f), 
-             showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000)
+             showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000), bossWaveIntroDuration(4200),
+             introType(waveIntroType::NORMAL)
 {
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
     if (!font)
@@ -18,16 +19,32 @@ WaveManager::~WaveManager()
     if(font) TTF_CloseFont(font);
 }
 
-void WaveManager::startWaveIntro()
+void WaveManager::startWaveIntro(waveIntroType type)
 {
     showingWaveIntro = true;
     waveIntroStartTime = SDL_GetTicks();
+	introType = type;
+
+    if (type == waveIntroType::BOSS)
+        waveIntroDuration = bossWaveIntroDuration;   // 4200
+}
+
+waveIntroType WaveManager::getIntroType() const
+{
+	return introType;
 }
 
 void WaveManager::setShowingWaveIntro(bool state) { showingWaveIntro = state; }
 
 void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 {
+
+	if (introType == waveIntroType::BOSS)
+	{
+		renderBossIntro(renderer);
+		return;
+	}
+
 	SDL_Color color = { 255, 255, 255 };
 
 	std::string introText = "WAVE " + std::to_string(getWave());
@@ -56,6 +73,49 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 
 	SDL_FreeSurface(textSurface);
 	SDL_DestroyTexture(textTexture);
+}
+
+void WaveManager::renderBossIntro(SDL_Renderer* renderer)
+{
+    SDL_Color red = { 255, 60, 60 };
+
+    const char* text1 = "WARNING!";
+    const char* text2 = "AN OMINOUS PRESENCE APPROACHING";
+
+    float t = (SDL_GetTicks() - waveIntroStartTime) / 250.0f; //change the pulse speed
+    float pulse01 = pow((sin(t) + 1.0f) * 0.5f, 2.0f);
+
+    Uint8 alpha = static_cast<Uint8>(pulse01 * 255);
+
+    auto renderText = [&](const char* txt, int y)
+    {
+        SDL_Surface* s = TTF_RenderText_Solid(font, txt, red);
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, s);
+
+        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(tex, alpha);
+
+        float scale = 0.75f; //to change font size
+
+        int w = static_cast<int>(s->w * scale);
+        int h = static_cast<int>(s->h * scale);
+
+        SDL_Rect r =
+        {
+            SCREEN_WIDTH / 2 - w / 2,
+            y,
+            w,
+            h
+        };
+
+        SDL_RenderCopy(renderer, tex, nullptr, &r);
+
+        SDL_FreeSurface(s);
+        SDL_DestroyTexture(tex);
+    };
+
+    renderText(text1, SCREEN_HEIGHT / 2 - 80);
+    renderText(text2, SCREEN_HEIGHT / 2);
 }
 
 void WaveManager::nextWave() 
