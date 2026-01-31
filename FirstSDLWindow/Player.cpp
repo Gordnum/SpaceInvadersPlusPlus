@@ -5,11 +5,11 @@
 // note kalo dia function yang ngereturn sesuatu, valuenya gabisa diubah. Tapi kalo functionnya void, valuenya bisa diubah.
 
 Player::Player(SDL_Renderer* renderer)
-       :renderer(renderer), font(nullptr), speed(300.0f), movingLeft(false), movingRight(false), 
-        playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
+    :renderer(renderer), font(nullptr), speed(300.0f), movingLeft(false), movingRight(false),
+    playerLives(3), currentTexture(weaponTextures[WeaponType::DEFAULT])
 {
-    rect = { 400, 475, 55, 28 };
-    
+    rect = { 375, 475, 55, 28 };
+
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
     if (!font)
         SDL_Log("Failed to load font: %s", TTF_GetError());
@@ -30,32 +30,32 @@ Player::~Player()
 
 void Player::handleEvent(const SDL_Event& e)
 {
-    if(e.type == SDL_KEYDOWN && e.key.repeat == 0)
+    if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
     {
-        switch(e.key.keysym.sym)
+        switch (e.key.keysym.sym)
         {
-            case SDLK_LEFT:
-            case SDLK_a:
-                movingLeft = true;
-                break;
-            case SDLK_RIGHT: 
-            case SDLK_d:
-                movingRight = true; 
-                break;
+        case SDLK_LEFT:
+        case SDLK_a:
+            movingLeft = true;
+            break;
+        case SDLK_RIGHT:
+        case SDLK_d:
+            movingRight = true;
+            break;
         }
     }
-    else if (e.type == SDL_KEYUP && e.key.repeat == 0) 
+    else if (e.type == SDL_KEYUP && e.key.repeat == 0)
     {
-        switch (e.key.keysym.sym) 
+        switch (e.key.keysym.sym)
         {
-            case SDLK_LEFT:
-            case SDLK_a:
-                movingLeft = false;
-                break;
-            case SDLK_RIGHT:
-            case SDLK_d:
-                movingRight = false;
-                break;
+        case SDLK_LEFT:
+        case SDLK_a:
+            movingLeft = false;
+            break;
+        case SDLK_RIGHT:
+        case SDLK_d:
+            movingRight = false;
+            break;
         }
     }
 }
@@ -98,7 +98,7 @@ void Player::render()
     }
 
     std::string labelText = "<LIVES>";
-    SDL_Surface* labelSurface = TTF_RenderText_Solid(font, labelText.c_str(), {255, 255, 255});
+    SDL_Surface* labelSurface = TTF_RenderText_Solid(font, labelText.c_str(), { 255, 255, 255 });
     SDL_Texture* labelTexture = SDL_CreateTextureFromSurface(renderer, labelSurface);
 
     SDL_Rect labelRect = { 600, 20, labelSurface->w, labelSurface->h };  // top label
@@ -109,7 +109,7 @@ void Player::render()
     SDL_Texture* livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurface);
 
     // Align number centered below label
-    SDL_Rect numberRect = 
+    SDL_Rect numberRect =
     {
         labelRect.x + (labelRect.w - livesSurface->w) / 2, // center X
         labelRect.y + labelRect.h, // below the label
@@ -126,7 +126,7 @@ void Player::render()
 }
 
 void Player::update(float deltaTime)
-{    
+{
     if (isInvincible)
     {
         unsigned int now = SDL_GetTicks();
@@ -151,7 +151,7 @@ void Player::update(float deltaTime)
     if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
 }
 
-void Player::loseLives() 
+void Player::loseLives()
 {
     if (isInvincible || playerLives <= 0) return;
 
@@ -164,6 +164,15 @@ void Player::loseLives()
     lastBlinkTime = invincibleStartTime;
     visible = false;
 }
+
+void Player::reset() 
+{
+    playerLives = 3;
+    movingLeft = false;
+    movingRight = false;
+    rect.x = 375;
+}
+
 void Player::plusLives() { if (playerLives > 0) playerLives++; }
 int Player::getX() const { return rect.x + rect.w / 2; }
 int Player::getY() const { return rect.y; }

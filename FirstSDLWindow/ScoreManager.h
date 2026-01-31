@@ -43,4 +43,5 @@ public:
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);
 
+	void reset();
 };

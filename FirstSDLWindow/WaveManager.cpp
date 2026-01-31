@@ -125,6 +125,13 @@ void WaveManager::nextWave()
     projectileSpeedMultiplier += 25.0f;  // Increase enemy projectile speed
 }
 
+void WaveManager::reset() 
+{
+    currentWave = 1;
+    enemySpeedMultiplier = 10.0f;
+    projectileSpeedMultiplier = 300.0f;
+}
+
 int WaveManager::getWave() const { return currentWave; }
 float WaveManager::getEnemySpeed() const { return enemySpeedMultiplier; }
 float WaveManager::getProjectileSpeed() const { return projectileSpeedMultiplier;  }

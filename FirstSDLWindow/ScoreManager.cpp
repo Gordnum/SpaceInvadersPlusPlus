@@ -78,6 +78,11 @@ void ScoreManager::loadHighScore(const std::string& filename)
 	}
 }
 
+void ScoreManager::reset() 
+{
+	score = 0;
+}
+
 SDL_Texture* ScoreManager::renderText(SDL_Renderer* renderer, const std::string& text, SDL_Rect& outRect, int y, bool centerX, int fixedX)
 {
 	if (!font)

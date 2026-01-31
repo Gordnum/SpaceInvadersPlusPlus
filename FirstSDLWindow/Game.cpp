@@ -12,15 +12,16 @@ constexpr int BORDER_THICKNESS = 4;
 constexpr int PLAYFIELD_TOP_Y = PLAYFIELD_UPPER_MARGIN + BORDER_THICKNESS;
 constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 
-Game::Game() 
-	 :window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
-	  scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
-	  bulletManager(nullptr), isGameOver(false), gameOverStartTime(0){}
+Game::Game()
+	:window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
+	scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
+	bulletManager(nullptr), isGameOver(false), gameOverStartTime(0) {
+}
 
 
-Game::~Game() {clean();}
+Game::~Game() { clean(); }
 
-float Game::calculateDeltaTime() 
+float Game::calculateDeltaTime()
 {
 	unsigned int currentTicks = SDL_GetTicks();
 	float dt = (currentTicks - lastTicks) / 1000.0f;
@@ -33,14 +34,14 @@ float Game::calculateDeltaTime()
 bool Game::init()
 {
 	srand(static_cast<unsigned int>(time(nullptr)));
-	
+
 	if (SDL_INIT_EVERYTHING < 0)
 	{
 		std::cerr << "SDL init failed";
 		return false;
 	}
 
-	if (TTF_Init() < 0) 
+	if (TTF_Init() < 0)
 	{
 		std::cerr << "TTF could not initialize! " << TTF_GetError() << "\n";
 		return false;
@@ -76,14 +77,14 @@ bool Game::init()
 	return true;
 }
 
-static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) 
+static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b)
 {
 	return SDL_HasIntersection(&a, &b);
 }
 
-void Game::handleEvents() 
+void Game::handleEvents()
 {
-	if(menuManager->isInMainMenu())
+	if (menuManager->isInMainMenu())
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -94,16 +95,16 @@ void Game::handleEvents()
 
 			menuManager->handleEvent(event, startCampaign, startEndless, quitGame);
 
-			if(quitGame || event.type == SDL_QUIT)
+			if (quitGame || event.type == SDL_QUIT)
 				isRunning = false;
-			else if(startCampaign)
+			else if (startCampaign)
 			{
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
 				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
 			}
-			else if(startEndless)
+			else if (startEndless)
 			{
 				currentMode = GameMode::ENDLESS;
 				menuManager->setInMainMenu(false);
@@ -161,7 +162,39 @@ void Game::handleEvents()
 // ADD
 void Game::update()
 {
-	if (isGameOver) return;
+	if (isGameOver)
+	{
+		unsigned int now = SDL_GetTicks();
+
+		if (now - gameOverStartTime >= 5000)
+		{
+			enemies.clear();
+			enemyBullets.clear();
+			bossBullets.clear();
+			pickups.clear();
+			bulletManager->clear();
+
+			boss->deactivate();
+			ufo->deactivate();
+
+			waveManager->reset();
+			comboManager->reset();
+			weaponInventory->reset();
+			scoreManager->reset();
+			player->reset();
+
+			highScoreSaved = false;
+			isGameOver = false;
+
+			menuManager->setInMainMenu(true);
+			moveInterval = 700;
+			if (enemyDirection == -1) enemyDirection = 1;
+
+			return;
+		}
+
+		return;
+	}
 
 	// FPS Counter
 	frameCount++;
@@ -230,16 +263,16 @@ void Game::update()
 				// You can modify damage based on weapon type
 				switch (b->getCurrentWeapon())
 				{
-					case WeaponType::DEFAULT:
-					case WeaponType::RAPID_SHOT:
-						damage = 10;
-						break;
-					case WeaponType::PIERCING_SHOT:
-						damage = 20;
-						break;
-					case WeaponType::BOMB_SHOT:
-						damage = 30;
-						break;
+				case WeaponType::DEFAULT:
+				case WeaponType::RAPID_SHOT:
+					damage = 10;
+					break;
+				case WeaponType::PIERCING_SHOT:
+					damage = 20;
+					break;
+				case WeaponType::BOMB_SHOT:
+					damage = 30;
+					break;
 				}
 
 				boss->takeDamage(damage);
@@ -268,9 +301,9 @@ void Game::update()
 		int typeRoll = rand() % 3;
 		switch (typeRoll)
 		{
-			case 0: type = EnemyType::CRAB; break;
-			case 1: type = EnemyType::OCTOPUS; break;
-			case 2: type = EnemyType::SQUID; break;
+		case 0: type = EnemyType::CRAB; break;
+		case 1: type = EnemyType::OCTOPUS; break;
+		case 2: type = EnemyType::SQUID; break;
 		}
 
 		int enemyAmount = 2 + rand() % 3; // 2 to 4 enemies
@@ -357,7 +390,7 @@ void Game::update()
 				enemy->move(static_cast<int>(enemyDirection * waveManager->getEnemySpeed()), 0);
 				enemy->advanceAnimation();
 			}
-			else if(enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED)
+			else if (enemy->isAlive() && enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED)
 			{
 				enemy->move(enemy->getEnemyBossSpeed(), 0);
 				enemy->advanceAnimation();
@@ -368,11 +401,11 @@ void Game::update()
 
 	// Enemy shoot
 	unsigned int currentEnemyShotTime = SDL_GetTicks();
-	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown) 
+	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown)
 	{
 		std::vector<Enemy*> shooters;
 
-		for (const auto& e : enemies) 
+		for (const auto& e : enemies)
 		{
 			if (!e->isAlive()) continue;
 
@@ -382,7 +415,7 @@ void Game::update()
 			}
 		}
 
-		if (!shooters.empty()) 
+		if (!shooters.empty())
 		{
 			Enemy* shooter = shooters[rand() % shooters.size()];
 
@@ -398,7 +431,7 @@ void Game::update()
 	}
 
 	// bullet hit enemy
-	for(auto& b: bulletManager->getBullets())
+	for (auto& b : bulletManager->getBullets())
 	{
 		int baseScore = 10;
 
@@ -408,9 +441,9 @@ void Game::update()
 
 			switch (enemy->getType())
 			{
-				case EnemyType::SQUID: baseScore = 50; break;
-				case EnemyType::CRAB: baseScore = 30; break;
-				case EnemyType::OCTOPUS: baseScore = 10; break;
+			case EnemyType::SQUID: baseScore = 50; break;
+			case EnemyType::CRAB: baseScore = 30; break;
+			case EnemyType::OCTOPUS: baseScore = 10; break;
 			}
 
 			if (b->isActive() && enemy->isAlive() &&
@@ -424,7 +457,7 @@ void Game::update()
 					comboManager->onEnemyKilled();
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
-				else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
+				else if (b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 				{
 					enemy->destroy();
 
@@ -454,7 +487,7 @@ void Game::update()
 					SoundManager::playSound(SoundID::BOMB_EXPLODE);
 					b->deactivate();
 				}
-				else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
+				else if (b->getCurrentWeapon() == WeaponType::TRIPMINE)
 				{
 					pendingTripmines.push_back(
 						{
@@ -468,7 +501,7 @@ void Game::update()
 					b->deactivate(); // remove tripmine bullet after explosion
 					SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
 				}
-				else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
+				else if (b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 				{
 					b->deactivate();
 					enemy->destroy();
@@ -575,9 +608,9 @@ void Game::update()
 	}
 
 	// if enemy gets too close
-	for (auto& enemy : enemies) 
+	for (auto& enemy : enemies)
 	{
-		if (enemy->isAlive() && (enemy->getRect().y + enemy->getRect().h >= player->getRect().y)) 
+		if (enemy->isAlive() && (enemy->getRect().y + enemy->getRect().h >= player->getRect().y))
 		{
 			isGameOver = true;
 			gameOverStartTime = SDL_GetTicks();
@@ -586,7 +619,7 @@ void Game::update()
 	}
 
 	// update bullet enemy
-	for (auto& bullet : enemyBullets) 
+	for (auto& bullet : enemyBullets)
 	{
 		if (bullet->isActive()) bullet->update(deltaTime);
 	}
@@ -608,19 +641,19 @@ void Game::update()
 				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
-			else if(b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
+			else if (b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 			{
 				b->deactivate();
 				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
-			else if(b->getCurrentWeapon() == WeaponType::TRIPMINE)
+			else if (b->getCurrentWeapon() == WeaponType::TRIPMINE)
 			{
 				b->deactivate();
 				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
-			else if(b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
+			else if (b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 			{
 				b->deactivate();
 				ufo->startDeathAnimation();
@@ -645,13 +678,13 @@ void Game::update()
 	}
 
 	// UFO
-	if(!boss->isActive() && currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
+	if (!boss->isActive() && currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
 	{
-			if(!ufo->isActive())
-			{
-				ufo->activate();
-				lastUFOSpawnTime = currentTime;
-			}
+		if (!ufo->isActive())
+		{
+			ufo->activate();
+			lastUFOSpawnTime = currentTime;
+		}
 	}
 
 	// PICKUPS
@@ -677,7 +710,7 @@ void Game::update()
 	}
 
 	// NEW HIGHSCORE
-	if(isGameOver && !highScoreSaved)
+	if (isGameOver && !highScoreSaved)
 	{
 		scoreManager->saveHighScore("highscore.txt");
 		highScoreSaved = true;
@@ -685,7 +718,7 @@ void Game::update()
 
 	// Check enemy status
 	bool allEnemiesDead = true;
-	for (auto&e : enemies)
+	for (auto& e : enemies)
 	{
 		if (e->getOrigin() == EnemyOrigin::BOSS_SPAWNED) continue;
 
@@ -701,7 +734,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if(currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -748,7 +781,7 @@ void Game::update()
 	// Enemies cleanup
 	enemies.erase(
 		std::remove_if(enemies.begin(), enemies.end(),
-			[](const std::unique_ptr<Enemy>& e) 
+			[](const std::unique_ptr<Enemy>& e)
 			{
 				return e->enemyIsDying() && e->enemyIsFinishedDeathAnimation();
 			}),
@@ -882,7 +915,7 @@ void Game::render()
 	//render TRIPMINE exploding line
 	unsigned int renderExplodingNow = SDL_GetTicks();
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // tripmine green
-	
+
 	for (const auto& explosion : pendingTripmines)
 	{
 		if (!explosion.exploded) continue;
@@ -954,7 +987,7 @@ void Game::render()
 	{
 		unsigned int gameOverScreen = SDL_GetTicks();
 
-		if(gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
+		if (gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
 		{
 			SDL_Color color = { 255, 255, 255 };
 			TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
@@ -989,7 +1022,7 @@ void Game::render()
 			SDL_RenderPresent(renderer);
 			return;
 		}
-		
+
 	}
 
 	SDL_RenderPresent(renderer);
@@ -1016,7 +1049,7 @@ void Game::run()
 	}
 }
 
-void Game::clean() 
+void Game::clean()
 {
 	SoundManager::clean();
 	enemies.clear();

@@ -35,7 +35,7 @@ class WaveManager
 		void showWaveIntro(SDL_Renderer* renderer);
 		void nextWave();
 		int getWave() const;
-
+		void reset();
 
 		float getEnemySpeed() const;
 		float getProjectileSpeed() const;

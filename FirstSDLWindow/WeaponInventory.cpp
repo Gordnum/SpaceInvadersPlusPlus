@@ -283,6 +283,24 @@ void WeaponInventory::update(float deltaTime)
 	}
 }
 
+void WeaponInventory::reset() 
+{
+	ownedWeapons.clear();
+	ammoMap.clear();
+
+	ownedWeapons.push_back(WeaponType::DEFAULT);
+	ammoMap[WeaponType::DEFAULT] = 0;
+
+	currentIndex = 0;
+
+	isAnimating = false;
+	animationOffset = 0.0f;
+	animationDirection = 0;
+
+	deltaTime = 0.0f;
+	lastWeaponSwitchSoundTime = 0;
+}
+
 WeaponType WeaponInventory::getCurrentWeapon() const 
 { 
 	try 
