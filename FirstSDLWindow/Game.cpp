@@ -102,12 +102,14 @@ void Game::handleEvents()
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
+				lastUFOSpawnTime = SDL_GetTicks();
 				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
 			}
 			else if (startEndless)
 			{
 				currentMode = GameMode::ENDLESS;
 				menuManager->setInMainMenu(false);
+				lastUFOSpawnTime = SDL_GetTicks();
 				waveManager->startWaveIntro();
 			}
 			return;
@@ -162,6 +164,20 @@ void Game::handleEvents()
 // ADD
 void Game::update()
 {
+	if (menuManager->isInMainMenu())
+	{
+		if (ufo->isActive())
+		{
+			ufo->reset();
+			ufo->deactivate();
+			lastUFOSpawnTime = SDL_GetTicks();
+		}
+
+		if (boss->isActive()) boss->deactivate();
+
+		return;
+	}
+
 	if (isGameOver)
 	{
 		unsigned int now = SDL_GetTicks();
@@ -176,6 +192,7 @@ void Game::update()
 
 			boss->deactivate();
 			ufo->deactivate();
+			lastUFOSpawnTime = SDL_GetTicks();
 
 			waveManager->reset();
 			comboManager->reset();
@@ -211,8 +228,7 @@ void Game::update()
 	if (inWaveIntro)
 	{
 		// Still allow the intro timer to move
-		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >=
-			waveManager->getWaveIntroDuration())
+		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
 			waveManager->setShowingWaveIntro(false);
 

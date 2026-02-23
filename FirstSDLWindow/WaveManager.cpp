@@ -25,8 +25,7 @@ void WaveManager::startWaveIntro(waveIntroType type)
     waveIntroStartTime = SDL_GetTicks();
 	introType = type;
 
-    if (type == waveIntroType::BOSS)
-        waveIntroDuration = bossWaveIntroDuration;
+    waveIntroDuration = (type == waveIntroType::BOSS) ? bossWaveIntroDuration : 2000;
 }
 
 waveIntroType WaveManager::getIntroType() const
