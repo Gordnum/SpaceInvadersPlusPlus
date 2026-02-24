@@ -13,6 +13,7 @@ private:
 	float playerBulletSpeed;
 	WeaponType currentWeapon;
 	int ammo;
+	int rowIndex = -1;
 
 public:
 	Bullet(SDL_Renderer* renderer);
@@ -29,4 +30,8 @@ public:
 
 	bool isActive() const;
 	void deactivate();
+
+	void setRowIndex(int row);
+	int getRowIndex() const;
+
 };

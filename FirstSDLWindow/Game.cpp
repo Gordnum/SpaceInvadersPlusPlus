@@ -189,6 +189,8 @@ void Game::update()
 			bossBullets.clear();
 			pickups.clear();
 			bulletManager->clear();
+			rowLastShotTime.clear();
+			rowHasActiveBullet.clear();
 
 			boss->deactivate();
 			ufo->deactivate();
@@ -416,34 +418,53 @@ void Game::update()
 	}
 
 	// Enemy shoot
-	unsigned int currentEnemyShotTime = SDL_GetTicks();
-	if (currentEnemyShotTime - lastEnemyShotTime >= enemyShootCooldown)
+	unsigned int now = SDL_GetTicks();
+
+	std::unordered_map<int, std::vector<Enemy*>> rowEnemies;
+
+	for (const auto& e : enemies)
 	{
-		std::vector<Enemy*> shooters;
+		if (!e->isAlive()) continue;
+		if (e->getType() != EnemyType::SQUID) continue;
 
-		for (const auto& e : enemies)
+		rowEnemies[e->getRowIndex()].push_back(e.get());
+	}
+
+	for (auto& pair : rowEnemies)
+	{
+		int row = pair.first;
+
+		if (rowLastShotTime.find(row) == rowLastShotTime.end())
 		{
-			if (!e->isAlive()) continue;
-
-			if (e->getType() == EnemyType::SQUID)
-			{
-				shooters.push_back(e.get());  // get raw pointer from unique_ptr
-			}
+			rowLastShotTime[row] = 0;
+			rowHasActiveBullet[row] = false;
 		}
 
-		if (!shooters.empty())
-		{
-			Enemy* shooter = shooters[rand() % shooters.size()];
+		if (rowHasActiveBullet[row])
+			continue;
 
-			auto b = std::make_unique<Bullet>(renderer);
-			SDL_Rect r = shooter->getRect();
-			b->fireFrom(r.x + r.w / 2, r.y + r.h, true);
-			b->setEnemyBulletSpeed(waveManager->getProjectileSpeed());
-			enemyBullets.push_back(std::move(b));
-			SoundManager::playSound(SoundID::ENEMY_SHOOT);
-		}
+		if (now - rowLastShotTime[row] < enemyShootCooldown)
+			continue;
 
-		lastEnemyShotTime = currentEnemyShotTime;
+		auto& shooters = pair.second;
+		if (shooters.empty())
+			continue;
+
+		Enemy* shooter = shooters[rand() % shooters.size()];
+
+		auto bullet = std::make_unique<Bullet>(renderer);
+
+		SDL_Rect r = shooter->getRect();
+		bullet->fireFrom(r.x + r.w / 2, r.y + r.h, true);
+		bullet->setEnemyBulletSpeed(waveManager->getProjectileSpeed());
+		bullet->setRowIndex(row);
+
+		enemyBullets.push_back(std::move(bullet));
+
+		rowLastShotTime[row] = now;
+		rowHasActiveBullet[row] = true;
+
+		SoundManager::playSound(SoundID::ENEMY_SHOOT);
 	}
 
 	// bullet hit enemy
@@ -750,7 +771,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2)
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20)
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -781,6 +802,16 @@ void Game::update()
 			enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
 			comboManager->reset();
 			bullet->deactivate();
+		}
+	}
+
+	//enemy bullets row cleanup
+	for (auto& b : enemyBullets)
+	{
+		if (!b->isActive())
+		{
+			int row = b->getRowIndex();
+			rowHasActiveBullet[row] = false;
 		}
 	}
 

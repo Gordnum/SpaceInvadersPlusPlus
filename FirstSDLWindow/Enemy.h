@@ -50,6 +50,7 @@ class Enemy
 		void move(int dx, int dy);
 		void advanceAnimation();
 		void setRowIndex(int row) { rowIndex = row; }
+		int getRowIndex() const { return rowIndex; };
 		bool isInTopRow() const { return rowIndex == 0; }
 		void setOrigin(EnemyOrigin o);
 		EnemyOrigin getOrigin() const;

@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cmath>
 #include <windows.h>
+#include <unordered_map>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
@@ -100,6 +101,9 @@ private:
     const unsigned int flashDuration = 1500;
 
     bool returningToMenu = false;
+
+    std::unordered_map<int, unsigned int> rowLastShotTime;
+    std::unordered_map<int, bool> rowHasActiveBullet;
 
 public:
     Game();

@@ -91,6 +91,16 @@ void Bullet::update(float deltaTime)
 		deactivate();
 }
 
+void Bullet::setRowIndex(int r)
+{
+	rowIndex = r;
+}
+
+int Bullet::getRowIndex() const
+{
+	return rowIndex;
+}
+
 void Bullet::render()
 {
 	if (!active) return;
