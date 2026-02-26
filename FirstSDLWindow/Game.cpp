@@ -499,7 +499,8 @@ void Game::update()
 							renderer,
 							"+" + std::to_string(earnedScore),
 							enemy->getX(),
-							enemy->getY()
+							enemy->getY(),
+							comboManager->getMultiplier()
 						)
 					);
 
@@ -536,7 +537,8 @@ void Game::update()
 										renderer,
 										"+" + std::to_string(earnedScore),
 										e2->getX(),
-										e2->getY()
+										e2->getY(),
+										comboManager->getMultiplier()
 									)
 								);
 
@@ -577,7 +579,8 @@ void Game::update()
 							renderer,
 							"+" + std::to_string(earnedScore),
 							enemy->getX(),
-							enemy->getY()
+							enemy->getY(),
+							comboManager->getMultiplier()
 						)
 					);
 
@@ -629,7 +632,8 @@ void Game::update()
 						renderer,
 						"+" + std::to_string(earnedScore),
 						enemy->getX(),
-						enemy->getY()
+						enemy->getY(),
+						comboManager->getMultiplier()
 					)
 				);
 
@@ -757,7 +761,8 @@ void Game::update()
 					renderer,
 					"+" + std::to_string(earnedScore),
 					ufo->getX(),
-					ufo->getY()
+					ufo->getY(),
+					comboManager->getMultiplier()
 				)
 			);
 
@@ -1165,8 +1170,8 @@ void Game::run()
 		frameStart = SDL_GetTicks();
 
 		handleEvents();
-		render();
 		update();
+		render();
 		frameTime = SDL_GetTicks() - frameStart;
 		if (FRAME_DELAY > frameTime)
 		{

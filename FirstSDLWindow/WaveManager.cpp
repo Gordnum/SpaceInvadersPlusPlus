@@ -120,8 +120,8 @@ void WaveManager::renderBossIntro(SDL_Renderer* renderer)
 void WaveManager::nextWave() 
 {
     currentWave++;
-    enemySpeedMultiplier += 1.0f;        // Increase enemy movement speed
-    projectileSpeedMultiplier += 15.0f;  // Increase enemy projectile speed
+    enemySpeedMultiplier += 0.5f;        // Increase enemy movement speed
+    projectileSpeedMultiplier += 10.0f;  // Increase enemy projectile speed
 }
 
 void WaveManager::reset() 

@@ -13,7 +13,7 @@ class ScorePopup
 		const float speedY = 40.0f;
 
 	public:
-		ScorePopup(SDL_Renderer* renderer, const std::string& text, int x, int y);
+		ScorePopup(SDL_Renderer* renderer, const std::string& text, int x, int y, float multiplier);
 		~ScorePopup();
 		void update(float dt);
 		void render(SDL_Renderer* renderer);
