@@ -3,7 +3,7 @@
 ScorePopup::ScorePopup(SDL_Renderer* renderer, const std::string& text, int x, int y)
 		   : texture(nullptr), lifetime(0.0f)
 {
-	TTF_Font* font = TTF_OpenFont(".. / Assets / Fonts / space_invaders.ttf", 20);
+	TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 18);
 	SDL_Color color = { 255, 255, 255, 255 }; //white
 
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);

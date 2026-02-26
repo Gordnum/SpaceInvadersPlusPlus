@@ -66,5 +66,8 @@ class Enemy
 		bool enemyIsDying() const { return dying; }
 		bool enemyIsFinishedDeathAnimation() const { return finishedDeathAnimation; }
 
+		int getX() const;
+		int getY() const;
+
 		static std::vector<std::unique_ptr<Enemy>> createFormation(SDL_Renderer* renderer, int rows, int cols, int spacingX, int spacingY);
 };

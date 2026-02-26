@@ -212,3 +212,5 @@ void Enemy::advanceAnimation()
 bool Enemy::isAlive() const { return alive; }
 EnemyType Enemy::getType() const { return enemyType; }
 EnemyOrigin Enemy::getOrigin() const { return origin; }
+int Enemy::getX() const { return rect.x + rect.w / 2; };
+int Enemy::getY() const { return rect.y; };

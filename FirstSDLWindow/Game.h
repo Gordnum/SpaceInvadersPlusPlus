@@ -19,6 +19,7 @@
 #include "WaveManager.h"
 #include "MenuManager.h"
 #include "SoundManager.h"
+#include "ScorePopup.h"   
 #include "WeaponType.h"
 #include "WeaponInventory.h"
 #include "Pickup.h"
@@ -58,6 +59,7 @@ private:
     std::vector<std::unique_ptr<Pickup>> pickups;
     std::vector<std::unique_ptr<Bullet>> enemyBullets;
     std::vector<std::unique_ptr<BossBullet>> bossBullets;
+    std::vector<std::unique_ptr<ScorePopup>> scorePopup;
 
     int enemyDirection = 1;
     unsigned int lastMoveTime = 0;

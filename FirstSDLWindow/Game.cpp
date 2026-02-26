@@ -491,6 +491,18 @@ void Game::update()
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->awardScore(earnedScore, *player);
+
+					scorePopup.push_back
+					(
+						std::make_unique<ScorePopup>
+						(
+							renderer,
+							"+" + std::to_string(earnedScore),
+							enemy->getX(),
+							enemy->getY()
+						)
+					);
+
 					comboManager->onEnemyKilled();
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
@@ -516,6 +528,18 @@ void Game::update()
 								e2->destroy();
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 								scoreManager->awardScore(earnedScore, *player);
+
+								scorePopup.push_back
+								(
+									std::make_unique<ScorePopup>
+									(
+										renderer,
+										"+" + std::to_string(earnedScore),
+										e2->getX(),
+										e2->getY()
+									)
+								);
+
 								comboManager->onEnemyKilled();
 							}
 						}
@@ -528,7 +552,7 @@ void Game::update()
 				{
 					pendingTripmines.push_back(
 						{
-							enemy->getRect().y,          // rowY
+							enemy->getRect().y,           // rowY
 							SDL_GetTicks() + 700,         // trigger time
 							false,                        // exploded or not
 							0                             // renderUntil
@@ -545,6 +569,18 @@ void Game::update()
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 					scoreManager->awardScore(earnedScore, *player);
 					comboManager->onEnemyKilled();
+
+					scorePopup.push_back
+					(
+						std::make_unique<ScorePopup>
+						(
+							renderer,
+							"+" + std::to_string(earnedScore),
+							enemy->getX(),
+							enemy->getY()
+						)
+					);
+
 					SoundManager::playSound(SoundID::ENEMY_DEATH);
 				}
 
@@ -585,6 +621,18 @@ void Game::update()
 				int baseScore = 30;
 				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 				scoreManager->awardScore(earnedScore, *player);
+
+				scorePopup.push_back
+				(
+					std::make_unique<ScorePopup>
+					(
+						renderer,
+						"+" + std::to_string(earnedScore),
+						enemy->getX(),
+						enemy->getY()
+					)
+				);
+
 				comboManager->onEnemyKilled();
 
 				if (scoreManager->spawnPickup())
@@ -701,6 +749,17 @@ void Game::update()
 			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 			scoreManager->awardScore(earnedScore, *player);
 			comboManager->onEnemyKilled();
+
+			scorePopup.push_back
+			(
+				std::make_unique<ScorePopup>
+				(
+					renderer,
+					"+" + std::to_string(earnedScore),
+					ufo->getX(),
+					ufo->getY()
+				)
+			);
 
 			int index = rand() % weaponInventory->randomizeWeapon().size();
 			WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
@@ -862,6 +921,21 @@ void Game::update()
 		pendingTripmines.end()
 	);
 
+	// Score popup cleanup
+	for (auto& popup : scorePopup)
+	{
+		popup->update(deltaTime);
+	}
+	
+	scorePopup.erase(
+		std::remove_if(scorePopup.begin(), scorePopup.end(),
+			[](const std::unique_ptr<ScorePopup>& p)
+			{
+				return !p->isAlive();
+			}),
+		scorePopup.end()
+	);
+
 	player->update(deltaTime);
 	for (auto& enemy : enemies) { enemy->update(deltaTime); }
 	ufo->update(deltaTime);
@@ -950,6 +1024,11 @@ void Game::render()
 	scoreManager->render(renderer);
 	comboManager->render(renderer);
 	weaponInventory->renderWeaponHUD(renderer);
+
+	for (auto& popup : scorePopup)
+	{
+		popup->render(renderer);
+	}
 
 	for (auto& enemy : enemies) { if (enemy->isAlive() || enemy->enemyIsDying()) enemy->render(); }
 	for (auto& pickup : pickups) { pickup->render(); }
