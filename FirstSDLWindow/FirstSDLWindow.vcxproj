@@ -146,6 +146,7 @@
     <ClCompile Include="Pickup.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="ScorePopup.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="UFO.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -164,6 +165,7 @@
     <ClInclude Include="Pickup.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="ScorePopup.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="UFO.h" />
     <ClInclude Include="WaveManager.h" />

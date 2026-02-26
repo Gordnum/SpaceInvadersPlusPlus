@@ -135,7 +135,7 @@ void UFO::activate()
 	hoverChannel = SoundManager::playLoop(SoundID::UFO_HOVER);
 }
 
-void UFO::deactivate() 
+void UFO::deactivate()
 { 
 	active = false;
 	SoundManager::stopChannel(hoverChannel);
