@@ -25,7 +25,8 @@ enum class SoundID
     BOSS_TAKE_DAMAGE,
     PICKUP_COLLECT,
     BOMB_EXPLODE,
-    UFO_HOVER
+    UFO_HOVER,
+    UFO_DEATH
 };
 
 inline SoundID weaponTypeToSoundID(WeaponType weapon) 

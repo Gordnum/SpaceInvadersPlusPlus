@@ -478,9 +478,9 @@ void Game::update()
 
 			switch (enemy->getType())
 			{
-			case EnemyType::SQUID: baseScore = 50; break;
-			case EnemyType::CRAB: baseScore = 30; break;
-			case EnemyType::OCTOPUS: baseScore = 10; break;
+				case EnemyType::SQUID: baseScore = 50; break;
+				case EnemyType::CRAB: baseScore = 30; break;
+				case EnemyType::OCTOPUS: baseScore = 10; break;
 			}
 
 			if (b->isActive() && enemy->isAlive() &&
@@ -554,10 +554,12 @@ void Game::update()
 				{
 					pendingTripmines.push_back(
 						{
-							enemy->getRect().y,           // rowY
-							SDL_GetTicks() + 700,         // trigger time
-							false,                        // exploded or not
-							0                             // renderUntil
+							enemy->getRect().y,				 // rowY
+							SDL_GetTicks() + 700,			 // trigger time
+							0,								 // renderUntil
+							false,							 // exploded or not
+							true,                            // hit boss or not
+							false,							 // hit ufo or not
 						}
 					);
 
@@ -612,16 +614,61 @@ void Game::update()
 		if (explosion.exploded) continue;
 		if (explodeNow < explosion.triggerTime) continue;
 
+		int baseScore = 10;
+
+		if (explosion.hitUFO && ufo->isActive())
+		{
+			ufo->startDeathAnimation();
+			ufo->deactivate();
+
+			int ufoScore = 200;
+			int ufoEarnedScore = static_cast<int>(ufoScore * comboManager->getMultiplier());
+			scoreManager->awardScore(ufoEarnedScore, *player);
+			comboManager->onEnemyKilled();
+
+			scorePopup.push_back(
+				std::make_unique<ScorePopup>(
+					renderer,
+					"+" + std::to_string(ufoEarnedScore),
+					ufo->getX(),
+					ufo->getY(),
+					comboManager->getMultiplier()
+				)
+			);
+
+			auto weapons = weaponInventory->randomizeWeapon();
+			if (!weapons.empty())
+			{
+				WeaponType randomWeapon = weapons[rand() % weapons.size()];
+				int randomX = 50 + rand() % (SCREEN_WIDTH - 100);
+
+				pickups.push_back(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon));
+
+				if (scoreManager->spawnPickup())
+					pickups.push_back(std::make_unique<Pickup>(renderer, randomX, PLAYFIELD_UPPER_MARGIN, randomWeapon));
+			}
+
+			if (scoreManager->giveLive())
+				player->plusLives();
+
+			SoundManager::playSound(SoundID::UFO_DEATH);
+		}
+
 		for (auto& enemy : enemies)
 		{
 			if (!enemy->isAlive()) continue;
+
+			switch (enemy->getType())
+			{
+				case EnemyType::SQUID: baseScore = 50; break;
+				case EnemyType::CRAB: baseScore = 30; break;
+				case EnemyType::OCTOPUS: baseScore = 10; break;
+			}
 
 			int enemyY = enemy->getRect().y;
 			if (std::abs(enemyY - explosion.rowY) < ROW_THRESHOLD)
 			{
 				enemy->destroy();
-
-				int baseScore = 30;
 				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
 				scoreManager->awardScore(earnedScore, *player);
 
@@ -738,9 +785,19 @@ void Game::update()
 			}
 			else if (b->getCurrentWeapon() == WeaponType::TRIPMINE)
 			{
-				b->deactivate();
-				ufo->startDeathAnimation();
-				ufo->deactivate();
+				pendingTripmines.push_back(
+					{
+						ufo->getRect().y,				 // rowY
+						SDL_GetTicks() + 700,			 // trigger time
+						0,								 // renderUntil
+						false,							 // exploded or not
+						true,							 // hit boss or not
+						true,							 // hit ufo or not
+					}
+				);
+
+				b->deactivate(); // remove tripmine bullet after explosion
+				SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
 			}
 			else if (b->getCurrentWeapon() == WeaponType::DEFAULT || b->getCurrentWeapon() == WeaponType::RAPID_SHOT)
 			{
@@ -749,32 +806,37 @@ void Game::update()
 				ufo->deactivate();
 			}
 
-			int baseScore = 200;
-			int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-			scoreManager->awardScore(earnedScore, *player);
-			comboManager->onEnemyKilled();
+			if (!ufo->isActive())
+			{
+				int baseScore = 200;
+				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
+				scoreManager->awardScore(earnedScore, *player);
+				comboManager->onEnemyKilled();
 
-			scorePopup.push_back
-			(
-				std::make_unique<ScorePopup>
+				scorePopup.push_back
 				(
-					renderer,
-					"+" + std::to_string(earnedScore),
-					ufo->getX(),
-					ufo->getY(),
-					comboManager->getMultiplier()
-				)
-			);
+					std::make_unique<ScorePopup>
+					(
+						renderer,
+						"+" + std::to_string(earnedScore),
+						ufo->getX(),
+						ufo->getY(),
+						comboManager->getMultiplier()
+					)
+				);
 
-			int index = rand() % weaponInventory->randomizeWeapon().size();
-			WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
+				int index = rand() % weaponInventory->randomizeWeapon().size();
+				WeaponType randomWeapon = weaponInventory->randomizeWeapon()[index];
 
-			int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
-			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon)));
-			if (scoreManager->spawnPickup())
-				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, PLAYFIELD_UPPER_MARGIN, randomWeapon)));
-			if (scoreManager->giveLive())
-				player->plusLives();
+				int randomX = 50 + (rand() % (SCREEN_WIDTH - 100)); // safe margin
+				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, ufo->getX(), ufo->getY(), randomWeapon)));
+				if (scoreManager->spawnPickup())
+					pickups.push_back(std::move(std::make_unique<Pickup>(renderer, randomX, PLAYFIELD_UPPER_MARGIN, randomWeapon)));
+				if (scoreManager->giveLive())
+					player->plusLives();
+
+				SoundManager::playSound(SoundID::UFO_DEATH);
+			}
 		}
 	}
 

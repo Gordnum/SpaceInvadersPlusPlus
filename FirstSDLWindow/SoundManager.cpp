@@ -58,6 +58,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
     loadSound(SoundID::ENEMY_SHOOT, "../Assets/SoundEffects/enemy_shoot.wav");
     loadSound(SoundID::UFO_HOVER, "../Assets/SoundEffects/ufo_hover.wav");
+    loadSound(SoundID::UFO_DEATH, "../Assets/SoundEffects/ufo_death.wav");
     loadSound(SoundID::CHANGE_TO_DEFAULT, "../Assets/SoundEffects/change_to_default.wav");
     loadSound(SoundID::CHANGE_TO_PIERCING, "../Assets/SoundEffects/change_to_piercing.wav");
     loadSound(SoundID::CHANGE_TO_BOMB, "../Assets/SoundEffects/change_to_bomb.wav");

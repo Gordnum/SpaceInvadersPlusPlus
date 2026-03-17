@@ -88,6 +88,7 @@ private:
         unsigned int renderUntil;
         bool exploded = false;
         bool hitBoss = false;
+        bool hitUFO = false;
     };
 
     std::vector<TripmineExplosion> pendingTripmines;
