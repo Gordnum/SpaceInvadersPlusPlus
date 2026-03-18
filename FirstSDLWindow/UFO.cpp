@@ -26,8 +26,8 @@ void UFO::LoadTextures(SDL_Renderer* renderer)
 
 	std::vector<std::string> deathPaths =
 	{
-		"../Assets/Textures/enemy_death_1.png",
-		"../Assets/Textures/enemy_death_2.png"
+		"../Assets/Textures/ufo_death_1.png",
+		"../Assets/Textures/ufo_death_2.png"
 	};
 
 	for (const std::string& path : deathPaths)
