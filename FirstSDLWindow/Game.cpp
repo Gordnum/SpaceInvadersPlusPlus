@@ -290,6 +290,7 @@ void Game::update()
 					break;
 				case WeaponType::BOMB_SHOT:
 					damage = 30;
+					SoundManager::playSound(SoundID::BOMB_EXPLODE);
 					break;
 				}
 
@@ -780,6 +781,7 @@ void Game::update()
 			else if (b->getCurrentWeapon() == WeaponType::BOMB_SHOT)
 			{
 				b->deactivate();
+				SoundManager::playSound(SoundID::BOMB_EXPLODE);
 				ufo->startDeathAnimation();
 				ufo->deactivate();
 			}
