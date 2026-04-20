@@ -13,7 +13,7 @@ class Boss
         SDL_Texture* texture;
         SDL_Rect rect;
         int health;
-        const int maxHealth = 100;
+        const int maxHealth = 200;
         float speed;
         int direction;
         bool active;

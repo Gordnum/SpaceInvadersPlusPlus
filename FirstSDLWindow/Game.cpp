@@ -15,7 +15,7 @@ constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 Game::Game()
 	:window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
-	bulletManager(nullptr), isGameOver(false), gameOverStartTime(0) {
+	bulletManager(nullptr), isGameOver(false){
 }
 
 
@@ -64,6 +64,7 @@ bool Game::init()
 	Enemy::LoadTextures(renderer);
 	player = std::make_unique<Player>(renderer);
 	player->loadWeaponTextures(renderer);
+	player->loadDeathTextures(renderer);
 	bullet = std::make_unique<Bullet>(renderer);
 	ufo = std::make_unique<UFO>(renderer);
 	boss = std::make_unique<Boss>(renderer);
@@ -99,6 +100,9 @@ void Game::handleEvents()
 				isRunning = false;
 			else if (startCampaign)
 			{
+				SDL_FlushEvent(SDL_KEYDOWN);
+				SDL_FlushEvent(SDL_KEYUP);
+
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
 				waveManager->startWaveIntro();
@@ -107,6 +111,10 @@ void Game::handleEvents()
 			}
 			else if (startEndless)
 			{
+				
+				SDL_FlushEvent(SDL_KEYDOWN);
+				SDL_FlushEvent(SDL_KEYUP);
+
 				currentMode = GameMode::ENDLESS;
 				menuManager->setInMainMenu(false);
 				lastUFOSpawnTime = SDL_GetTicks();
@@ -122,6 +130,9 @@ void Game::handleEvents()
 		if (event.type == SDL_QUIT)
 			isRunning = false;
 
+		if (isGameOver || player->isDying())
+			continue; // ignore all gameplay input
+
 		if (!waveManager->getWaveIntro())
 		{
 			if (event.type == SDL_KEYDOWN)
@@ -135,6 +146,8 @@ void Game::handleEvents()
 
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && !bullet->isActive())
 			{
+				SDL_Log("SHOOT\n");
+
 				WeaponType currentWeapon = weaponInventory->getCurrentWeapon();
 				int ammo = weaponInventory->getAmmo(currentWeapon);
 
@@ -179,6 +192,39 @@ void Game::update()
 	}
 
 	if (isGameOver)
+	{
+		unsigned int now = SDL_GetTicks();
+
+		switch (gameOverPhase)
+		{
+		case GameOverPhase::FREEZE:
+			if (now - gameOverStartTime > 300) //time before game over screen shows up
+			{
+				gameOverPhase = GameOverPhase::ANIMATING;
+				gameOverStartTime = now;
+				player->startDeathAnimation();
+			}
+			return;
+
+		case GameOverPhase::ANIMATING:
+			player->update(deltaTime);
+
+			if (player->isDeathAnimationFinished())
+			{
+				gameOverPhase = GameOverPhase::SHOW_TEXT;
+				gameOverStartTime = now;
+			}
+			return;
+
+		case GameOverPhase::SHOW_TEXT:
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	if (isGameOver && gameOverPhase == GameOverPhase::SHOW_TEXT)
 	{
 		unsigned int now = SDL_GetTicks();
 
@@ -307,6 +353,7 @@ void Game::update()
 
 					// Win logic / trigger end screen (prototype)
 					isGameOver = true;
+					gameOverPhase = GameOverPhase::FREEZE;
 					gameOverStartTime = SDL_GetTicks();
 				}
 			}
@@ -723,6 +770,7 @@ void Game::update()
 			if (player->getLives() <= 0)
 			{
 				isGameOver = true;
+				gameOverPhase = GameOverPhase::FREEZE;
 				gameOverStartTime = SDL_GetTicks();
 			}
 		}
@@ -739,6 +787,7 @@ void Game::update()
 			if (player->getLives() <= 0)
 			{
 				isGameOver = true;
+				gameOverPhase = GameOverPhase::FREEZE;
 				gameOverStartTime = SDL_GetTicks();
 			}
 		}
@@ -750,6 +799,7 @@ void Game::update()
 		if (enemy->isAlive() && (enemy->getRect().y + enemy->getRect().h >= player->getRect().y))
 		{
 			isGameOver = true;
+			gameOverPhase = GameOverPhase::FREEZE;
 			gameOverStartTime = SDL_GetTicks();
 			break; // Stop checking after one has triggered
 		}
@@ -899,7 +949,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20)
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2) //set boss spawn wave
 		{
 			boss->activate();
 			ufo->deactivate();

@@ -18,8 +18,8 @@ BulletManager::~BulletManager() { clear(); }
 
 bool BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
 {
-    auto bullet = std::make_unique<Bullet>(renderer);
-    WeaponInventory inventory;
+    //auto bullet = std::make_unique<Bullet>(renderer);
+    //WeaponInventory inventory;
 
     if (currentWeapon == WeaponType::DEFAULT)
     {
@@ -40,7 +40,7 @@ bool BulletManager::fire(int x, int y, WeaponType currentWeapon, int ammo)
     }
 
     bullets.push_back(std::make_unique<Bullet>(renderer));
-    bullet->fire(x, y, currentWeapon);
+    bullets.back()->fire(x, y, currentWeapon);
 
     return false;
 }
@@ -65,7 +65,10 @@ void BulletManager::render()
 
 void BulletManager::clear()
 {
-    bullets.clear();
+    for (auto& b : bullets)
+    {
+        b->deactivate();
+    }
 }
 
 std::vector<std::unique_ptr<Bullet>>& BulletManager::getBullets() { return bullets; }

@@ -1,7 +1,6 @@
 #include "Player.h"
 #include <string>
 
-
 // note kalo dia function yang ngereturn sesuatu, valuenya gabisa diubah. Tapi kalo functionnya void, valuenya bisa diubah.
 
 Player::Player(SDL_Renderer* renderer)
@@ -23,6 +22,12 @@ Player::~Player()
             SDL_DestroyTexture(pair.second);
     }
     weaponTextures.clear();
+
+    for (auto& tex : deathFrames)
+    {
+        if (tex) SDL_DestroyTexture(tex);
+    }
+    deathFrames.clear();
 
     if (font)
         TTF_CloseFont(font);
@@ -78,8 +83,36 @@ void Player::setWeaponTexture(WeaponType type)
         currentTexture = weaponTextures[type];
 }
 
+void Player::loadDeathTextures(SDL_Renderer* renderer)
+{
+    deathFrames.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/player_death_1.png"));
+    deathFrames.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/player_death_2.png"));
+}
+
+void Player::startDeathAnimation()
+{
+    dying = true;
+    deathFinished = false;
+    deathStartTime = SDL_GetTicks();
+    deathFrame = 0;
+}
+
 void Player::render()
 {
+    if (dying)
+    {
+        if (!deathFinished && deathFrame < deathFrames.size())
+        {
+            SDL_RenderCopy(renderer, deathFrames[deathFrame], nullptr, &rect);
+        }
+        return;
+    }
+
+    if (!visible) return;
+
+    if (currentTexture)
+        SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
+
     if (!font)
     {
         SDL_Log("Font not loaded; skipping text render");
@@ -127,7 +160,7 @@ void Player::render()
 
 void Player::update(float deltaTime)
 {
-    if (isInvincible)
+    if (isInvincible && !dying)
     {
         unsigned int now = SDL_GetTicks();
 
@@ -144,25 +177,59 @@ void Player::update(float deltaTime)
         }
     }
 
+    if (dying)
+    {
+        if (deathFrames.empty())
+        {
+            deathFinished = true;
+            return;
+        }
+
+        unsigned int now = SDL_GetTicks();
+        int elapsed = now - deathStartTime;
+
+        deathFrame = elapsed / DEATH_FRAME_DURATION;
+
+        if (deathFrame >= deathFrames.size())
+        {
+            deathFinished = true;
+            return;
+        }
+
+        return;
+    }
+
     if (movingLeft) rect.x -= static_cast<int>(speed * deltaTime);
     if (movingRight) rect.x += static_cast<int>(speed * deltaTime);
 
     if (rect.x < 0) rect.x = 0;
     if (rect.x + rect.w > 800) rect.x = 800 - rect.w;
+
 }
 
 void Player::loseLives()
 {
-    if (isInvincible || playerLives <= 0) return;
+    if (isInvincible || playerLives <= 0 || dying) return;
 
-    if (!isInvincible)
-        SoundManager::playSound(SoundID::PLAYER_HIT);
+    SoundManager::playSound(SoundID::PLAYER_HIT);
 
     playerLives--;
-    isInvincible = true;
-    invincibleStartTime = SDL_GetTicks();
-    lastBlinkTime = invincibleStartTime;
-    visible = false;
+
+    if (playerLives > 0)
+    {
+        isInvincible = true;
+        invincibleStartTime = SDL_GetTicks();
+        lastBlinkTime = invincibleStartTime;
+    }
+    else
+    {
+        dying = true;
+        deathStartTime = SDL_GetTicks();
+        deathFrame = 0;
+
+        isInvincible = false;
+        visible = true;
+    }
 }
 
 void Player::reset() 
@@ -171,10 +238,18 @@ void Player::reset()
     movingLeft = false;
     movingRight = false;
     rect.x = 375;
+
+    dying = false;
+    deathFinished = false;
+
+    isInvincible = false;
+    visible = true;
 }
 
 void Player::plusLives() { if (playerLives > 0) playerLives++; }
 int Player::getX() const { return rect.x + rect.w / 2; }
 int Player::getY() const { return rect.y; }
 int Player::getLives() const { return playerLives; }
+bool Player::isDying() const { return dying; }
+bool Player::isDeathAnimationFinished() const { return deathFinished; }
 SDL_Rect Player::getRect() const { return rect; }

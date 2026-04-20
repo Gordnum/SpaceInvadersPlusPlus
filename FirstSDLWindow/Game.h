@@ -30,6 +30,14 @@ enum class GameMode
     ENDLESS
 };
 
+enum class GameOverPhase
+{
+    NONE,
+    FREEZE,
+    ANIMATING,
+    SHOW_TEXT
+};
+
 class Game
 {
 private:
@@ -42,6 +50,9 @@ private:
     SDL_Renderer* renderer;
     bool isRunning;
     bool isGameOver;
+
+    GameOverPhase gameOverPhase = GameOverPhase::NONE;
+    unsigned int gameOverStartTime = 0;
 
     std::unique_ptr<Player> player;
     std::unique_ptr<Bullet> bullet;
@@ -70,7 +81,6 @@ private:
 
     unsigned int lastEnemyShotTime = 0;
     const unsigned int enemyShootCooldown = 2000; // every 2 seconds
-    unsigned int gameOverStartTime;
     bool highScoreSaved = false;
 
     unsigned int fpsTimer = SDL_GetTicks();
