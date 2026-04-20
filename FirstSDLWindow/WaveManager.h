@@ -17,8 +17,8 @@ class WaveManager
 		float projectileSpeedMultiplier;
 		bool showingWaveIntro;
 		unsigned int waveIntroStartTime;
-		unsigned waveIntroDuration;
-		const unsigned bossWaveIntroDuration;
+		unsigned int waveIntroDuration;
+		const unsigned int bossWaveIntroDuration;
 		TTF_Font* font;
 		waveIntroType introType;
 

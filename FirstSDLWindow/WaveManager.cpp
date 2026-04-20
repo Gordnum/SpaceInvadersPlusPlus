@@ -6,7 +6,7 @@ const int SCREEN_HEIGHT = 600;
 
 WaveManager::WaveManager()
 			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(300.0f), 
-             showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000), bossWaveIntroDuration(4200),
+             showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000), bossWaveIntroDuration(9000),
              introType(waveIntroType::NORMAL)
 {
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
@@ -37,7 +37,6 @@ void WaveManager::setShowingWaveIntro(bool state) { showingWaveIntro = state; }
 
 void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 {
-
 	if (introType == waveIntroType::BOSS)
 	{
 		renderBossIntro(renderer);
@@ -76,23 +75,29 @@ void WaveManager::showWaveIntro(SDL_Renderer* renderer)
 
 void WaveManager::renderBossIntro(SDL_Renderer* renderer)
 {
+    unsigned int elapsed = SDL_GetTicks() - waveIntroStartTime;
+
+    const unsigned int bossWarningDelay = 3000;
+    const unsigned int bossOminousDelay = 4500;
+
+    if (elapsed < bossWarningDelay)
+        return;
+
     SDL_Color red = { 255, 60, 60 };
 
-    const char* text1 = "WARNING!";
-    const char* text2 = "AN OMINOUS PRESENCE APPROACHING";
+    float t = (elapsed - bossWarningDelay) / 350.0f; //change the pulse speed
 
-    float t = (SDL_GetTicks() - waveIntroStartTime) / 250.0f; //change the pulse speed
     float pulse01 = pow((sin(t) + 1.0f) * 0.5f, 2.0f);
 
     Uint8 alpha = static_cast<Uint8>(pulse01 * 255);
 
-    auto renderText = [&](const char* txt, int y)
+    auto renderText = [&](const char* txt, int y, unsigned int textAlpha)
     {
-        SDL_Surface* s = TTF_RenderText_Solid(font, txt, red);
+        SDL_Surface* s = TTF_RenderText_Blended(font, txt, red);
         SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, s);
 
         SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-        SDL_SetTextureAlphaMod(tex, alpha);
+        SDL_SetTextureAlphaMod(tex, textAlpha);
 
         float scale = 0.75f; //change font size
        
@@ -113,8 +118,56 @@ void WaveManager::renderBossIntro(SDL_Renderer* renderer)
         SDL_DestroyTexture(tex);
     };
 
-    renderText(text1, SCREEN_HEIGHT / 2 - 80);
-    renderText(text2, SCREEN_HEIGHT / 2);
+    renderText("WARNING!", SCREEN_HEIGHT / 2 - 80, alpha);
+
+    if (elapsed >= bossOminousDelay)
+    {
+        unsigned int fadeAlpha;
+
+        const unsigned int fadeInDuration = 1500;
+        const unsigned int holdDuration = 1000;
+        const unsigned int fadeOutDuration = 1500;
+
+        unsigned int fadeInEnd =
+            bossOminousDelay + fadeInDuration;
+
+        unsigned int holdEnd =
+            fadeInEnd + holdDuration;
+
+        unsigned int fadeOutEnd =
+            holdEnd + fadeOutDuration;
+
+        if (elapsed < fadeInEnd)
+        {
+            float t =
+                (elapsed - bossOminousDelay) /
+                (float)fadeInDuration;
+
+            fadeAlpha =
+                static_cast<Uint8>(255 * t);
+        }
+        else if (elapsed < holdEnd)
+            fadeAlpha = 255;
+        else if (elapsed < fadeOutEnd)
+        {
+            float t =
+                1.0f -
+                (elapsed - holdEnd) /
+                (float)fadeOutDuration;
+
+            fadeAlpha =
+                static_cast<Uint8>(255 * t);
+        }
+        else
+            fadeAlpha = 0;
+
+        renderText
+        (
+            "AN OMINOUS PRESENCE APPROACHING",
+            SCREEN_HEIGHT / 2,
+            fadeAlpha
+        );
+    }
 }
 
 void WaveManager::nextWave() 
