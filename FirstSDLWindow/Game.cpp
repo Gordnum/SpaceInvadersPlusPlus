@@ -1243,7 +1243,7 @@ void Game::render()
 				return;
 			}
 
-			SDL_Surface* surface = TTF_RenderText_Solid(font, "GAME OVER", color);
+			SDL_Surface* surface = TTF_RenderText_Solid(font, "YOU FAILED", color);
 			if (!surface)
 			{
 				SDL_Log("Failed to create surface: %s", TTF_GetError());
