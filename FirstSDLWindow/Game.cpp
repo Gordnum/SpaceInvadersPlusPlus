@@ -15,7 +15,7 @@ constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 Game::Game()
 	:window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
-	bulletManager(nullptr), isGameOver(false){
+	bulletManager(nullptr), isGameOver(false) {
 }
 
 
@@ -59,6 +59,7 @@ bool Game::init()
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	menuManager = std::make_unique<MenuManager>(renderer);
+	cutscene = std::make_unique<Cutscene>(renderer);
 	waveManager = std::make_unique<WaveManager>();
 	UFO::LoadTextures(renderer);
 	Enemy::LoadTextures(renderer);
@@ -105,13 +106,20 @@ void Game::handleEvents()
 
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
-				waveManager->startWaveIntro();
-				lastUFOSpawnTime = SDL_GetTicks();
-				pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
+
+				gameState = GameState::INTRO_CUTSCENE;
+				cutscene->start
+				(
+					{
+						"You are Earth's last line of defense...",
+						"The invaders are attempting to conquer Earth.",
+						"Good luck."
+					}
+				);
 			}
 			else if (startEndless)
 			{
-				
+
 				SDL_FlushEvent(SDL_KEYDOWN);
 				SDL_FlushEvent(SDL_KEYUP);
 
@@ -177,6 +185,65 @@ void Game::handleEvents()
 // ADD
 void Game::update()
 {
+	if (gameState == GameState::INTRO_CUTSCENE)
+	{
+		cutscene->update();
+
+		if (cutscene->isFinished())
+		{
+			gameState = GameState::PLAYING;
+			waveManager->startWaveIntro();
+			lastUFOSpawnTime = SDL_GetTicks();
+			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
+		}
+
+		return;
+	}
+
+	if (gameState == GameState::WIN_CUTSCENE)
+	{
+		cutscene->update();
+
+		if (cutscene->isFinished())
+		{
+			enemies.clear();
+			enemyBullets.clear();
+			bossBullets.clear();
+			pickups.clear();
+			pendingTripmines.clear();
+			scorePopup.clear();
+
+			bulletManager->clear();
+
+			rowLastShotTime.clear();
+			rowHasActiveBullet.clear();
+
+			boss->deactivate();
+			ufo->deactivate();
+
+			waveManager->reset();
+
+			comboManager->reset();
+
+			weaponInventory->reset();
+
+			player->reset();
+
+			scoreManager->reset();
+
+			enemyDirection = 1;
+			moveInterval = 700;
+
+			lastUFOSpawnTime = SDL_GetTicks();
+
+			gameState = GameState::PLAYING;
+
+			menuManager->setInMainMenu(true);
+		}
+
+		return;
+	}
+
 	if (menuManager->isInMainMenu())
 	{
 		if (ufo->isActive())
@@ -349,12 +416,28 @@ void Game::update()
 				if (boss->isDefeated() && currentMode == GameMode::CAMPAIGN)
 				{
 					boss->deactivate();
+
+					gameState = GameState::WIN_CUTSCENE;
+
+					cutscene->start
+					(
+						{
+							"The alien commander has fallen.",
+							"Earth is safe... for now."
+						}
+					);
+
+					return;
+
+
+					/*
 					waveManager->setShowingWaveIntro(false);
 
 					// Win logic / trigger end screen (prototype)
 					isGameOver = true;
 					gameOverPhase = GameOverPhase::FREEZE;
 					gameOverStartTime = SDL_GetTicks();
+					*/
 				}
 			}
 		}
@@ -526,9 +609,9 @@ void Game::update()
 
 			switch (enemy->getType())
 			{
-				case EnemyType::SQUID: baseScore = 50; break;
-				case EnemyType::CRAB: baseScore = 30; break;
-				case EnemyType::OCTOPUS: baseScore = 10; break;
+			case EnemyType::SQUID: baseScore = 50; break;
+			case EnemyType::CRAB: baseScore = 30; break;
+			case EnemyType::OCTOPUS: baseScore = 10; break;
 			}
 
 			if (b->isActive() && enemy->isAlive() &&
@@ -609,7 +692,7 @@ void Game::update()
 							true,                            // hit boss or not
 							false,							 // hit ufo or not
 						}
-					);
+						);
 
 					b->deactivate(); // remove tripmine bullet after explosion
 					SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
@@ -708,9 +791,9 @@ void Game::update()
 
 			switch (enemy->getType())
 			{
-				case EnemyType::SQUID: baseScore = 50; break;
-				case EnemyType::CRAB: baseScore = 30; break;
-				case EnemyType::OCTOPUS: baseScore = 10; break;
+			case EnemyType::SQUID: baseScore = 50; break;
+			case EnemyType::CRAB: baseScore = 30; break;
+			case EnemyType::OCTOPUS: baseScore = 10; break;
 			}
 
 			int enemyY = enemy->getRect().y;
@@ -846,7 +929,7 @@ void Game::update()
 						true,							 // hit boss or not
 						true,							 // hit ufo or not
 					}
-				);
+					);
 
 				b->deactivate(); // remove tripmine bullet after explosion
 				SoundManager::playSound(SoundID::TRIPMINE_SET_AND_EXPLODE);
@@ -1045,7 +1128,7 @@ void Game::update()
 	{
 		popup->update(deltaTime);
 	}
-	
+
 	scorePopup.erase(
 		std::remove_if(scorePopup.begin(), scorePopup.end(),
 			[](const std::unique_ptr<ScorePopup>& p)
@@ -1068,6 +1151,12 @@ void Game::update()
 // ADD
 void Game::render()
 {
+	if (gameState == GameState::INTRO_CUTSCENE || gameState == GameState::WIN_CUTSCENE)
+	{
+		cutscene->render();
+		return;
+	}
+
 	bool inWaveIntro = waveManager->getWaveIntro();
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

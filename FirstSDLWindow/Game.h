@@ -23,11 +23,20 @@
 #include "WeaponType.h"
 #include "WeaponInventory.h"
 #include "Pickup.h"
+#include "Cutscene.h"
 
 enum class GameMode
 {
     CAMPAIGN,
     ENDLESS
+};
+
+enum class GameState
+{
+    MENU, 
+    INTRO_CUTSCENE, 
+    PLAYING, 
+    WIN_CUTSCENE
 };
 
 enum class GameOverPhase
@@ -53,6 +62,9 @@ private:
 
     GameOverPhase gameOverPhase = GameOverPhase::NONE;
     unsigned int gameOverStartTime = 0;
+
+    GameState gameState;
+    std::unique_ptr<Cutscene> cutscene;
 
     std::unique_ptr<Player> player;
     std::unique_ptr<Bullet> bullet;
