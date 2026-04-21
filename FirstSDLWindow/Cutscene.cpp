@@ -28,14 +28,13 @@ void Cutscene::update()
 
     if (now - lastSwitchTime >= delayPerLine)
     {
-        currentLine++;
-        lastSwitchTime = now;
-
-        if (currentLine >= (int)lines.size())
+        if (currentLine < static_cast<int>(lines.size()) - 1)
         {
-            finished = true;
-            active = false;
+            currentLine++;
+            lastSwitchTime = now;
         }
+        else
+            finished = true;
     }
 }
 
@@ -48,20 +47,63 @@ void Cutscene::render()
 
     SDL_Color color = { 255, 255, 255 };
 
-    if (currentLine < (int)lines.size())
+    const int xCenter = 400;
+
+    const int yPositions[] =
     {
-        SDL_Surface* surface = TTF_RenderText_Solid(font, lines[currentLine].c_str(), color);
+        200, // first line
+        300, // second line
+        400  // third line
+    };
+
+    const unsigned int now = SDL_GetTicks();
+    const unsigned int FADE_DURATION = 1000;
+
+    for (int i = 0; i <= currentLine && i < static_cast<int>(lines.size()) && i < 3; i++)
+    {
+        unsigned int lineStartTime = lastSwitchTime;
+
+        if (i < currentLine)
+        {
+            lineStartTime = lastSwitchTime - ((currentLine - i) * delayPerLine);
+        }
+
+        unsigned int elapsed = now - lineStartTime;
+
+        unsigned short alpha = 255;
+
+        if (elapsed < FADE_DURATION)
+        {
+            alpha = static_cast<unsigned short>((255.0f * elapsed) / FADE_DURATION);
+        }
+
+        SDL_Surface* surface = TTF_RenderText_Blended(font, lines[i].c_str(), { 255,255,255 });
+
+        if (!surface)
+            continue;
+
+        int w = surface->w;
+        int h = surface->h;
+
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        SDL_Rect dest = {
-            400 - surface->w / 2,
-            300 - surface->h / 2,
-            surface->w,
-            surface->h
+        SDL_FreeSurface(surface);
+
+        if (!texture)
+            continue;
+
+        SDL_SetTextureAlphaMod(texture, alpha);
+
+        SDL_Rect dest =
+        {
+            xCenter - w/2,
+            yPositions[i] - h/2,
+            w,
+            h
         };
 
-        SDL_FreeSurface(surface);
-        SDL_RenderCopy(renderer, texture, NULL, &dest);
+        SDL_RenderCopy(renderer, texture, nullptr, &dest);
+
         SDL_DestroyTexture(texture);
     }
 

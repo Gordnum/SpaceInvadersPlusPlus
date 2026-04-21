@@ -15,8 +15,7 @@ constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 Game::Game()
 	:window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
-	bulletManager(nullptr), isGameOver(false) {
-}
+	bulletManager(nullptr), isGameOver(false) {}
 
 
 Game::~Game() { clean(); }
@@ -423,7 +422,8 @@ void Game::update()
 					(
 						{
 							"The alien commander has fallen.",
-							"Earth is safe... for now."
+							"Earth is safe...",
+							"for now."
 						}
 					);
 
