@@ -1,7 +1,7 @@
 #include "Cutscene.h"
 
 Cutscene::Cutscene(SDL_Renderer* r) : renderer(r), currentLine(0), active(false), 
-                                      finished(false), lastSwitchTime(0), delayPerLine(2500)
+                                      finished(false), lastSwitchTime(0), delayPerLine(3000)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 24);
     if (!font)
@@ -57,7 +57,7 @@ void Cutscene::render()
     };
 
     const unsigned int now = SDL_GetTicks();
-    const unsigned int FADE_DURATION = 1000;
+    const unsigned int FADE_DURATION = 1000; //control fade in duration
 
     for (int i = 0; i <= currentLine && i < static_cast<int>(lines.size()) && i < 3; i++)
     {

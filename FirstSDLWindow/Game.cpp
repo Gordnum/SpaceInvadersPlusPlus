@@ -884,6 +884,7 @@ void Game::update()
 			isGameOver = true;
 			gameOverPhase = GameOverPhase::FREEZE;
 			gameOverStartTime = SDL_GetTicks();
+			SoundManager::playSound(SoundID::PLAYER_HIT);
 			break; // Stop checking after one has triggered
 		}
 	}
