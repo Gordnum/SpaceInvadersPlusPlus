@@ -38,7 +38,7 @@ public:
 	bool spawnPickup();
 	bool giveLive();
 
-	void awardScore(int points, Player& player);
+	void awardScore(int points);
 
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);

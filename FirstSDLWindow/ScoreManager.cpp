@@ -17,6 +17,8 @@ ScoreManager::ScoreManager(SDL_Renderer* renderer)
 		return; 
 	}
 
+	TTF_SetFontStyle(font, TTF_STYLE_BOLD);
+
 	updateTexture(renderer);
 }
 
@@ -48,12 +50,9 @@ void ScoreManager::addPoints(int amount)
 	}
 }
 
-void ScoreManager::awardScore(int points, Player& player)
+void ScoreManager::awardScore(int points)
 {
 	addPoints(points);
-
-	if (giveLive())
-		player.plusLives();
 }
 
 int ScoreManager::getScore() const { return score; }

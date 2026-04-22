@@ -7,6 +7,8 @@ ComboManager::ComboManager()
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
 		SDL_Log("Failed to load combo font: %s", TTF_GetError());
+
+	TTF_SetFontStyle(font, TTF_STYLE_BOLD);
 }
 
 ComboManager::~ComboManager()

@@ -15,7 +15,8 @@ constexpr int PLAYFIELD_BOTTOM_Y = SCREEN_HEIGHT - PLAYFIELD_BOTTOM_MARGIN;
 Game::Game()
 	:window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), bullet(nullptr), enemy(nullptr), ufo(nullptr), boss(nullptr),
 	scoreManager(nullptr), weaponInventory(nullptr), comboManager(nullptr), waveManager(nullptr), menuManager(nullptr),
-	bulletManager(nullptr), isGameOver(false) {}
+	bulletManager(nullptr), isGameOver(false) {
+}
 
 
 Game::~Game() { clean(); }
@@ -621,7 +622,27 @@ void Game::update()
 				{
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->awardScore(earnedScore, *player);
+					scoreManager->awardScore(earnedScore);
+
+					if (scoreManager->giveLive())
+					{
+						SDL_Log("1UP SPAWNED");
+						player->plusLives();
+
+						SDL_Color plus_lives = { 255, 255, 255 };
+
+						scorePopup.push_back(
+							std::make_unique<ScorePopup>
+							(
+								renderer,
+								"1UP",
+								player->getRect().x + player->getRect().w / 2,
+								player->getRect().y - 30,
+								1.0f,
+								&plus_lives
+							)
+						);
+					}
 
 					scorePopup.push_back
 					(
@@ -659,7 +680,27 @@ void Game::update()
 							{
 								e2->destroy();
 								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-								scoreManager->awardScore(earnedScore, *player);
+								scoreManager->awardScore(earnedScore);
+
+								if (scoreManager->giveLive())
+								{
+									SDL_Log("1UP SPAWNED");
+									player->plusLives();
+
+									SDL_Color plus_lives = { 255, 255, 255 };
+
+									scorePopup.push_back(
+										std::make_unique<ScorePopup>
+										(
+											renderer,
+											"1UP",
+											player->getRect().x + player->getRect().w / 2,
+											player->getRect().y - 30,
+											1.0f,
+											&plus_lives
+										)
+									);
+								}
 
 								scorePopup.push_back
 								(
@@ -702,8 +743,28 @@ void Game::update()
 					b->deactivate();
 					enemy->destroy();
 					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-					scoreManager->awardScore(earnedScore, *player);
+					scoreManager->awardScore(earnedScore);
 					comboManager->onEnemyKilled();
+
+					if (scoreManager->giveLive())
+					{
+						SDL_Log("1UP SPAWNED");
+						player->plusLives();
+
+						SDL_Color plus_lives = { 255, 255, 255 };
+
+						scorePopup.push_back(
+							std::make_unique<ScorePopup>
+							(
+								renderer,
+								"1UP",
+								player->getRect().x + player->getRect().w / 2,
+								player->getRect().y - 30,
+								1.0f,
+								&plus_lives
+							)
+						);
+					}
 
 					scorePopup.push_back
 					(
@@ -754,8 +815,28 @@ void Game::update()
 
 			int ufoScore = 200;
 			int ufoEarnedScore = static_cast<int>(ufoScore * comboManager->getMultiplier());
-			scoreManager->awardScore(ufoEarnedScore, *player);
+			scoreManager->awardScore(ufoEarnedScore);
 			comboManager->onEnemyKilled();
+
+			if (scoreManager->giveLive())
+			{
+				SDL_Log("1UP SPAWNED");
+				player->plusLives();
+
+				SDL_Color plus_lives = { 255, 255, 255 };
+
+				scorePopup.push_back(
+					std::make_unique<ScorePopup>
+					(
+						renderer,
+						"1UP",
+						player->getRect().x + player->getRect().w / 2,
+						player->getRect().y - 30,
+						1.0f,
+						&plus_lives
+					)
+				);
+			}
 
 			scorePopup.push_back(
 				std::make_unique<ScorePopup>(
@@ -801,7 +882,27 @@ void Game::update()
 			{
 				enemy->destroy();
 				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-				scoreManager->awardScore(earnedScore, *player);
+				scoreManager->awardScore(earnedScore);
+
+				if (scoreManager->giveLive())
+				{
+					SDL_Log("1UP SPAWNED");
+					player->plusLives();
+
+					SDL_Color plus_lives = { 255, 255, 255 };
+
+					scorePopup.push_back(
+						std::make_unique<ScorePopup>
+						(
+							renderer,
+							"1UP",
+							player->getRect().x + player->getRect().w / 2,
+							player->getRect().y - 30,
+							1.0f,
+							&plus_lives
+						)
+					);
+				}
 
 				scorePopup.push_back
 				(
@@ -946,8 +1047,28 @@ void Game::update()
 			{
 				int baseScore = 200;
 				int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
-				scoreManager->awardScore(earnedScore, *player);
+				scoreManager->awardScore(earnedScore);
 				comboManager->onEnemyKilled();
+
+				if (scoreManager->giveLive())
+				{
+					SDL_Log("1UP SPAWNED");
+					player->plusLives();
+
+					SDL_Color plus_lives = { 255, 255, 255 };
+
+					scorePopup.push_back(
+						std::make_unique<ScorePopup>
+						(
+							renderer,
+							"1UP",
+							player->getRect().x + player->getRect().w / 2,
+							player->getRect().y - 30,
+							1.0f,
+							&plus_lives
+						)
+					);
+				}
 
 				scorePopup.push_back
 				(

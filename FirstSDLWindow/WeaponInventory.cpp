@@ -15,6 +15,10 @@ WeaponInventory::WeaponInventory()
 		SDL_Log("Failed to load ammo font: %s", TTF_GetError());
 	if (!smallFont || !largeFont)
 		SDL_Log("Failed to load weapon fonts: %s", TTF_GetError());
+
+	TTF_SetFontStyle(font, TTF_STYLE_BOLD);
+	TTF_SetFontStyle(smallFont, TTF_STYLE_BOLD);
+	TTF_SetFontStyle(largeFont, TTF_STYLE_BOLD);
 	
 	ammoMap[WeaponType::DEFAULT] = 0;
 	ownedWeapons.push_back(WeaponType::DEFAULT);
@@ -135,7 +139,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 {
 	if (ownedWeapons.size() <= 0) return; // no wheel for 1 weapon
 
-	const int centerX = SCREEN_WIDTH - 610;
+	const int centerX = SCREEN_WIDTH - 590; //weapon text position
 	const int baseY = SCREEN_HEIGHT - 36;
 	const int padding = -2;
 
@@ -244,7 +248,7 @@ void WeaponInventory::renderWeaponHUD(SDL_Renderer* renderer)
 	SDL_QueryTexture(texture, nullptr, nullptr, &destRect.w, &destRect.h);
 	SDL_RenderCopy(renderer, texture, nullptr, &destRect);
 
-	SDL_Rect ammoRect = { destRect.x + 250, 550, 0, 0 };
+	SDL_Rect ammoRect = { destRect.x + 270, 550, 0, 0 }; //ammo text position
 	SDL_QueryTexture(ammoTexture, nullptr, nullptr, &ammoRect.w, &ammoRect.h);
 	SDL_RenderCopy(renderer, ammoTexture, nullptr, &ammoRect);
 
