@@ -1445,7 +1445,7 @@ void Game::render()
 
 		if (gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
 		{
-			SDL_Color color = { 255, 255, 255 };
+			SDL_Color color = { 255, 0, 0 };
 			TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
 
 			if (!font)
