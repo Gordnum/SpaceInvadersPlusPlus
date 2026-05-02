@@ -429,7 +429,8 @@ void Game::update()
 							SDL_GetTicks() + 700,       // delay
 							0,                          // renderUntil
 							false,                      // exploded
-							true                        // hitBoss
+							true,						// hitBoss
+							false						// hitUFO
 						}
 					);
 
@@ -766,7 +767,7 @@ void Game::update()
 							SDL_GetTicks() + 700,			 // trigger time
 							0,								 // renderUntil
 							false,							 // exploded or not
-							true,                            // hit boss or not
+							false,                           // hit boss or not
 							false,							 // hit ufo or not
 						}
 						);
@@ -1064,7 +1065,7 @@ void Game::update()
 						SDL_GetTicks() + 700,			 // trigger time
 						0,								 // renderUntil
 						false,							 // exploded or not
-						true,							 // hit boss or not
+						false,							 // hit boss or not
 						true,							 // hit ufo or not
 					}
 					);
