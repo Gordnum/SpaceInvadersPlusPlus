@@ -533,25 +533,26 @@ void Game::update()
 		bool willBounce = false;
 
 		// Check if any enemy will go out of bounds on next move
-		for (auto& enemy : enemies)
+		if (!enemyDropPending)
 		{
-			if (!enemy->isAlive()) continue;
-			if (enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED) continue;
-
-			SDL_Rect r = enemy->getRect();
-			int nextX = r.x + enemyDirection * static_cast<int>(waveManager->getEnemySpeed());
-
-			if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
+			for (auto& enemy : enemies)
 			{
-				willBounce = true;
-				break;
+				if (!enemy->isAlive()) continue;
+				if (enemy->getOrigin() == EnemyOrigin::BOSS_SPAWNED) continue;
+
+				SDL_Rect r = enemy->getRect();
+				int nextX = r.x + enemyDirection * static_cast<int>(waveManager->getEnemySpeed());
+
+				if (nextX <= 0 || (nextX + r.w) >= SCREEN_WIDTH)
+				{
+					willBounce = true;
+					break;
+				}
 			}
 		}
-
+		
 		if (willBounce)
 		{
-			enemyDirection *= -1;
-
 			for (auto& enemy : enemies)
 			{
 				if (!enemy->isAlive()) continue;
@@ -566,8 +567,15 @@ void Game::update()
 
 			std::cout << "DROP\n";
 
+			enemyDropPending = true;
 			lastMoveTime = currentTime;
 			return;
+		}
+
+		if (enemyDropPending)
+		{
+			enemyDirection *= -1;
+			enemyDropPending = false;
 		}
 
 		for (auto& enemy : enemies)

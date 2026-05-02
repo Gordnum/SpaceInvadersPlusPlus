@@ -103,6 +103,7 @@ private:
     unsigned int lastUFOSpawnTime = 0;
     unsigned int ufoSpawnInterval = 13000;
     bool hasBounced = false;
+    bool enemyDropPending = false;
 
     unsigned int lastEnemyShotTime = 0;
     const unsigned int enemyShootCooldown = 2000; // every 2 seconds
