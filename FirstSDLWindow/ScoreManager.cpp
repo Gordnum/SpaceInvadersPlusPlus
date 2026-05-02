@@ -80,6 +80,10 @@ void ScoreManager::loadHighScore(const std::string& filename)
 void ScoreManager::reset() 
 {
 	score = 0;
+	nextPickupThreshold = 500;
+	nextGiveLivesThreshold = 5000;
+	shouldGiveLive = false;
+	shouldSpawnPickup = false;
 }
 
 SDL_Texture* ScoreManager::renderText(SDL_Renderer* renderer, const std::string& text, SDL_Rect& outRect, int y, bool centerX, int fixedX)

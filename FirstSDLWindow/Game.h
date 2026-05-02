@@ -47,6 +47,15 @@ enum class GameOverPhase
     SHOW_TEXT
 };
 
+enum class BossDeathState
+{
+    NONE,
+    START,
+    EXPLODING,
+    FADE_OUT,
+    DONE
+};
+
 class Game
 {
 private:
@@ -65,6 +74,10 @@ private:
 
     GameState gameState;
     std::unique_ptr<Cutscene> cutscene;
+
+    BossDeathState bossDeathState = BossDeathState::NONE;
+    unsigned int bossDeathStartTime = 0;
+    unsigned short fadeAlpha = 0;
 
     std::unique_ptr<Player> player;
     std::unique_ptr<Bullet> bullet;

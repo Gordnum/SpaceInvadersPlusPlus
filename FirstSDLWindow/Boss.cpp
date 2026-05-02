@@ -15,13 +15,23 @@ Boss::Boss(SDL_Renderer* renderer)
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
+    bossDeath.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/boss_death_1.png"));
+    bossDeath.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/boss_death_2.png"));
 
-    rect = { (SCREEN_WIDTH - rect.w) / 2, 100, 120, 60 };
+
+    rect = { 0, 100, 120, 60 };
+    rect.x = (SCREEN_WIDTH - rect.w) / 2;
 }
 
 Boss::~Boss()
 {
     if (texture) SDL_DestroyTexture(texture);
+
+    for (auto tex : bossDeath)
+    {
+        if (tex) SDL_DestroyTexture(tex);
+    }
+    bossDeath.clear();
 }
 
 void Boss::activate()
@@ -37,6 +47,75 @@ void Boss::deactivate() { active = false; }
 bool Boss::isActive() const { return active; }
 
 bool Boss::isDefeated() const { return health <= 0; }
+
+bool Boss::isDying() const { return dying; }
+
+bool Boss::isDeathFinished() const
+{
+    return dying && SDL_GetTicks() - deathStartTime > 2000;
+}
+
+void Boss::startDeath()
+{
+    dying = true;
+    deathStartTime = SDL_GetTicks();
+    lastExplosionSpawn = deathStartTime;
+}
+
+void Boss::updateDeath()
+{
+    unsigned int now = SDL_GetTicks();
+
+    Uint32 elapsed = now - deathStartTime;
+    bool isBlinkingPhase = elapsed < blinkDuration;
+
+    if (isBlinkingPhase)
+    {
+        // frequency control here
+        visible = ((elapsed / blinkInterval) % 2 == 0);
+
+        //spawn boss_death frames
+        if (now - lastExplosionSpawn > 100)
+        {
+            lastExplosionSpawn = now;
+
+            BossDeathExplosion e;
+            e.rect.w = 32;
+            e.rect.h = 32;
+            e.rect.x = rect.x + rand() % rect.w;
+            e.rect.y = rect.y + rand() % rect.h;
+            e.startTime = now;
+            e.lastFrameTime = now;
+
+            explosions.push_back(e);
+        }
+    }
+    else
+    {
+        visible = false;
+    }
+
+    //update boss_death frames
+    for (auto& e : explosions)
+    {
+        if (now - e.lastFrameTime > 100)
+        {
+            e.frame = (e.frame + 1) % bossDeath.size();
+            e.lastFrameTime = now;
+        }
+    }
+
+    //cleanup boss_death frames
+    explosions.erase(
+        std::remove_if(explosions.begin(), explosions.end(),
+            [now](const BossDeathExplosion& e)
+            {
+                return now - e.startTime > 300;
+            }),
+        explosions.end()
+    );
+
+}
 
 void Boss::takeDamage(int amount)
 {
@@ -63,6 +142,12 @@ bool Boss::shouldSpawnEnemies()
 void Boss::update(float deltaTime, SDL_Renderer* renderer, std::vector<std::unique_ptr<BossBullet>>& bullets)
 {
     if (!active) return;
+
+    if (dying)
+    {
+        updateDeath();
+        return;
+    }
 
     rect.x += static_cast<int>(speed * direction * deltaTime);
 
@@ -109,16 +194,26 @@ void Boss::render(SDL_Renderer* renderer)
 {
     if (!active || !texture) return;
 
-    // Draw boss
-    SDL_RenderCopy(renderer, texture, nullptr, &rect);
+    // Draw boss (with blinking)
+    if (visible)
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
 
-    // Draw health bar
-    SDL_Rect border = { rect.x, rect.y - 20, rect.w, 10 };
-    SDL_Rect fill = { rect.x, rect.y - 20, rect.w * health / maxHealth, 10 };
+    // Draw boss_death frames
+    for (auto& e : explosions)
+    {
+        SDL_Texture* tex = bossDeath[e.frame];
+        SDL_RenderCopy(renderer, tex, nullptr, &e.rect);
+    }
 
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // red bar
-    SDL_RenderFillRect(renderer, &fill);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white border
-    SDL_RenderDrawRect(renderer, &border);
-    
+    // Draw health bar (hide when boss is dying)
+    if (!dying)
+    {
+        SDL_Rect border = { rect.x, rect.y - 20, rect.w, 10 };
+        SDL_Rect fill = { rect.x, rect.y - 20, rect.w * health / maxHealth, 10 };
+
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // red bar
+        SDL_RenderFillRect(renderer, &fill);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white border
+        SDL_RenderDrawRect(renderer, &border);
+    }
 }

@@ -185,6 +185,55 @@ void Game::handleEvents()
 // ADD
 void Game::update()
 {
+	if (bossDeathState != BossDeathState::NONE)
+	{
+		unsigned int now = SDL_GetTicks();
+
+		switch (bossDeathState)
+		{
+			case BossDeathState::START:
+				fadeAlpha = 0;
+				boss->startDeath();
+				bossDeathState = BossDeathState::EXPLODING;
+				break;
+
+			case BossDeathState::EXPLODING:
+				boss->update(deltaTime, renderer, bossBullets);
+
+				if (boss->isDeathFinished())
+				{
+					fadeAlpha += 1.5f;
+					if (fadeAlpha >= 255)
+					{
+						fadeAlpha = 255;
+						bossDeathState = BossDeathState::DONE;
+					}
+						
+				}
+					
+				break;
+
+			case BossDeathState::DONE:
+				boss->deactivate();
+
+				gameState = GameState::WIN_CUTSCENE;
+
+				cutscene->start
+				(
+					{
+						"The alien commander has fallen.",
+						"Earth is safe...",
+						"for now."
+					}
+				);
+
+				bossDeathState = BossDeathState::NONE;
+				break;
+		}
+
+		return;
+	}
+
 	if (gameState == GameState::INTRO_CUTSCENE)
 	{
 		cutscene->update();
@@ -413,23 +462,10 @@ void Game::update()
 				if (b->getCurrentWeapon() != WeaponType::PIERCING_SHOT)
 					b->deactivate();
 
-				if (boss->isDefeated() && currentMode == GameMode::CAMPAIGN)
+				if (boss->isDefeated() && !boss->isDying() && currentMode == GameMode::CAMPAIGN)
 				{
-					boss->deactivate();
-
-					gameState = GameState::WIN_CUTSCENE;
-
-					cutscene->start
-					(
-						{
-							"The alien commander has fallen.",
-							"Earth is safe...",
-							"for now."
-						}
-					);
-
-					return;
-
+					bossDeathState = BossDeathState::START;
+					bossDeathStartTime = SDL_GetTicks();
 
 					/*
 					waveManager->setShowingWaveIntro(false);
@@ -1479,6 +1515,15 @@ void Game::render()
 			return;
 		}
 
+	}
+
+	if (bossDeathState == BossDeathState::EXPLODING)
+	{
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, fadeAlpha);
+
+		SDL_Rect screen = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+		SDL_RenderFillRect(renderer, &screen);
 	}
 
 	SDL_RenderPresent(renderer);
