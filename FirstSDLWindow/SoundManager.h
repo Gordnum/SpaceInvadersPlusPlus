@@ -24,6 +24,7 @@ enum class SoundID
     BOSS_SHOOT,
     BOSS_TAKE_DAMAGE,
     PICKUP_COLLECT,
+    LIFE_UP,
     BOMB_EXPLODE,
     UFO_HOVER,
     UFO_DEATH

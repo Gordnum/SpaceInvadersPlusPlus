@@ -67,6 +67,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::TRIPMINE_SET_AND_EXPLODE, "../Assets/SoundEffects/tripmine_set_and_explode.wav");
     loadSound(SoundID::PLAYER_HIT, "../Assets/SoundEffects/player_hit.wav");
     loadSound(SoundID::PICKUP_COLLECT, "../Assets/SoundEffects/pickup_collect.wav");
+    loadSound(SoundID::LIFE_UP, "../Assets/SoundEffects/life_up.wav");
     loadSound(SoundID::BOSS_TAKE_DAMAGE, "../Assets/SoundEffects/boss_take_damage.wav");
     loadSound(SoundID::BOSS_SHOOT, "../Assets/SoundEffects/boss_shoot.wav");
 }

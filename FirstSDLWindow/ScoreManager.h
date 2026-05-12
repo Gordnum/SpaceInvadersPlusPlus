@@ -3,6 +3,7 @@
 #include <SDL_ttf.h>
 #include <string>
 #include "Player.h"
+#include "SoundManager.h"
 
 class ScoreManager
 {

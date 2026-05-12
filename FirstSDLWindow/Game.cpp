@@ -1199,7 +1199,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2) //set boss spawn wave
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20) //set boss spawn wave
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -1233,7 +1233,7 @@ void Game::update()
 		}
 	}
 
-	//enemy bullets row cleanup
+	// Enemy bullets row cleanup
 	for (auto& b : enemyBullets)
 	{
 		if (!b->isActive())

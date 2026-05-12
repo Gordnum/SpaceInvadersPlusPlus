@@ -178,6 +178,7 @@ bool ScoreManager::giveLive()
 	if(shouldGiveLive)
 	{
 		shouldGiveLive = false;
+		SoundManager::playSound(SoundID::LIFE_UP);
 		return true;
 	}
 	return false;
