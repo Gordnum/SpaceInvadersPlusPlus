@@ -61,6 +61,7 @@ bool Game::init()
 	menuManager = std::make_unique<MenuManager>(renderer);
 	cutscene = std::make_unique<Cutscene>(renderer);
 	waveManager = std::make_unique<WaveManager>();
+	finalResults = std::make_unique<FinalResults>();
 	UFO::LoadTextures(renderer);
 	Enemy::LoadTextures(renderer);
 	player = std::make_unique<Player>(renderer);
@@ -73,7 +74,7 @@ bool Game::init()
 	comboManager = std::make_unique<ComboManager>();
 	weaponInventory = std::make_unique<WeaponInventory>();
 	bulletManager = std::make_unique<BulletManager>(renderer);
-	scoreManager->loadHighScore("highscore.txt");
+	scoreManager->loadHighScore("../Assets/highscore.txt");
 
 	isRunning = true;
 	return true;
@@ -191,44 +192,44 @@ void Game::update()
 
 		switch (bossDeathState)
 		{
-			case BossDeathState::START:
-				fadeAlpha = 0;
-				boss->startDeath();
-				bossDeathState = BossDeathState::EXPLODING;
-				break;
+		case BossDeathState::START:
+			fadeAlpha = 0;
+			boss->startDeath();
+			bossDeathState = BossDeathState::EXPLODING;
+			break;
 
-			case BossDeathState::EXPLODING:
-				boss->update(deltaTime, renderer, bossBullets);
+		case BossDeathState::EXPLODING:
+			boss->update(deltaTime, renderer, bossBullets);
 
-				if (boss->isDeathFinished())
+			if (boss->isDeathFinished())
+			{
+				fadeAlpha += 1.5f;
+				if (fadeAlpha >= 255)
 				{
-					fadeAlpha += 1.5f;
-					if (fadeAlpha >= 255)
-					{
-						fadeAlpha = 255;
-						bossDeathState = BossDeathState::DONE;
-					}
-						
+					fadeAlpha = 255;
+					bossDeathState = BossDeathState::DONE;
 				}
-					
-				break;
 
-			case BossDeathState::DONE:
-				boss->deactivate();
+			}
 
-				gameState = GameState::WIN_CUTSCENE;
+			break;
 
-				cutscene->start
-				(
-					{
-						"The alien commander has fallen.",
-						"Earth is safe...",
-						"for now."
-					}
-				);
+		case BossDeathState::DONE:
+			boss->deactivate();
 
-				bossDeathState = BossDeathState::NONE;
-				break;
+			gameState = GameState::WIN_CUTSCENE;
+
+			cutscene->start
+			(
+				{
+					"The alien commander has fallen.",
+					"Earth is safe...",
+					"for now."
+				}
+			);
+
+			bossDeathState = BossDeathState::NONE;
+			break;
 		}
 
 		return;
@@ -274,6 +275,17 @@ void Game::update()
 
 			comboManager->reset();
 
+			finalResults->start
+			(
+				scoreManager->getScore(),
+				player->getLives(),
+				weaponInventory->getAmmo(WeaponType::RAPID_SHOT),
+				weaponInventory->getAmmo(WeaponType::PIERCING_SHOT),
+				weaponInventory->getAmmo(WeaponType::BOMB_SHOT),
+				weaponInventory->getAmmo(WeaponType::TRIPMINE),
+				scoreManager.get()
+			);
+
 			weaponInventory->reset();
 
 			player->reset();
@@ -285,9 +297,26 @@ void Game::update()
 
 			lastUFOSpawnTime = SDL_GetTicks();
 
-			gameState = GameState::PLAYING;
+			gameState = GameState::FINAL_RESULTS;
+		}
 
-			menuManager->setInMainMenu(true);
+		return;
+	}
+
+	if (gameState == GameState::FINAL_RESULTS)
+	{
+		finalResults->update();
+
+		if (finalResults->isFinished())
+		{
+			const Uint8* keys = SDL_GetKeyboardState(nullptr);
+
+			if (keys[SDL_SCANCODE_RETURN])
+			{
+				finalResults->close();
+				menuManager->setInMainMenu(true);
+				gameState = GameState::PLAYING;
+			}
 		}
 
 		return;
@@ -550,7 +579,7 @@ void Game::update()
 				}
 			}
 		}
-		
+
 		if (willBounce)
 		{
 			for (auto& enemy : enemies)
@@ -1177,7 +1206,7 @@ void Game::update()
 	// NEW HIGHSCORE
 	if (isGameOver && !highScoreSaved)
 	{
-		scoreManager->saveHighScore("highscore.txt");
+		scoreManager->saveHighScore("../Assets/highscore.txt");
 		highScoreSaved = true;
 	}
 
@@ -1199,7 +1228,7 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20) //set boss spawn wave
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2) //set boss spawn wave
 		{
 			boss->activate();
 			ufo->deactivate();
@@ -1321,6 +1350,17 @@ void Game::render()
 	if (gameState == GameState::INTRO_CUTSCENE || gameState == GameState::WIN_CUTSCENE)
 	{
 		cutscene->render();
+		return;
+	}
+
+	if (gameState == GameState::FINAL_RESULTS)
+	{
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+
+		finalResults->render(renderer);
+
+		SDL_RenderPresent(renderer);
 		return;
 	}
 

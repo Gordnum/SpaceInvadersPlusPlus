@@ -1,9 +1,9 @@
 #include "Cutscene.h"
 
-Cutscene::Cutscene(SDL_Renderer* r) : renderer(r), currentLine(0), active(false), 
-                                      finished(false), lastSwitchTime(0), delayPerLine(3000)
+Cutscene::Cutscene(SDL_Renderer* r) : renderer(r), currentLine(0), active(false),
+finished(false), lastSwitchTime(0), delayPerLine(3000)
 {
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 24);
+    font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 24);
     if (!font)
     {
         SDL_Log("Font failed: %s", TTF_GetError());
@@ -96,8 +96,8 @@ void Cutscene::render()
 
         SDL_Rect dest =
         {
-            xCenter - w/2,
-            yPositions[i] - h/2,
+            xCenter - w / 2,
+            yPositions[i] - h / 2,
             w,
             h
         };

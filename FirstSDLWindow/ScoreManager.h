@@ -43,6 +43,8 @@ public:
 
 	void saveHighScore(const std::string& filename);
 	void loadHighScore(const std::string& filename);
+	int getHighScore() const;
+	void setHighScore(int value);
 
 	void reset();
 };

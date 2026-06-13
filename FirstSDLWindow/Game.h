@@ -24,6 +24,7 @@
 #include "WeaponInventory.h"
 #include "Pickup.h"
 #include "Cutscene.h"
+#include "FinalResults.h"
 
 enum class GameMode
 {
@@ -33,10 +34,11 @@ enum class GameMode
 
 enum class GameState
 {
-    MENU, 
-    INTRO_CUTSCENE, 
-    PLAYING, 
-    WIN_CUTSCENE
+    MENU,
+    INTRO_CUTSCENE,
+    PLAYING,
+    WIN_CUTSCENE,
+    FINAL_RESULTS
 };
 
 enum class GameOverPhase
@@ -86,6 +88,7 @@ private:
     std::unique_ptr<Boss> boss;
     std::unique_ptr<ComboManager> comboManager;
     std::unique_ptr<WaveManager> waveManager;
+    std::unique_ptr<FinalResults> finalResults;
     std::unique_ptr<WeaponInventory> weaponInventory;
     std::unique_ptr<ScoreManager> scoreManager;
     std::unique_ptr<BulletManager> bulletManager;

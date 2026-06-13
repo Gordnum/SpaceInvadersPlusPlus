@@ -57,6 +57,17 @@ void ScoreManager::awardScore(int points)
 
 int ScoreManager::getScore() const { return score; }
 
+int ScoreManager::getHighScore() const { return highscore; }
+
+void ScoreManager::setHighScore(int value)
+{
+	if (value > highscore)
+	{
+		highscore = value;
+		saveHighScore("../Assets/highscore.txt");
+	}
+}
+
 void ScoreManager::saveHighScore(const std::string& filename)
 {
 	std::ofstream file(filename);
@@ -112,9 +123,6 @@ SDL_Texture* ScoreManager::renderText(SDL_Renderer* renderer, const std::string&
 
 void ScoreManager::updateTexture(SDL_Renderer* renderer)
 {
-	if (score > highscore)
-		highscore = score;
-
 	// --- Render "Score" label ---
 	if (scoreLabelTexture) SDL_DestroyTexture(scoreLabelTexture);
 	scoreLabelTexture = renderText(renderer, "<SCORE>", scoreLabelRect, 20, false, 100); // left-aligned at x=100
