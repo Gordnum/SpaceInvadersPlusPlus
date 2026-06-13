@@ -1009,8 +1009,15 @@ void Game::update()
 		if (explosion.hitBoss && boss->isActive())
 		{
 			const int TRIPMINE_BOSS_DAMAGE = 30;
+
 			boss->takeDamage(TRIPMINE_BOSS_DAMAGE);
 			SoundManager::playSound(SoundID::BOSS_TAKE_DAMAGE);
+
+			if (boss->isDefeated() && !boss->isDying() && currentMode == GameMode::CAMPAIGN)
+			{
+				bossDeathState = BossDeathState::START;
+				bossDeathStartTime = SDL_GetTicks();
+			}
 		}
 
 		explosion.exploded = true;
