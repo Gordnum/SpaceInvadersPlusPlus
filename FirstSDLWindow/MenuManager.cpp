@@ -69,6 +69,9 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 					else if (selectedIndex == 1 && campaignBeaten)
 						startEndless = true;
 				}
+
+				SoundManager::playSound(SoundID::MENU_ENTER);
+
 				break;
 
 			case SDLK_ESCAPE:

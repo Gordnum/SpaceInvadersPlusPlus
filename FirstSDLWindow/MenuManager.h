@@ -3,6 +3,7 @@
 #include <SDL_ttf.h>
 #include <vector>
 #include <string>
+#include "SoundManager.h"
 
 enum class MenuState 
 {

@@ -70,6 +70,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::LIFE_UP, "../Assets/SoundEffects/life_up.wav");
     loadSound(SoundID::BOSS_TAKE_DAMAGE, "../Assets/SoundEffects/boss_take_damage.wav");
     loadSound(SoundID::BOSS_SHOOT, "../Assets/SoundEffects/boss_shoot.wav");
+    loadSound(SoundID::MENU_ENTER, "../Assets/SoundEffects/menu_enter.wav");
 }
 
 void SoundManager::clean() 
