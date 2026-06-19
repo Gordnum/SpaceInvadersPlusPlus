@@ -40,6 +40,9 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				selectedIndex--;
 				if (selectedIndex < 0)
 					selectedIndex = (currentState == MenuState::Main) ? 1 : (campaignBeaten ? 1 : 0);
+
+				SoundManager::playSound(SoundID::MENU_UPDOWN);
+
 				break;
 
 			case SDLK_DOWN:
@@ -48,6 +51,9 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 					selectedIndex = selectedIndex % 2;
 				else
 					selectedIndex = selectedIndex % (campaignBeaten ? 2 : 1);
+
+				SoundManager::playSound(SoundID::MENU_UPDOWN);
+
 				break;
 
 			case SDLK_RETURN:
