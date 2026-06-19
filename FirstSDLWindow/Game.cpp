@@ -737,6 +737,44 @@ void Game::update()
 				{
 					enemy->destroy();
 
+					int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
+
+					scoreManager->awardScore(earnedScore);
+
+					if (scoreManager->giveLive())
+					{
+						player->plusLives();
+
+						SDL_Color plus_lives = { 255,255,255 };
+
+						scorePopup.push_back
+						(
+							std::make_unique<ScorePopup>
+							(
+								renderer,
+								"1UP",
+								player->getRect().x + player->getRect().w / 2,
+								player->getRect().y - 30,
+								1.0f,
+								&plus_lives
+							)
+						);
+					}
+
+					scorePopup.push_back
+					(
+						std::make_unique<ScorePopup>
+						(
+							renderer,
+							"+" + std::to_string(earnedScore),
+							enemy->getX(),
+							enemy->getY(),
+							comboManager->getMultiplier()
+						)
+					);
+
+					comboManager->onEnemyKilled();
+
 					const int BOMB_RADIUS = 60;
 					SDL_Rect center = enemy->getRect(); // center of explosion
 
@@ -753,7 +791,26 @@ void Game::update()
 							if (dx <= BOMB_RADIUS && dy <= BOMB_RADIUS)
 							{
 								e2->destroy();
-								int earnedScore = static_cast<int>(baseScore * comboManager->getMultiplier());
+
+								int splashScore = 10;
+
+								switch (e2->getType())
+								{
+									case EnemyType::SQUID:
+										splashScore = 50;
+										break;
+
+									case EnemyType::CRAB:
+										splashScore = 30;
+										break;
+
+									case EnemyType::OCTOPUS:
+										splashScore = 10;
+										break;
+								}
+
+								int earnedScore = static_cast<int>(splashScore * comboManager->getMultiplier());
+
 								scoreManager->awardScore(earnedScore);
 
 								if (scoreManager->giveLive())
