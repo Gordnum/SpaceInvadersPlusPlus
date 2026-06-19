@@ -12,8 +12,6 @@ WaveManager::WaveManager()
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
     if (!font)
         SDL_Log("Failed to load wave font: %s", TTF_GetError());
-
-    TTF_SetFontStyle(font, TTF_STYLE_BOLD);
 }
 
 WaveManager::~WaveManager()
