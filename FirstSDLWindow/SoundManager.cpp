@@ -72,6 +72,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::BOSS_SHOOT, "../Assets/SoundEffects/boss_shoot.wav");
     loadSound(SoundID::MENU_ENTER, "../Assets/SoundEffects/menu_enter.wav");
     loadSound(SoundID::MENU_UPDOWN, "../Assets/SoundEffects/menu_updown.wav");
+    loadSound(SoundID::MENU_BACK, "../Assets/SoundEffects/menu_back.wav");
 }
 
 void SoundManager::clean() 

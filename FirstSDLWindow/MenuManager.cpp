@@ -85,7 +85,9 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				{
 					currentState = MenuState::Main;
 					selectedIndex = 0;
+					SoundManager::playSound(SoundID::MENU_BACK);
 				}
+
 				break;
 		}
 	}
