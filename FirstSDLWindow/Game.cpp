@@ -1514,7 +1514,7 @@ void Game::render()
 	for (auto& b : enemyBullets) { if (b->isActive()) b->render(); }
 	for (auto& b : bossBullets) { if (b->isActive()) b->render(renderer); }
 
-	if (waveManager->getWaveIntro() && !isGameOver) //prototype game win
+	if (waveManager->getWaveIntro() && !isGameOver)
 		waveManager->showWaveIntro(renderer);
 
 	//render TRIPMINE exploding line

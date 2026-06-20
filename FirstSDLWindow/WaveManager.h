@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>
+#include "SoundManager.h"
 
 enum class waveIntroType
 {
@@ -16,6 +17,7 @@ class WaveManager
 		float enemySpeedMultiplier;
 		float projectileSpeedMultiplier;
 		bool showingWaveIntro;
+		bool bossWarningPlayed;
 		unsigned int waveIntroStartTime;
 		unsigned int waveIntroDuration;
 		const unsigned int bossWaveIntroDuration;

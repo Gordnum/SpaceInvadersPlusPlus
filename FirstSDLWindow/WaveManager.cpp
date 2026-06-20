@@ -7,7 +7,7 @@ const int SCREEN_HEIGHT = 600;
 WaveManager::WaveManager()
 			:currentWave(1), enemySpeedMultiplier(10.0f), projectileSpeedMultiplier(300.0f), 
              showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000), bossWaveIntroDuration(9000),
-             introType(waveIntroType::NORMAL)
+             bossWarningPlayed(false), introType(waveIntroType::NORMAL)
 {
     font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
     if (!font)
@@ -24,6 +24,8 @@ void WaveManager::startWaveIntro(waveIntroType type)
     showingWaveIntro = true;
     waveIntroStartTime = SDL_GetTicks();
 	introType = type;
+
+    bossWarningPlayed = false;
 
     waveIntroDuration = (type == waveIntroType::BOSS) ? bossWaveIntroDuration : 2000;
 }
@@ -79,6 +81,12 @@ void WaveManager::renderBossIntro(SDL_Renderer* renderer)
 
     const unsigned int bossWarningDelay = 3000;
     const unsigned int bossOminousDelay = 4500;
+
+    if (elapsed >= bossWarningDelay && !bossWarningPlayed)
+    {
+        SoundManager::playSound(SoundID::BOSS_WARNING);
+        bossWarningPlayed = true;
+    }
 
     if (elapsed < bossWarningDelay)
         return;
