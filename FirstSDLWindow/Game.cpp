@@ -117,6 +117,8 @@ void Game::handleEvents()
 						"Good luck."
 					}
 				);
+
+				SoundManager::playSound(SoundID::CAMPAIGN_INTRO);
 			}
 			else if (startEndless)
 			{

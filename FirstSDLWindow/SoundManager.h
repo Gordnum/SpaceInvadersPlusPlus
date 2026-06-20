@@ -30,7 +30,8 @@ enum class SoundID
     UFO_DEATH,
     MENU_ENTER,
     MENU_UPDOWN,
-    MENU_BACK
+    MENU_BACK,
+    CAMPAIGN_INTRO
 };
 
 inline SoundID weaponTypeToSoundID(WeaponType weapon) 

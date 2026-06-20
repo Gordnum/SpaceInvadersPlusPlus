@@ -73,6 +73,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::MENU_ENTER, "../Assets/SoundEffects/menu_enter.wav");
     loadSound(SoundID::MENU_UPDOWN, "../Assets/SoundEffects/menu_updown.wav");
     loadSound(SoundID::MENU_BACK, "../Assets/SoundEffects/menu_back.wav");
+    loadSound(SoundID::CAMPAIGN_INTRO, "../Assets/SoundEffects/campaign_intro.wav");
 }
 
 void SoundManager::clean() 
