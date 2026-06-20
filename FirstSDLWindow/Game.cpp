@@ -285,7 +285,8 @@ void Game::update()
 				weaponInventory->getAmmo(WeaponType::PIERCING_SHOT),
 				weaponInventory->getAmmo(WeaponType::BOMB_SHOT),
 				weaponInventory->getAmmo(WeaponType::TRIPMINE),
-				scoreManager.get()
+				scoreManager.get(),
+				currentMode
 			);
 
 			weaponInventory->reset();
@@ -315,8 +316,11 @@ void Game::update()
 
 			if (currentMode == GameMode::CAMPAIGN)
 			{
-				scoreManager->unlockEndless();
-				finalResults->endlessUnlockedThisRun();
+				if (!scoreManager->isEndlessUnlocked())
+				{
+					scoreManager->unlockEndless();
+					finalResults->endlessUnlockedThisRun();
+				}
 			}
 
 			if (keys[SDL_SCANCODE_RETURN])
@@ -398,6 +402,19 @@ void Game::update()
 
 			waveManager->reset();
 			comboManager->reset();
+
+			finalResults->start
+			(
+				scoreManager->getScore(),
+				player->getLives(),
+				weaponInventory->getAmmo(WeaponType::RAPID_SHOT),
+				weaponInventory->getAmmo(WeaponType::PIERCING_SHOT),
+				weaponInventory->getAmmo(WeaponType::BOMB_SHOT),
+				weaponInventory->getAmmo(WeaponType::TRIPMINE),
+				scoreManager.get(),
+				currentMode
+			);
+
 			weaponInventory->reset();
 			scoreManager->reset();
 			player->reset();
@@ -408,6 +425,9 @@ void Game::update()
 			menuManager->setInMainMenu(true);
 			moveInterval = 700;
 			if (enemyDirection == -1) enemyDirection = 1;
+
+			if (currentMode == GameMode::ENDLESS)
+				gameState = GameState::FINAL_RESULTS;
 
 			return;
 		}
@@ -1500,7 +1520,7 @@ void Game::render()
 	SDL_RenderSetClipRect(renderer, nullptr);
 
 	player->render();
-	scoreManager->render(renderer);
+	scoreManager->render(renderer, currentMode);
 	comboManager->render(renderer);
 	weaponInventory->renderWeaponHUD(renderer);
 

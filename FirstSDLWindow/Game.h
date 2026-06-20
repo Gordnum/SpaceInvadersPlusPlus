@@ -8,6 +8,7 @@
 #include <cmath>
 #include <windows.h>
 #include <unordered_map>
+#include "GameMode.h"
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
@@ -25,12 +26,6 @@
 #include "Pickup.h"
 #include "Cutscene.h"
 #include "FinalResults.h"
-
-enum class GameMode
-{
-    CAMPAIGN,
-    ENDLESS
-};
 
 enum class GameState
 {

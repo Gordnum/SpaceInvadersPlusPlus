@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include "ScoreManager.h"
+#include "GameMode.h"
 
 class FinalResults
 {
@@ -16,6 +17,7 @@ class FinalResults
         bool highScoreChecked;
         bool endlessUnlocked;
         ScoreManager* scoreManager;
+        GameMode currentMode;
 
         int baseScore;
         int lifeBonus;
@@ -39,7 +41,7 @@ class FinalResults
 
 	public:
         FinalResults();
-        void start(int score, int livesRemaining, int rapidAmmo, int piercingAmmo, int bombAmmo, int tripmineAmmo, ScoreManager* sm);
+        void start(int score, int livesRemaining, int rapidAmmo, int piercingAmmo, int bombAmmo, int tripmineAmmo, ScoreManager* sm, GameMode gameMode);
         void update();
         void render(SDL_Renderer* renderer);
         bool isActive();

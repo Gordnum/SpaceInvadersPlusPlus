@@ -36,7 +36,7 @@ FinalResults::FinalResults()
     lastTick = SDL_GetTicks();
 }
 
-void FinalResults::start(int score, int livesRemaining, int rapidAmmo, int piercingAmmo, int bombAmmo, int tripmineAmmo, ScoreManager* sm)
+void FinalResults::start(int score, int livesRemaining, int rapidAmmo, int piercingAmmo, int bombAmmo, int tripmineAmmo, ScoreManager* sm, GameMode mode)
 {
     active = true;
     countingFinished = false;
@@ -44,6 +44,8 @@ void FinalResults::start(int score, int livesRemaining, int rapidAmmo, int pierc
     baseScore = score;
 
     scoreManager = sm;
+
+    currentMode = mode;
 
     highScoreChecked = false;
     newHighScoreAchieved = false;
@@ -59,7 +61,10 @@ void FinalResults::start(int score, int livesRemaining, int rapidAmmo, int pierc
 
     tripmineBonus = tripmineAmmo * 400;
 
-    bossBonus = 5000;
+    if (currentMode == GameMode::CAMPAIGN)
+        bossBonus = 5000;
+    else
+        bossBonus = 0;
 
     totalScore = baseScore + lifeBonus + rapidBonus + piercingBonus + bombBonus + tripmineBonus + bossBonus;
 
@@ -163,11 +168,21 @@ void FinalResults::update()
     {
         highScoreChecked = true;
 
-        if (totalScore > scoreManager->getHighScore())
+        if (currentMode == GameMode::CAMPAIGN)
         {
-            scoreManager->setHighScore(totalScore);
-            newHighScoreAchieved = true;
-            SDL_Log("NEW HIGH SCORE: %d", totalScore);
+            if (totalScore > scoreManager->getCampaignHighScore())
+            {
+                scoreManager->setCampaignHighScore(totalScore);
+                newHighScoreAchieved = true;
+            }
+        }
+        else
+        {
+            if (totalScore > scoreManager->getEndlessHighScore())
+            {
+                scoreManager->setEndlessHighScore(totalScore);
+                newHighScoreAchieved = true;
+            }
         }
     }
 }
@@ -265,7 +280,10 @@ void FinalResults::render(SDL_Renderer* renderer)
 
     SDL_RenderFillRect(renderer, &background);
 
-    drawCentered("MISSION COMPLETE", 100);
+    if(currentMode == GameMode::CAMPAIGN)
+        drawCentered("MISSION COMPLETE", 100);
+    else
+        drawCentered("RESULTS", 100);
 
     drawRightAligned("Base Score", labelColumn, 150);
     drawText(renderer, font, "|", separatorColumn, 150);
@@ -302,17 +320,23 @@ void FinalResults::render(SDL_Renderer* renderer)
     if (newHighScoreAchieved)
     {
         unsigned int ticks = SDL_GetTicks();
-
-        if ((ticks / 300) % 2 == 0)
+        if (currentMode == GameMode::CAMPAIGN)
         {
-            drawCentered("*NEW HIGHSCORE ACHIEVED*", 20);
+            if ((ticks / 300) % 2 == 0)
+                drawCentered("*NEW CAMPAIGN HIGHSCORE ACHIEVED*", 20);
         }
+        else
+        {
+            if ((ticks / 300) % 2 == 0)
+                drawCentered("*NEW ENDLESS HIGHSCORE ACHIEVED*", 20);
+        }
+        
     }
 
     if (countingFinished)
         drawCentered("PRESS ENTER TO CONTINUE", 540);
 
-    if (endlessUnlocked)
+    if (currentMode == GameMode::CAMPAIGN && endlessUnlocked)
     {
         unsigned int ticks = SDL_GetTicks();
 

@@ -7,19 +7,20 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 ScoreManager::ScoreManager(SDL_Renderer* renderer)
-	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), 
-	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false), endlessUnlocked(false)
+	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }),
+	campaignHighscore(0), endlessHighscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false), 
+	endlessUnlocked(false), currentMode(GameMode::CAMPAIGN)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
-		return; 
+		return;
 	}
 
 	TTF_SetFontStyle(font, TTF_STYLE_BOLD);
 
-	updateTexture(renderer);
+	updateTexture(renderer, currentMode);
 }
 
 ScoreManager::~ScoreManager()
@@ -32,18 +33,18 @@ ScoreManager::~ScoreManager()
 	if (font) TTF_CloseFont(font);
 }
 
-void ScoreManager::addPoints(int amount) 
+void ScoreManager::addPoints(int amount)
 {
 	printf("\t+ %d\n", amount);
 	score += amount;
 
-	if(score >= nextPickupThreshold)
+	if (score >= nextPickupThreshold)
 	{
 		shouldSpawnPickup = true;
 		nextPickupThreshold += 500;
 	}
 
-	if(score >= nextGiveLivesThreshold)
+	if (score >= nextGiveLivesThreshold)
 	{
 		shouldGiveLive = true;
 		nextGiveLivesThreshold += 5000;
@@ -57,13 +58,30 @@ void ScoreManager::awardScore(int points)
 
 int ScoreManager::getScore() const { return score; }
 
-int ScoreManager::getHighScore() const { return highscore; }
-
-void ScoreManager::setHighScore(int value)
+int ScoreManager::getCampaignHighScore() const
 {
-	if (value > highscore)
+	return campaignHighscore;
+}
+
+int ScoreManager::getEndlessHighScore() const
+{
+	return endlessHighscore;
+}
+
+void ScoreManager::setCampaignHighScore(int value)
+{
+	if (value > campaignHighscore)
 	{
-		highscore = value;
+		campaignHighscore = value;
+		saveHighScore("../Assets/highscore.txt");
+	}
+}
+
+void ScoreManager::setEndlessHighScore(int value)
+{
+	if (value > endlessHighscore)
+	{
+		endlessHighscore = value;
 		saveHighScore("../Assets/highscore.txt");
 	}
 }
@@ -71,9 +89,10 @@ void ScoreManager::setHighScore(int value)
 void ScoreManager::saveHighScore(const std::string& filename)
 {
 	std::ofstream file(filename);
-	if (file.is_open()) 
+	if (file.is_open())
 	{
-		file << highscore << std::endl;
+		file << campaignHighscore << std::endl;
+		file << endlessHighscore << std::endl;
 		file << endlessUnlocked;
 		file.close();
 	}
@@ -82,9 +101,10 @@ void ScoreManager::saveHighScore(const std::string& filename)
 void ScoreManager::loadHighScore(const std::string& filename)
 {
 	std::ifstream file(filename);
-	if (file.is_open()) 
+	if (file.is_open())
 	{
-		file >> highscore;
+		file >> campaignHighscore;
+		file >> endlessHighscore;
 
 		if (!(file >> endlessUnlocked))
 		{
@@ -95,7 +115,7 @@ void ScoreManager::loadHighScore(const std::string& filename)
 	}
 }
 
-void ScoreManager::reset() 
+void ScoreManager::reset()
 {
 	score = 0;
 	nextPickupThreshold = 500;
@@ -128,16 +148,16 @@ SDL_Texture* ScoreManager::renderText(SDL_Renderer* renderer, const std::string&
 	return tex;
 }
 
-void ScoreManager::updateTexture(SDL_Renderer* renderer)
+void ScoreManager::updateTexture(SDL_Renderer* renderer, GameMode mode)
 {
-	// --- Render "Score" label ---
+	// Render "Score" label
 	if (scoreLabelTexture) SDL_DestroyTexture(scoreLabelTexture);
 	scoreLabelTexture = renderText(renderer, "<SCORE>", scoreLabelRect, 20, false, 100); // left-aligned at x=100
 
-	if(highScoreLabelTexture)  SDL_DestroyTexture(highScoreLabelTexture);
+	if (highScoreLabelTexture)  SDL_DestroyTexture(highScoreLabelTexture);
 	highScoreLabelTexture = renderText(renderer, "<HI-SCORE>", highScoreLabelRect, 20, true, 100);
 
-	// --- Render score number under the label ---
+	// Render score number under the label
 	if (scoreNumberTexture) SDL_DestroyTexture(scoreNumberTexture);
 	if (highScoreNumberTexture) SDL_DestroyTexture(highScoreNumberTexture);
 
@@ -146,7 +166,10 @@ void ScoreManager::updateTexture(SDL_Renderer* renderer)
 	SDL_Surface* numSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), color);
 	scoreNumberTexture = SDL_CreateTextureFromSurface(renderer, numSurface);
 
-	std::string highScoreStr = std::to_string(highscore);
+	currentMode = mode; // Set the mode
+
+	int displayedHighscore = (currentMode == GameMode::CAMPAIGN) ? campaignHighscore : endlessHighscore;
+	std::string highScoreStr = std::to_string(displayedHighscore);
 	SDL_Surface* highNumSurface = TTF_RenderText_Solid(font, highScoreStr.c_str(), color);
 	highScoreNumberTexture = SDL_CreateTextureFromSurface(renderer, highNumSurface);
 
@@ -165,9 +188,9 @@ void ScoreManager::updateTexture(SDL_Renderer* renderer)
 	SDL_FreeSurface(highNumSurface);
 }
 
-void ScoreManager::render(SDL_Renderer* renderer)
+void ScoreManager::render(SDL_Renderer* renderer, GameMode mode)
 {
-	updateTexture(renderer);
+	updateTexture(renderer, mode);
 	if (scoreLabelTexture)
 		SDL_RenderCopy(renderer, scoreLabelTexture, nullptr, &scoreLabelRect);
 	if (scoreNumberTexture)
@@ -178,9 +201,9 @@ void ScoreManager::render(SDL_Renderer* renderer)
 		SDL_RenderCopy(renderer, highScoreNumberTexture, nullptr, &highScoreNumberRect);
 }
 
-bool ScoreManager::spawnPickup() 
-{ 
-	if(shouldSpawnPickup)
+bool ScoreManager::spawnPickup()
+{
+	if (shouldSpawnPickup)
 	{
 		shouldSpawnPickup = false;
 		return true;
@@ -190,7 +213,7 @@ bool ScoreManager::spawnPickup()
 
 bool ScoreManager::giveLive()
 {
-	if(shouldGiveLive)
+	if (shouldGiveLive)
 	{
 		shouldGiveLive = false;
 		SoundManager::playSound(SoundID::LIFE_UP);
