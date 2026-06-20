@@ -1603,7 +1603,9 @@ void Game::render()
 				return;
 			}
 
-			SDL_Surface* surface = TTF_RenderText_Solid(font, "YOU FAILED", color);
+			const char* gameOverText = (currentMode == GameMode::CAMPAIGN) ? "YOU FAILED" : "YOU DIED";
+
+			SDL_Surface* surface = TTF_RenderText_Solid(font, gameOverText, color);
 			if (!surface)
 			{
 				SDL_Log("Failed to create surface: %s", TTF_GetError());
