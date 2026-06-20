@@ -128,35 +128,24 @@ void WaveManager::renderBossIntro(SDL_Renderer* renderer)
         const unsigned int holdDuration = 1000;
         const unsigned int fadeOutDuration = 1500;
 
-        unsigned int fadeInEnd =
-            bossOminousDelay + fadeInDuration;
+        unsigned int fadeInEnd = bossOminousDelay + fadeInDuration;
 
-        unsigned int holdEnd =
-            fadeInEnd + holdDuration;
+        unsigned int holdEnd = fadeInEnd + holdDuration;
 
-        unsigned int fadeOutEnd =
-            holdEnd + fadeOutDuration;
+        unsigned int fadeOutEnd = holdEnd + fadeOutDuration;
 
         if (elapsed < fadeInEnd)
         {
-            float t =
-                (elapsed - bossOminousDelay) /
-                (float)fadeInDuration;
-
-            fadeAlpha =
-                static_cast<Uint8>(255 * t);
+            float t = (elapsed - bossOminousDelay) / (float)fadeInDuration;
+            fadeAlpha = static_cast<Uint8>(255 * t);
         }
         else if (elapsed < holdEnd)
             fadeAlpha = 255;
         else if (elapsed < fadeOutEnd)
         {
-            float t =
-                1.0f -
-                (elapsed - holdEnd) /
-                (float)fadeOutDuration;
+            float t = 1.0f - (elapsed - holdEnd) / (float)fadeOutDuration;
 
-            fadeAlpha =
-                static_cast<Uint8>(255 * t);
+            fadeAlpha = static_cast<Uint8>(255 * t);
         }
         else
             fadeAlpha = 0;
