@@ -3,8 +3,8 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-MenuManager::MenuManager(SDL_Renderer* renderer)
-			:renderer(renderer), titleFont(nullptr), choicesFont(nullptr), currentState(MenuState::Main), selectedIndex(0), campaignBeaten(false), inMainMenu(true)
+MenuManager::MenuManager(SDL_Renderer* renderer, ScoreManager* scoreManager)
+			:renderer(renderer), titleFont(nullptr), choicesFont(nullptr), currentState(MenuState::Main), selectedIndex(0), inMainMenu(true), scoreManager(scoreManager)
 {
 	titleFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
 	if (!titleFont)
@@ -25,8 +25,6 @@ MenuManager::~MenuManager()
 	if (choicesFont) TTF_CloseFont(choicesFont);
 }
 
-void MenuManager::setCampaignBeaten(bool beaten) { campaignBeaten = beaten; }
-bool MenuManager::isCampaignBeaten() const { return campaignBeaten; }
 void MenuManager::setInMainMenu(bool status) { inMainMenu = status; }
 bool MenuManager::isInMainMenu() const { return inMainMenu; }
 
@@ -39,7 +37,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 			case SDLK_UP:
 				selectedIndex--;
 				if (selectedIndex < 0)
-					selectedIndex = (currentState == MenuState::Main) ? 1 : (campaignBeaten ? 1 : 0);
+					selectedIndex = (currentState == MenuState::Main) ? 1 : (scoreManager->isEndlessUnlocked() ? 1 : 0);
 
 				SoundManager::playSound(SoundID::MENU_UPDOWN);
 
@@ -50,7 +48,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				if (currentState == MenuState::Main)
 					selectedIndex = selectedIndex % 2;
 				else
-					selectedIndex = selectedIndex % (campaignBeaten ? 2 : 1);
+					selectedIndex = selectedIndex % (scoreManager->isEndlessUnlocked() ? 2 : 1);
 
 				SoundManager::playSound(SoundID::MENU_UPDOWN);
 
@@ -72,7 +70,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				{
 					if (selectedIndex == 0)
 						startCampaign = true;
-					else if (selectedIndex == 1 && campaignBeaten)
+					else if (selectedIndex == 1 && scoreManager->isEndlessUnlocked())
 						startEndless = true;
 				}
 
@@ -136,7 +134,8 @@ void MenuManager::renderMainMenu()
 void MenuManager::renderPlaySubMenu()
 {
 	std::vector<std::string> options = { "Campaign" };
-	if (campaignBeaten)
+
+	if (scoreManager->isEndlessUnlocked())
 		options.push_back("Endless");
 
 	SDL_Color white = { 255, 255, 255 };

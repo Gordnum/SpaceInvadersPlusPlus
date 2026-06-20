@@ -14,6 +14,7 @@ class FinalResults
         bool countingFinished;
         bool newHighScoreAchieved;
         bool highScoreChecked;
+        bool endlessUnlocked;
         ScoreManager* scoreManager;
 
         int baseScore;
@@ -45,4 +46,5 @@ class FinalResults
         bool isFinished() const;
         int getFinalScore();
         void close();
+        void endlessUnlockedThisRun();
 };

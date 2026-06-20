@@ -58,7 +58,8 @@ bool Game::init()
 	window = SDL_CreateWindow("SpaceInvaders++", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	menuManager = std::make_unique<MenuManager>(renderer);
+	scoreManager = std::make_unique<ScoreManager>(renderer);
+	menuManager = std::make_unique<MenuManager>(renderer, scoreManager.get());
 	cutscene = std::make_unique<Cutscene>(renderer);
 	waveManager = std::make_unique<WaveManager>();
 	finalResults = std::make_unique<FinalResults>();
@@ -70,7 +71,6 @@ bool Game::init()
 	bullet = std::make_unique<Bullet>(renderer);
 	ufo = std::make_unique<UFO>(renderer);
 	boss = std::make_unique<Boss>(renderer);
-	scoreManager = std::make_unique<ScoreManager>(renderer);
 	comboManager = std::make_unique<ComboManager>();
 	weaponInventory = std::make_unique<WeaponInventory>();
 	bulletManager = std::make_unique<BulletManager>(renderer);
@@ -311,9 +311,16 @@ void Game::update()
 		{
 			const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
+			if (currentMode == GameMode::CAMPAIGN)
+			{
+				scoreManager->unlockEndless();
+				finalResults->endlessUnlockedThisRun();
+			}
+
 			if (keys[SDL_SCANCODE_RETURN])
 			{
 				finalResults->close();
+				
 				menuManager->setInMainMenu(true);
 				gameState = GameState::PLAYING;
 			}
@@ -496,15 +503,6 @@ void Game::update()
 				{
 					bossDeathState = BossDeathState::START;
 					bossDeathStartTime = SDL_GetTicks();
-
-					/*
-					waveManager->setShowingWaveIntro(false);
-
-					// Win logic / trigger end screen (prototype)
-					isGameOver = true;
-					gameOverPhase = GameOverPhase::FREEZE;
-					gameOverStartTime = SDL_GetTicks();
-					*/
 				}
 			}
 		}

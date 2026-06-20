@@ -8,7 +8,7 @@ const int SCREEN_HEIGHT = 600;
 
 ScoreManager::ScoreManager(SDL_Renderer* renderer)
 	:score(0), font(nullptr), scoreLabelTexture(nullptr), color({ 255, 255, 255, 255 }), 
-	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false)
+	 highscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false), endlessUnlocked(false)
 {
 	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
 	if (!font)
@@ -73,7 +73,8 @@ void ScoreManager::saveHighScore(const std::string& filename)
 	std::ofstream file(filename);
 	if (file.is_open()) 
 	{
-		file << highscore;
+		file << highscore << std::endl;
+		file << endlessUnlocked;
 		file.close();
 	}
 }
@@ -84,6 +85,12 @@ void ScoreManager::loadHighScore(const std::string& filename)
 	if (file.is_open()) 
 	{
 		file >> highscore;
+
+		if (!(file >> endlessUnlocked))
+		{
+			endlessUnlocked = false;
+		}
+
 		file.close();
 	}
 }
@@ -190,4 +197,18 @@ bool ScoreManager::giveLive()
 		return true;
 	}
 	return false;
+}
+
+bool ScoreManager::isEndlessUnlocked() const
+{
+	return endlessUnlocked;
+}
+
+void ScoreManager::unlockEndless()
+{
+	if (!endlessUnlocked)
+	{
+		endlessUnlocked = true;
+		saveHighScore("../Assets/highscore.txt");
+	}
 }

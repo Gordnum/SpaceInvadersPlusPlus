@@ -14,6 +14,7 @@ private:
 	int nextGiveLivesThreshold;
 	bool shouldSpawnPickup;
 	bool shouldGiveLive;
+	bool endlessUnlocked; //for flagging completed campaign or not
 	TTF_Font* font;
 	SDL_Color color;
 	SDL_Rect scoreLabelRect;
@@ -45,6 +46,9 @@ public:
 	void loadHighScore(const std::string& filename);
 	int getHighScore() const;
 	void setHighScore(int value);
+
+	bool isEndlessUnlocked() const;
+	void unlockEndless();
 
 	void reset();
 };

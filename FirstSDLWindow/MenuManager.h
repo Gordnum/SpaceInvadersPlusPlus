@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "SoundManager.h"
+#include "ScoreManager.h"
 
 enum class MenuState 
 {
@@ -26,14 +27,15 @@ class MenuManager
 
 		void renderMainMenu();
 		void renderPlaySubMenu();
+
+		ScoreManager* scoreManager;
+
 	public:
-		MenuManager(SDL_Renderer* renderer);
+		MenuManager(SDL_Renderer* renderer, ScoreManager* scoreManager);
 		~MenuManager();
 
 		void handleEvent(const SDL_Event& e, bool& startCampaign, bool& startEndless, bool& quit);
 		void render();
-		void setCampaignBeaten(bool beaten);
 		void setInMainMenu(bool status);
-		bool isCampaignBeaten() const;
 		bool isInMainMenu() const;
 };

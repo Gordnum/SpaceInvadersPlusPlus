@@ -13,6 +13,7 @@ FinalResults::FinalResults()
     countingFinished = false;
     newHighScoreAchieved = false;
     scoreManager = nullptr;
+    endlessUnlocked = false;
 
     baseScore = 0;
     lifeBonus = 0;
@@ -304,16 +305,29 @@ void FinalResults::render(SDL_Renderer* renderer)
 
         if ((ticks / 300) % 2 == 0)
         {
-            drawCentered("*NEW HIGHSCORE ACHIEVED*", 40);
+            drawCentered("*NEW HIGHSCORE ACHIEVED*", 20);
         }
     }
 
     if (countingFinished)
         drawCentered("PRESS ENTER TO CONTINUE", 540);
+
+    if (endlessUnlocked)
+    {
+        unsigned int ticks = SDL_GetTicks();
+
+        if ((ticks / 300) % 2 == 0)
+            drawCentered("ENDLESS MODE UNLOCKED", 60);
+    }
 }
 
 void FinalResults::close()
 {
     active = false;
     countingFinished = false;
+}
+
+void FinalResults::endlessUnlockedThisRun()
+{
+    endlessUnlocked = true;
 }
