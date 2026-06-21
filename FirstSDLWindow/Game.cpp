@@ -326,6 +326,7 @@ void Game::update()
 			if (keys[SDL_SCANCODE_RETURN])
 			{
 				finalResults->close();
+				SoundManager::playSound(SoundID::MENU_ENTER);
 				
 				menuManager->setInMainMenu(true);
 				gameState = GameState::PLAYING;
