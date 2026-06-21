@@ -18,6 +18,7 @@ class MenuManager
 		SDL_Renderer* renderer;
 		TTF_Font* titleFont;
 		TTF_Font* choicesFont;
+		TTF_Font* creditsFont;
 
 		MenuState currentState;
 		int selectedIndex;

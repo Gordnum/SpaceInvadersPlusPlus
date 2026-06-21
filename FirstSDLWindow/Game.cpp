@@ -1485,13 +1485,14 @@ void Game::render()
 		PLAYFIELD_BOTTOM_Y - PLAYFIELD_TOP_Y
 	};
 
-	SDL_RenderSetClipRect(renderer, &playfieldClip);
-
 	if (menuManager->isInMainMenu())
 	{
 		menuManager->render();
 		return;
 	}
+
+	SDL_RenderSetClipRect(renderer, &playfieldClip);
+
 	bullet->render();
 	bulletManager->render();
 	if (!inWaveIntro)

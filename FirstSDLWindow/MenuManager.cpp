@@ -17,12 +17,19 @@ MenuManager::MenuManager(SDL_Renderer* renderer, ScoreManager* scoreManager)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
 	}
+
+	creditsFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	if (!choicesFont)
+	{
+		SDL_Log("Failed to load font: %s", TTF_GetError());
+	}
 }
 
 MenuManager::~MenuManager()
 {
 	if (titleFont) TTF_CloseFont(titleFont);
 	if (choicesFont) TTF_CloseFont(choicesFont);
+	if (creditsFont) TTF_CloseFont(creditsFont);
 }
 
 void MenuManager::setInMainMenu(bool status) { inMainMenu = status; }
@@ -97,8 +104,8 @@ void MenuManager::render()
 	SDL_RenderClear(renderer);
 
 	// Title
-	SDL_Color white = { 255, 255, 255 };
-	SDL_Surface* titleSurface = TTF_RenderText_Solid(titleFont, "SPACE INVADERS++", white);
+	SDL_Color titleColor = { 255, 255, 255 };
+	SDL_Surface* titleSurface = TTF_RenderText_Solid(titleFont, "SPACE INVADERS++", titleColor);
 	SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
 	SDL_Rect titleRect = { 400 - titleSurface->w / 2, 150, titleSurface->w, titleSurface->h };
 	SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
@@ -109,6 +116,15 @@ void MenuManager::render()
 		renderMainMenu();
 	else
 		renderPlaySubMenu();
+
+	// Credits
+	SDL_Color creditsColor = { 255, 255, 255 };
+	SDL_Surface* creditsSurface = TTF_RenderText_Solid(creditsFont, "Made by Gordnum", creditsColor);
+	SDL_Texture* creditsTexture = SDL_CreateTextureFromSurface(renderer, creditsSurface);
+	SDL_Rect creditsRect = { 550, 560, creditsSurface->w, creditsSurface->h };
+	SDL_RenderCopy(renderer, creditsTexture, nullptr, &creditsRect);
+	SDL_FreeSurface(creditsSurface);
+	SDL_DestroyTexture(creditsTexture);
 
 	SDL_RenderPresent(renderer);
 }
@@ -124,7 +140,7 @@ void MenuManager::renderMainMenu()
 		SDL_Color color = (i == selectedIndex) ? yellow : white;
 		SDL_Surface* surface = TTF_RenderText_Solid(choicesFont, options[i].c_str(), color);
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-		SDL_Rect rect = { 400 - surface->w / 2, 400 + i * 50, surface->w, surface->h };
+		SDL_Rect rect = { 400 - surface->w / 2, 300 + i * 50, surface->w, surface->h };
 		SDL_RenderCopy(renderer, texture, nullptr, &rect);
 		SDL_FreeSurface(surface);
 		SDL_DestroyTexture(texture);
