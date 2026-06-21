@@ -32,7 +32,8 @@ enum class SoundID
     MENU_UPDOWN,
     MENU_BACK,
     CAMPAIGN_INTRO,
-    BOSS_WARNING
+    BOSS_WARNING,
+    BOSS_DEATH
 };
 
 inline SoundID weaponTypeToSoundID(WeaponType weapon) 

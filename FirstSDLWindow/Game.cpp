@@ -194,46 +194,44 @@ void Game::update()
 
 		switch (bossDeathState)
 		{
-		case BossDeathState::START:
-			fadeAlpha = 0;
-			boss->startDeath();
-			bossDeathState = BossDeathState::EXPLODING;
-			break;
+			case BossDeathState::START:
+				fadeAlpha = 0;
+				boss->startDeath();
+				bossDeathState = BossDeathState::EXPLODING;
+				break;
 
-		case BossDeathState::EXPLODING:
-			boss->update(deltaTime, renderer, bossBullets);
+			case BossDeathState::EXPLODING:
+				boss->update(deltaTime, renderer, bossBullets);
 
-			if (boss->isDeathFinished())
-			{
-				fadeAlpha += 1.5f;
-				if (fadeAlpha >= 255)
+				if (boss->isDeathFinished())
 				{
-					fadeAlpha = 255;
-					bossDeathState = BossDeathState::DONE;
+					fadeAlpha += 1.5f;
+					if (fadeAlpha >= 255)
+					{
+						fadeAlpha = 255;
+						bossDeathState = BossDeathState::DONE;
+					}
 				}
 
-			}
+				break;
 
-			break;
+			case BossDeathState::DONE:
+				boss->deactivate();
 
-		case BossDeathState::DONE:
-			boss->deactivate();
+				gameState = GameState::WIN_CUTSCENE;
 
-			gameState = GameState::WIN_CUTSCENE;
+				cutscene->start
+				(
+					{
+						"The alien commander has fallen.",
+						"Earth is safe...",
+						"for now."
+					}
+				);
 
-			cutscene->start
-			(
-				{
-					"The alien commander has fallen.",
-					"Earth is safe...",
-					"for now."
-				}
-			);
-
-			bossDeathState = BossDeathState::NONE;
-			break;
+				bossDeathState = BossDeathState::NONE;
+				break;
 		}
-
 		return;
 	}
 
@@ -458,7 +456,7 @@ void Game::update()
 			// Spawn enemies if not in boss intro
 			if (!boss->isActive())
 			{
-				int rows = (waveManager->getWave() >= 11) ? 6 : 5;
+				int rows = (currentMode == GameMode::CAMPAIGN) ? (waveManager->getWave() >= 11) ? 6 : 5 : 6;
 				int cols = 11;
 				int spacingX = 13;
 				int spacingY = 13;
@@ -1333,7 +1331,7 @@ void Game::update()
 	// New Wave
 	if (waveManager->getWaveIntro() && !boss->isActive())
 	{
-		int rows = (waveManager->getWave() >= 11) ? 6 : 5;
+		int rows = (currentMode == GameMode::CAMPAIGN) ? (waveManager->getWave() >= 11) ? 6 : 5 : 6;
 		int cols = 11;
 		int spacingX = 13;
 		int spacingY = 13;

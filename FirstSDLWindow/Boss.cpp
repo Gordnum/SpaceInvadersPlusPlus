@@ -58,6 +58,7 @@ bool Boss::isDeathFinished() const
 void Boss::startDeath()
 {
     dying = true;
+    SoundManager::playSound(SoundID::BOSS_DEATH);
     deathStartTime = SDL_GetTicks();
     lastExplosionSpawn = deathStartTime;
 }
@@ -74,7 +75,7 @@ void Boss::updateDeath()
         // frequency control here
         visible = ((elapsed / blinkInterval) % 2 == 0);
 
-        //spawn boss_death frames
+        //spawn boss death frames
         if (now - lastExplosionSpawn > 100)
         {
             lastExplosionSpawn = now;
@@ -95,7 +96,7 @@ void Boss::updateDeath()
         visible = false;
     }
 
-    //update boss_death frames
+    //update boss death frames
     for (auto& e : explosions)
     {
         if (now - e.lastFrameTime > 100)
@@ -105,7 +106,7 @@ void Boss::updateDeath()
         }
     }
 
-    //cleanup boss_death frames
+    //cleanup boss death frames
     explosions.erase(
         std::remove_if(explosions.begin(), explosions.end(),
             [now](const BossDeathExplosion& e)
