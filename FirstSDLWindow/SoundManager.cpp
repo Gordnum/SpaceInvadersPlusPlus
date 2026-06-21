@@ -76,6 +76,7 @@ void SoundManager::loadAllSounds()
     loadSound(SoundID::CAMPAIGN_INTRO, "../Assets/SoundEffects/campaign_intro.wav");
     loadSound(SoundID::BOSS_WARNING, "../Assets/SoundEffects/boss_warning.wav");
     loadSound(SoundID::BOSS_DEATH, "../Assets/SoundEffects/boss_death.wav");
+    loadSound(SoundID::BOSS_HOVER, "../Assets/SoundEffects/boss_hover.wav");
 }
 
 void SoundManager::clean() 

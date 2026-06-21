@@ -40,9 +40,16 @@ void Boss::activate()
     health = maxHealth;
     rect.x = (SCREEN_WIDTH - rect.w) / 2;
     lastShotTime = SDL_GetTicks();
+
+    hoverChannel = SoundManager::playLoop(SoundID::BOSS_HOVER);
 }
 
-void Boss::deactivate() { active = false; }
+void Boss::deactivate()
+{
+    active = false; 
+    SoundManager::stopChannel(hoverChannel);
+    hoverChannel = -1;
+}
 
 bool Boss::isActive() const { return active; }
 
@@ -58,6 +65,10 @@ bool Boss::isDeathFinished() const
 void Boss::startDeath()
 {
     dying = true;
+
+    SoundManager::stopChannel(hoverChannel);
+    hoverChannel = -1;
+
     SoundManager::playSound(SoundID::BOSS_DEATH);
     deathStartTime = SDL_GetTicks();
     lastExplosionSpawn = deathStartTime;
@@ -207,6 +218,7 @@ void Boss::render(SDL_Renderer* renderer)
     }
 
     // Draw health bar (hide when boss is dying)
+    /*
     if (!dying)
     {
         SDL_Rect border = { rect.x, rect.y - 20, rect.w, 10 };
@@ -217,4 +229,5 @@ void Boss::render(SDL_Renderer* renderer)
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white border
         SDL_RenderDrawRect(renderer, &border);
     }
+    */
 }

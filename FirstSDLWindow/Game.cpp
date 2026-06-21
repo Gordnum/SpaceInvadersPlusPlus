@@ -449,12 +449,15 @@ void Game::update()
 	if (inWaveIntro)
 	{
 		// Still allow the intro timer to move
-		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
+		unsigned int now = SDL_GetTicks();
+
+		if (now - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
 			waveManager->setShowingWaveIntro(false);
 
-			// Spawn enemies if not in boss intro
-			if (!boss->isActive())
+			if (waveManager->getIntroType() == waveIntroType::BOSS)
+				boss->activate();
+			else
 			{
 				int rows = (currentMode == GameMode::CAMPAIGN) ? (waveManager->getWave() >= 11) ? 6 : 5 : 6;
 				int cols = 11;
@@ -462,9 +465,10 @@ void Game::update()
 				int spacingY = 13;
 
 				enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
-				comboManager->reset();
-				bullet->deactivate();
 			}
+
+			comboManager->reset();
+			bullet->deactivate();
 		}
 	}
 
@@ -1311,9 +1315,8 @@ void Game::update()
 	{
 		waveManager->nextWave();
 
-		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 2) //set boss spawn wave
+		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20) //set boss spawn wave
 		{
-			boss->activate();
 			ufo->deactivate();
 			enemies.clear();
 			waveManager->startWaveIntro(waveIntroType::BOSS);
@@ -1331,15 +1334,24 @@ void Game::update()
 	// New Wave
 	if (waveManager->getWaveIntro() && !boss->isActive())
 	{
-		int rows = (currentMode == GameMode::CAMPAIGN) ? (waveManager->getWave() >= 11) ? 6 : 5 : 6;
-		int cols = 11;
-		int spacingX = 13;
-		int spacingY = 13;
+		unsigned int now = SDL_GetTicks();
 
-		if (SDL_GetTicks() - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
+		if (now - waveManager->getWaveIntroStartTime() >= waveManager->getWaveIntroDuration())
 		{
 			waveManager->setShowingWaveIntro(false);
-			enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+
+			if (waveManager->getIntroType() == waveIntroType::BOSS)
+				boss->activate();
+			else
+			{
+				int rows = (currentMode == GameMode::CAMPAIGN) ? (waveManager->getWave() >= 11) ? 6 : 5 : 6;
+				int cols = 11;
+				int spacingX = 13;
+				int spacingY = 13;
+
+				enemies = Enemy::createFormation(renderer, rows, cols, spacingX, spacingY);
+			}
+
 			comboManager->reset();
 			bullet->deactivate();
 		}

@@ -45,6 +45,8 @@ class Boss
         unsigned int lastSummonTime = 0;
         const unsigned int summonCooldown = 4000;
 
+        int hoverChannel = -1;
+
 	public:
         Boss(SDL_Renderer* renderer);
         ~Boss();
