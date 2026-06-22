@@ -102,8 +102,11 @@ void Game::handleEvents()
 				isRunning = false;
 			else if (startCampaign)
 			{
-				SDL_FlushEvent(SDL_KEYDOWN);
-				SDL_FlushEvent(SDL_KEYUP);
+				SDL_FlushEvent(SDLK_DOWN);
+				SDL_FlushEvent(SDLK_UP); 
+				SDL_FlushEvent(SDLK_w);
+				SDL_FlushEvent(SDLK_s);
+				SDL_FlushEvent(SDLK_SPACE);
 
 				currentMode = GameMode::CAMPAIGN;
 				menuManager->setInMainMenu(false);
@@ -123,8 +126,11 @@ void Game::handleEvents()
 			else if (startEndless)
 			{
 
-				SDL_FlushEvent(SDL_KEYDOWN);
-				SDL_FlushEvent(SDL_KEYUP);
+				SDL_FlushEvent(SDLK_DOWN);
+				SDL_FlushEvent(SDLK_UP);
+				SDL_FlushEvent(SDLK_w);
+				SDL_FlushEvent(SDLK_s);
+				SDL_FlushEvent(SDLK_SPACE);
 
 				currentMode = GameMode::ENDLESS;
 				menuManager->setInMainMenu(false);
@@ -159,10 +165,10 @@ void Game::handleEvents()
 		{
 			if (event.type == SDL_KEYDOWN)
 			{
-				if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_e)
+				if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_s)
 					weaponInventory->startWeaponSwapAnimation(1);
 
-				else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_q)
+				else if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w)
 					weaponInventory->startWeaponSwapAnimation(-1);
 			}
 
@@ -434,12 +440,16 @@ void Game::update()
 			highScoreSaved = false;
 			isGameOver = false;
 
-			menuManager->setInMainMenu(true);
 			moveInterval = 700;
 			if (enemyDirection == -1) enemyDirection = 1;
 
 			if (currentMode == GameMode::ENDLESS)
+			{
+				menuManager->setInMainMenu(false);
 				gameState = GameState::FINAL_RESULTS;
+			}
+			else
+				menuManager->setInMainMenu(true);
 
 			return;
 		}

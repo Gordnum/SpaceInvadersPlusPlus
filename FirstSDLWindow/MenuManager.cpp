@@ -50,6 +50,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 		switch (e.key.keysym.sym)
 		{
 			case SDLK_UP:
+			case SDLK_w:
 				selectedIndex--;
 				if (selectedIndex < 0)
 					selectedIndex = (currentState == MenuState::Main) ? 1 : (scoreManager->isEndlessUnlocked() ? 1 : 0);
@@ -59,6 +60,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				break;
 
 			case SDLK_DOWN:
+			case SDLK_s:
 				selectedIndex++;
 				if (currentState == MenuState::Main)
 					selectedIndex = selectedIndex % 2;
@@ -70,7 +72,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				break;
 
 			case SDLK_RETURN:
-			case SDLK_KP_ENTER:
+			case SDLK_SPACE:
 				if (currentState == MenuState::Main)
 				{
 					if (selectedIndex == 0) 
@@ -94,6 +96,7 @@ void MenuManager::handleEvent(const SDL_Event& e, bool& startCampaign, bool& sta
 				break;
 
 			case SDLK_ESCAPE:
+			case SDLK_BACKSPACE:
 				if (currentState == MenuState::PlaySubMenu) 
 				{
 					currentState = MenuState::Main;
