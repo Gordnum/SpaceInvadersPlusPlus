@@ -362,3 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Assets/highscore.txt
+/Assets/Textures/icon2.png
+/Assets/Textures/icon3.png
+/Assets/Textures/icon4.png
+/Assets/Textures/icon5.png
