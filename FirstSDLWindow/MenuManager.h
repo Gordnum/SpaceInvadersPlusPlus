@@ -5,6 +5,7 @@
 #include <string>
 #include "SoundManager.h"
 #include "ScoreManager.h"
+#include "Utils.h"
 
 enum class MenuState 
 {
@@ -19,6 +20,7 @@ class MenuManager
 		TTF_Font* titleFont;
 		TTF_Font* choicesFont;
 		TTF_Font* creditsFont;
+		TTF_Font* starFont;
 
 		MenuState currentState;
 		int selectedIndex;
@@ -39,4 +41,5 @@ class MenuManager
 		void render();
 		void setInMainMenu(bool status);
 		bool isInMainMenu() const;
+		void renderStars(int starCount);
 };

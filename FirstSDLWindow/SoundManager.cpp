@@ -50,33 +50,35 @@ void SoundManager::stopChannel(int channel, int fadeMs)
 
 void SoundManager::loadAllSounds() 
 {
-    loadSound(SoundID::WEAPON_DEFAULT, "../Assets/SoundEffects/DEFAULT_SHOT.wav");
-    loadSound(SoundID::WEAPON_PIERCING, "../Assets/SoundEffects/piercing.wav");
-    loadSound(SoundID::WEAPON_BOMB, "../Assets/SoundEffects/bomb.wav");
-    loadSound(SoundID::WEAPON_TRIPMINE, "../Assets/SoundEffects/tripmine.wav");
-    loadSound(SoundID::ENEMY_DEATH, "../Assets/SoundEffects/enemy_death.wav");
-    loadSound(SoundID::BOMB_EXPLODE, "../Assets/SoundEffects/bomb_explode.wav");
-    loadSound(SoundID::ENEMY_SHOOT, "../Assets/SoundEffects/enemy_shoot.wav");
-    loadSound(SoundID::UFO_HOVER, "../Assets/SoundEffects/ufo_hover.wav");
-    loadSound(SoundID::UFO_DEATH, "../Assets/SoundEffects/ufo_death.wav");
-    loadSound(SoundID::CHANGE_TO_DEFAULT, "../Assets/SoundEffects/change_to_default.wav");
-    loadSound(SoundID::CHANGE_TO_PIERCING, "../Assets/SoundEffects/change_to_piercing.wav");
-    loadSound(SoundID::CHANGE_TO_BOMB, "../Assets/SoundEffects/change_to_bomb.wav");
-    loadSound(SoundID::CHANGE_TO_RAPID, "../Assets/SoundEffects/change_to_rapid.wav");
-    loadSound(SoundID::CHANGE_TO_TRIPMINE, "../Assets/SoundEffects/change_to_tripmine.wav");
-    loadSound(SoundID::TRIPMINE_SET_AND_EXPLODE, "../Assets/SoundEffects/tripmine_set_and_explode.wav");
-    loadSound(SoundID::PLAYER_HIT, "../Assets/SoundEffects/player_hit.wav");
-    loadSound(SoundID::PICKUP_COLLECT, "../Assets/SoundEffects/pickup_collect.wav");
-    loadSound(SoundID::LIFE_UP, "../Assets/SoundEffects/life_up.wav");
-    loadSound(SoundID::BOSS_TAKE_DAMAGE, "../Assets/SoundEffects/boss_take_damage.wav");
-    loadSound(SoundID::BOSS_SHOOT, "../Assets/SoundEffects/boss_shoot.wav");
-    loadSound(SoundID::MENU_ENTER, "../Assets/SoundEffects/menu_enter.wav");
-    loadSound(SoundID::MENU_UPDOWN, "../Assets/SoundEffects/menu_updown.wav");
-    loadSound(SoundID::MENU_BACK, "../Assets/SoundEffects/menu_back.wav");
-    loadSound(SoundID::CAMPAIGN_INTRO, "../Assets/SoundEffects/campaign_intro.wav");
-    loadSound(SoundID::BOSS_WARNING, "../Assets/SoundEffects/boss_warning.wav");
-    loadSound(SoundID::BOSS_DEATH, "../Assets/SoundEffects/boss_death.wav");
-    loadSound(SoundID::BOSS_HOVER, "../Assets/SoundEffects/boss_hover.wav");
+    std::string base = getExeDir();
+
+    loadSound(SoundID::WEAPON_DEFAULT, base + "Assets\\SoundEffects\\DEFAULT_SHOT.wav");
+    loadSound(SoundID::WEAPON_PIERCING, base + "Assets\\SoundEffects\\piercing.wav");
+    loadSound(SoundID::WEAPON_BOMB, base + "Assets\\SoundEffects\\bomb.wav");
+    loadSound(SoundID::WEAPON_TRIPMINE, base + "Assets\\SoundEffects\\tripmine.wav");
+    loadSound(SoundID::ENEMY_DEATH, base + "Assets\\SoundEffects\\enemy_death.wav");
+    loadSound(SoundID::BOMB_EXPLODE, base + "Assets\\SoundEffects\\bomb_explode.wav");
+    loadSound(SoundID::ENEMY_SHOOT, base + "Assets\\SoundEffects\\enemy_shoot.wav");
+    loadSound(SoundID::UFO_HOVER, base + "Assets\\SoundEffects\\ufo_hover.wav");
+    loadSound(SoundID::UFO_DEATH, base + "Assets\\SoundEffects\\ufo_death.wav");
+    loadSound(SoundID::CHANGE_TO_DEFAULT, base + "Assets\\SoundEffects\\change_to_default.wav");
+    loadSound(SoundID::CHANGE_TO_PIERCING, base + "Assets\\SoundEffects\\change_to_piercing.wav");
+    loadSound(SoundID::CHANGE_TO_BOMB, base + "Assets\\SoundEffects\\change_to_bomb.wav");
+    loadSound(SoundID::CHANGE_TO_RAPID, base + "Assets\\SoundEffects\\change_to_rapid.wav");
+    loadSound(SoundID::CHANGE_TO_TRIPMINE, base + "Assets\\SoundEffects\\change_to_tripmine.wav");
+    loadSound(SoundID::TRIPMINE_SET_AND_EXPLODE, base + "Assets\\SoundEffects\\tripmine_set_and_explode.wav");
+    loadSound(SoundID::PLAYER_HIT, base + "Assets\\SoundEffects\\player_hit.wav");
+    loadSound(SoundID::PICKUP_COLLECT, base + "Assets\\SoundEffects\\pickup_collect.wav");
+    loadSound(SoundID::LIFE_UP, base + "Assets\\SoundEffects\\life_up.wav");
+    loadSound(SoundID::BOSS_TAKE_DAMAGE, base + "Assets\\SoundEffects\\boss_take_damage.wav");
+    loadSound(SoundID::BOSS_SHOOT, base + "Assets\\SoundEffects\\boss_shoot.wav");
+    loadSound(SoundID::BOSS_WARNING, base + "Assets\\SoundEffects\\boss_warning.wav");
+    loadSound(SoundID::BOSS_DEATH, base + "Assets\\SoundEffects\\boss_death.wav");
+    loadSound(SoundID::BOSS_HOVER, base + "Assets\\SoundEffects\\boss_hover.wav");
+    loadSound(SoundID::MENU_ENTER, base + "Assets\\SoundEffects\\menu_enter.wav");
+    loadSound(SoundID::MENU_UPDOWN, base + "Assets\\SoundEffects\\menu_updown.wav");
+    loadSound(SoundID::MENU_BACK, base + "Assets\\SoundEffects\\menu_back.wav");
+    loadSound(SoundID::CAMPAIGN_INTRO, base + "Assets\\SoundEffects\\campaign_intro.wav");
 }
 
 void SoundManager::clean() 

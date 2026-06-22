@@ -5,7 +5,10 @@ const int SCREEN_WIDTH = 800;
 Boss::Boss(SDL_Renderer* renderer)
 	 : renderer(renderer), texture(nullptr), health(maxHealth), speed(100.0f), direction(1), active(false)
 {
-    SDL_Surface* surface = IMG_Load("../Assets/Textures/ufo.png");
+    std::string base = getExeDir();
+
+    SDL_Surface* surface = IMG_Load((base + "Assets\\Textures\\ufo.png").c_str());
+
     if (!surface)
     {
         SDL_Log("Failed to load boss texture: %s", IMG_GetError());
@@ -15,9 +18,8 @@ Boss::Boss(SDL_Renderer* renderer)
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
-    bossDeath.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/boss_death_1.png"));
-    bossDeath.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/boss_death_2.png"));
-
+    bossDeath.push_back(IMG_LoadTexture(renderer, (base + "Assets\\Textures\\boss_death_1.png").c_str()));
+    bossDeath.push_back(IMG_LoadTexture(renderer, (base + "Assets\\Textures\\boss_death_2.png").c_str()));
 
     rect = { 0, 100, 120, 60 };
     rect.x = (SCREEN_WIDTH - rect.w) / 2;
@@ -40,6 +42,13 @@ void Boss::activate()
     health = maxHealth;
     rect.x = (SCREEN_WIDTH - rect.w) / 2;
     lastShotTime = SDL_GetTicks();
+    lastSummonTime = SDL_GetTicks();
+
+    dying = false;
+    visible = true;
+    explosions.clear();
+    deathStartTime = 0;
+    lastExplosionSpawn = 0;
 
     hoverChannel = SoundManager::playLoop(SoundID::BOSS_HOVER);
 }

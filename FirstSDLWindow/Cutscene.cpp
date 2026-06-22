@@ -3,7 +3,9 @@
 Cutscene::Cutscene(SDL_Renderer* r) : renderer(r), currentLine(0), active(false),
 finished(false), lastSwitchTime(0), delayPerLine(3000)
 {
-    font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 24);
+    std::string base = getExeDir();
+
+    font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 24);
     if (!font)
     {
         SDL_Log("Font failed: %s", TTF_GetError());

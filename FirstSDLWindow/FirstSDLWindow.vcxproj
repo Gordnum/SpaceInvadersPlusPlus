@@ -124,11 +124,27 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\ASUS\source\repos\SDL2_ttf-2.24.0\include;C:\Users\ASUS\source\repos\SDL2_mixer-2.8.1\include;C:\Users\ASUS\source\repos\SDL2-2.32.8\include;C:\Users\ASUS\source\repos\SDL2_image-2.8.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\ASUS\source\repos\SDL2-2.32.8\lib\x64;C:\Users\ASUS\source\repos\SDL2_mixer-2.8.1\lib\x64;C:\Users\ASUS\source\repos\SDL2_ttf-2.24.0\lib\x64;C:\Users\ASUS\source\repos\SDL2_image-2.8.8\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy /y "C:\Users\ASUS\source\repos\SDL2-2.32.8\lib\x64\SDL2.dll" "$(OutDir)"
+xcopy /y "C:\Users\ASUS\source\repos\SDL2_ttf-2.24.0\lib\x64\SDL2_ttf.dll" "$(OutDir)"
+xcopy /y "C:\Users\ASUS\source\repos\SDL2_mixer-2.8.1\lib\x64\SDL2_mixer.dll" "$(OutDir)"
+xcopy /y "C:\Users\ASUS\source\repos\SDL2_image-2.8.8\lib\x64\SDL2_image.dll" "$(OutDir)"
+xcopy /y /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boss.cpp" />
@@ -169,6 +185,7 @@
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Pickup.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ScorePopup.h" />
     <ClInclude Include="SoundManager.h" />

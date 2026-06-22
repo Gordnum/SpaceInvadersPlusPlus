@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include "ScoreManager.h"
 #include "GameMode.h"
+#include "Utils.h"
 
 class FinalResults
 {

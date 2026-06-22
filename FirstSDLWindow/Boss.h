@@ -5,6 +5,7 @@
 #include <memory>
 #include "BossBullet.h"
 #include "SoundManager.h"
+#include "Utils.h"
 
 struct BossDeathExplosion
 {
@@ -12,9 +13,7 @@ struct BossDeathExplosion
     int frame = 0;
     Uint32 lastFrameTime = 0;
     Uint32 startTime = 0;
-
 };
-
 
 class Boss
 {
@@ -26,7 +25,7 @@ class Boss
 
         SDL_Rect rect;
         int health;
-        const int maxHealth = 200;
+        const int maxHealth = 400;
         float speed;
         int direction;
         bool active;

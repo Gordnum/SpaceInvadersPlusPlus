@@ -1,3 +1,4 @@
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 #include <SDL.h>
 #include "Game.h"
 #include <iostream>

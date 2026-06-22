@@ -3,6 +3,7 @@
 #include <SDL_ttf.h>
 #include <vector>
 #include <string>
+#include "Utils.h"
 
 class Cutscene
 {

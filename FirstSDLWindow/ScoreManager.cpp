@@ -11,7 +11,9 @@ ScoreManager::ScoreManager(SDL_Renderer* renderer)
 	campaignHighscore(0), endlessHighscore(0), nextPickupThreshold(500), nextGiveLivesThreshold(5000), shouldSpawnPickup(false), 
 	endlessUnlocked(false), currentMode(GameMode::CAMPAIGN)
 {
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	std::string base = getExeDir();
+
+	font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
 	if (!font)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
@@ -73,7 +75,7 @@ void ScoreManager::setCampaignHighScore(int value)
 	if (value > campaignHighscore)
 	{
 		campaignHighscore = value;
-		saveHighScore("../Assets/highscore.txt");
+		saveHighScore((getExeDir() + "Assets\\highscore.txt").c_str());
 	}
 }
 
@@ -82,36 +84,49 @@ void ScoreManager::setEndlessHighScore(int value)
 	if (value > endlessHighscore)
 	{
 		endlessHighscore = value;
-		saveHighScore("../Assets/highscore.txt");
+		saveHighScore((getExeDir() + "Assets\\highscore.txt").c_str());
 	}
 }
 
 void ScoreManager::saveHighScore(const std::string& filename)
 {
-	std::ofstream file(filename);
+	std::string plaintext = std::to_string(campaignHighscore) + "\n" +
+							std::to_string(endlessHighscore) + "\n" +
+							std::to_string(endlessUnlocked);
+	
+	std::string encrypted = xorEncryptDecrypt(plaintext);
+
+	std::ofstream file(filename, std::ios::binary);
 	if (file.is_open())
 	{
-		file << campaignHighscore << std::endl;
-		file << endlessHighscore << std::endl;
-		file << endlessUnlocked;
+		file.write(encrypted.c_str(), encrypted.size());
 		file.close();
 	}
 }
 
 void ScoreManager::loadHighScore(const std::string& filename)
 {
-	std::ifstream file(filename);
-	if (file.is_open())
+	std::ifstream file(filename, std::ios::binary);
+	if (!file.is_open()) return;
+
+	std::string encrypted((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	file.close();
+
+	std::string decrypted = xorEncryptDecrypt(encrypted);
+
+	try
 	{
-		file >> campaignHighscore;
-		file >> endlessHighscore;
-
-		if (!(file >> endlessUnlocked))
-		{
+		std::istringstream ss(decrypted);
+		ss >> campaignHighscore;
+		ss >> endlessHighscore;
+		if (!(ss >> endlessUnlocked))
 			endlessUnlocked = false;
-		}
-
-		file.close();
+	}
+	catch (...)
+	{
+		campaignHighscore = 0;
+		endlessHighscore = 0;
+		endlessUnlocked = false;
 	}
 }
 
@@ -232,6 +247,17 @@ void ScoreManager::unlockEndless()
 	if (!endlessUnlocked)
 	{
 		endlessUnlocked = true;
-		saveHighScore("../Assets/highscore.txt");
+		saveHighScore((getExeDir() + "Assets\\highscore.txt").c_str());
 	}
+}
+
+int ScoreManager::getStarCount() const
+{
+	int stars = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		if (endlessHighscore >= STAR_THRESHOLDS[i])
+			stars++;
+	}
+	return stars;
 }

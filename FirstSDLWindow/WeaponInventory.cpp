@@ -7,9 +7,11 @@ WeaponInventory::WeaponInventory()
 				:currentIndex(0), font(nullptr), animationOffset(0.0f), 
 				 animationSpeed(5.0f), isAnimating(false), animationDirection(0), deltaTime(0.0f)
 {
-	smallFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 16);
-	largeFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	std::string base = getExeDir();
+
+	smallFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 16);
+	largeFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
+	font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
 
 	if (!font)
 		SDL_Log("Failed to load ammo font: %s", TTF_GetError());

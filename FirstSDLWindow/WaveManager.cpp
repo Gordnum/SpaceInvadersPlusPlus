@@ -9,7 +9,9 @@ WaveManager::WaveManager()
              showingWaveIntro(false), waveIntroStartTime(0), waveIntroDuration(2000), bossWaveIntroDuration(9000),
              bossWarningPlayed(false), introType(waveIntroType::NORMAL)
 {
-    font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
+    std::string base = getExeDir();
+
+    font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 48);
     if (!font)
         SDL_Log("Failed to load wave font: %s", TTF_GetError());
 }
@@ -179,6 +181,11 @@ void WaveManager::reset()
     currentWave = 1;
     enemySpeedMultiplier = 10.0f;
     projectileSpeedMultiplier = 300.0f;
+    showingWaveIntro = false;
+    bossWarningPlayed = false;
+    introType = waveIntroType::NORMAL;
+    waveIntroDuration = 2000;
+    waveIntroStartTime = 0;
 }
 
 int WaveManager::getWave() const { return currentWave; }

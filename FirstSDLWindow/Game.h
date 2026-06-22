@@ -26,6 +26,7 @@
 #include "Pickup.h"
 #include "Cutscene.h"
 #include "FinalResults.h"
+#include "Utils.h"
 
 enum class GameState
 {
@@ -55,97 +56,97 @@ enum class BossDeathState
 
 class Game
 {
-private:
-    void handleEvents();
-    void update();
-    void render();
+    private:
+        void handleEvents();
+        void update();
+        void render();
 
-    GameMode currentMode;
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    bool isRunning;
-    bool isGameOver;
+        GameMode currentMode;
+        SDL_Window* window;
+        SDL_Renderer* renderer;
+        bool isRunning;
+        bool isGameOver;
 
-    GameOverPhase gameOverPhase = GameOverPhase::NONE;
-    unsigned int gameOverStartTime = 0;
+        GameOverPhase gameOverPhase = GameOverPhase::NONE;
+        unsigned int gameOverStartTime = 0;
 
-    GameState gameState;
-    std::unique_ptr<Cutscene> cutscene;
+        GameState gameState;
+        std::unique_ptr<Cutscene> cutscene;
 
-    BossDeathState bossDeathState = BossDeathState::NONE;
-    unsigned int bossDeathStartTime = 0;
-    unsigned short fadeAlpha = 0;
+        BossDeathState bossDeathState = BossDeathState::NONE;
+        unsigned int bossDeathStartTime = 0;
+        unsigned short fadeAlpha = 0;
 
-    std::unique_ptr<Player> player;
-    std::unique_ptr<Bullet> bullet;
-    std::unique_ptr<Enemy> enemy;
-    std::unique_ptr<UFO> ufo;
-    std::unique_ptr<Boss> boss;
-    std::unique_ptr<ComboManager> comboManager;
-    std::unique_ptr<WaveManager> waveManager;
-    std::unique_ptr<FinalResults> finalResults;
-    std::unique_ptr<WeaponInventory> weaponInventory;
-    std::unique_ptr<ScoreManager> scoreManager;
-    std::unique_ptr<BulletManager> bulletManager;
-    std::unique_ptr<MenuManager> menuManager;
+        std::unique_ptr<Player> player;
+        std::unique_ptr<Bullet> bullet;
+        std::unique_ptr<Enemy> enemy;
+        std::unique_ptr<UFO> ufo;
+        std::unique_ptr<Boss> boss;
+        std::unique_ptr<ComboManager> comboManager;
+        std::unique_ptr<WaveManager> waveManager;
+        std::unique_ptr<FinalResults> finalResults;
+        std::unique_ptr<WeaponInventory> weaponInventory;
+        std::unique_ptr<ScoreManager> scoreManager;
+        std::unique_ptr<BulletManager> bulletManager;
+        std::unique_ptr<MenuManager> menuManager;
 
-    std::vector<std::unique_ptr<Enemy>> enemies;
-    std::vector<std::unique_ptr<Pickup>> pickups;
-    std::vector<std::unique_ptr<Bullet>> enemyBullets;
-    std::vector<std::unique_ptr<BossBullet>> bossBullets;
-    std::vector<std::unique_ptr<ScorePopup>> scorePopup;
+        std::vector<std::unique_ptr<Enemy>> enemies;
+        std::vector<std::unique_ptr<Pickup>> pickups;
+        std::vector<std::unique_ptr<Bullet>> enemyBullets;
+        std::vector<std::unique_ptr<BossBullet>> bossBullets;
+        std::vector<std::unique_ptr<ScorePopup>> scorePopup;
 
-    int enemyDirection = 1;
-    unsigned int lastMoveTime = 0;
-    unsigned int moveInterval = 700;
-    unsigned int lastUFOSpawnTime = 0;
-    unsigned int ufoSpawnInterval = 13000;
-    bool hasBounced = false;
-    bool enemyDropPending = false;
+        int enemyDirection = 1;
+        unsigned int lastMoveTime = 0;
+        unsigned int moveInterval = 700;
+        unsigned int lastUFOSpawnTime = 0;
+        unsigned int ufoSpawnInterval = 13000;
+        bool hasBounced = false;
+        bool enemyDropPending = false;
 
-    unsigned int lastEnemyShotTime = 0;
-    const unsigned int enemyShootCooldown = 2000; // every 2 seconds
-    bool highScoreSaved = false;
+        unsigned int lastEnemyShotTime = 0;
+        const unsigned int enemyShootCooldown = 2000; // every 2 seconds
+        bool highScoreSaved = false;
 
-    unsigned int fpsTimer = SDL_GetTicks();
-    int frameCount = 0;
+        unsigned int fpsTimer = SDL_GetTicks();
+        int frameCount = 0;
 
-    float deltaTime;
-    unsigned int lastTicks;
+        float deltaTime;
+        unsigned int lastTicks;
 
-    float calculateDeltaTime();
+        float calculateDeltaTime();
 
-    struct TripmineExplosion
-    {
-        int rowY;
-        unsigned int triggerTime;
-        unsigned int renderUntil;
-        bool exploded = false;
-        bool hitBoss = false;
-        bool hitUFO = false;
-    };
+        struct TripmineExplosion
+        {
+            int rowY;
+            unsigned int triggerTime;
+            unsigned int renderUntil;
+            bool exploded = false;
+            bool hitBoss = false;
+            bool hitUFO = false;
+        };
 
-    std::vector<TripmineExplosion> pendingTripmines;
+        std::vector<TripmineExplosion> pendingTripmines;
 
-    //bounce threshold
-    const int enemyMinX = 20;
-    const int enemyMaxX = 780;
-    const int enemyDropY = 15;
+        //bounce threshold
+        const int enemyMinX = 20;
+        const int enemyMaxX = 780;
+        const int enemyDropY = 15;
 
-    //piercing shot flash screen
-    bool flashActive = false;
-    unsigned int flashStartTime = 0;
-    const unsigned int flashDuration = 1500;
+        //piercing shot flash screen
+        bool flashActive = false;
+        unsigned int flashStartTime = 0;
+        const unsigned int flashDuration = 1500;
 
-    bool returningToMenu = false;
+        bool returningToMenu = false;
 
-    std::unordered_map<int, unsigned int> rowLastShotTime;
-    std::unordered_map<int, bool> rowHasActiveBullet;
+        std::unordered_map<int, unsigned int> rowLastShotTime;
+        std::unordered_map<int, bool> rowHasActiveBullet;
 
-public:
-    Game();
-    ~Game();
-    bool init();
-    void run();
-    void clean();
+    public:
+        Game();
+        ~Game();
+        bool init();
+        void run();
+        void clean();
 };

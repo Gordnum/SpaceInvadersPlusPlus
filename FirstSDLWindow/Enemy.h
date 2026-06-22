@@ -6,6 +6,7 @@
 #include <SDL_image.h>
 #include <iostream>
 #include <memory>
+#include "Utils.h"
 
 enum class EnemyType 
 { 

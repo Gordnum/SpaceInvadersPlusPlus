@@ -4,6 +4,7 @@
 #include <SDL_mixer.h>
 #include <SDL.h>
 #include "WeaponType.h"
+#include "Utils.h"
 
 enum class SoundID 
 {

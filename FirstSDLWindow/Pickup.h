@@ -20,5 +20,4 @@ class Pickup
 		WeaponType getType() const;
 		bool isCollected() const;
 		void collect();
-
 };

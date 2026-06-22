@@ -4,7 +4,9 @@
 ComboManager::ComboManager()
 	:font(nullptr), color{ 255, 255, 255 } 
 {
-	font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	std::string base = getExeDir();
+
+	font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
 	if (!font)
 		SDL_Log("Failed to load combo font: %s", TTF_GetError());
 

@@ -74,7 +74,7 @@ bool Game::init()
 	comboManager = std::make_unique<ComboManager>();
 	weaponInventory = std::make_unique<WeaponInventory>();
 	bulletManager = std::make_unique<BulletManager>(renderer);
-	scoreManager->loadHighScore("../Assets/highscore.txt");
+	scoreManager->loadHighScore((getExeDir() + "Assets\\highscore.txt").c_str());
 
 	isRunning = true;
 	return true;
@@ -131,8 +131,19 @@ void Game::handleEvents()
 				lastUFOSpawnTime = SDL_GetTicks();
 				waveManager->startWaveIntro();
 			}
-			return;
 		}
+		return;
+	}
+
+	if (gameState == GameState::INTRO_CUTSCENE || gameState == GameState::WIN_CUTSCENE || gameState == GameState::FINAL_RESULTS)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+				isRunning = false;
+		}
+		return; // ignore everything else
 	}
 
 	SDL_Event event;
@@ -244,7 +255,6 @@ void Game::update()
 			gameState = GameState::PLAYING;
 			waveManager->startWaveIntro();
 			lastUFOSpawnTime = SDL_GetTicks();
-			pickups.push_back(std::move(std::make_unique<Pickup>(renderer, 400, PLAYFIELD_UPPER_MARGIN, WeaponType::BOMB_SHOT)));
 		}
 
 		return;
@@ -268,6 +278,8 @@ void Game::update()
 			rowLastShotTime.clear();
 			rowHasActiveBullet.clear();
 
+			bossDeathState = BossDeathState::NONE;
+			fadeAlpha = 0;
 			boss->deactivate();
 			ufo->deactivate();
 
@@ -326,6 +338,7 @@ void Game::update()
 				finalResults->close();
 				SoundManager::playSound(SoundID::MENU_ENTER);
 				
+				SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 				menuManager->setInMainMenu(true);
 				gameState = GameState::PLAYING;
 			}
@@ -1259,7 +1272,9 @@ void Game::update()
 	}
 
 	// UFO
-	if (!boss->isActive() && currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
+	bool inBossIntro = waveManager->getWaveIntro() && waveManager->getIntroType() == waveIntroType::BOSS;
+
+	if (!boss->isActive() && !inBossIntro && currentTime - lastUFOSpawnTime >= ufoSpawnInterval)
 	{
 		if (!ufo->isActive())
 		{
@@ -1293,7 +1308,7 @@ void Game::update()
 	// NEW HIGHSCORE
 	if (isGameOver && !highScoreSaved)
 	{
-		scoreManager->saveHighScore("../Assets/highscore.txt");
+		scoreManager->saveHighScore((getExeDir() + "Assets\\highscore.txt").c_str());
 		highScoreSaved = true;
 	}
 
@@ -1318,6 +1333,7 @@ void Game::update()
 		if (currentMode == GameMode::CAMPAIGN && waveManager->getWave() == 20) //set boss spawn wave
 		{
 			ufo->deactivate();
+			lastUFOSpawnTime = SDL_GetTicks();
 			enemies.clear();
 			waveManager->startWaveIntro(waveIntroType::BOSS);
 		}
@@ -1627,7 +1643,7 @@ void Game::render()
 		if (gameOverScreen - gameOverStartTime >= 2000) // time to activate the game over screen
 		{
 			SDL_Color color = { 255, 0, 0 };
-			TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
+			TTF_Font* font = TTF_OpenFont((getExeDir() + "Assets\\Fonts\\space_invaders.ttf").c_str(), 48);
 
 			if (!font)
 			{

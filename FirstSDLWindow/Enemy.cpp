@@ -56,11 +56,13 @@ std::vector<std::unique_ptr<Enemy>> Enemy::createFormation(SDL_Renderer* rendere
 
 void Enemy::LoadTextures(SDL_Renderer* renderer)
 {
+	std::string base = getExeDir();
+
 	std::map<EnemyType, std::vector<std::string>> texturePaths = 
 	{
-		{ EnemyType::SQUID,   { "../Assets/Textures/squid_1.png", "../Assets/Textures/squid_2.png" } },
-		{ EnemyType::OCTOPUS, { "../Assets/Textures/octopus_1.png", "../Assets/Textures/octopus_2.png" } },
-		{ EnemyType::CRAB,    { "../Assets/Textures/crab_1.png", "../Assets/Textures/crab_2.png" } }
+		{ EnemyType::SQUID,   { (base + "Assets\\Textures\\squid_1.png").c_str(), (base + "Assets\\Textures\\squid_2.png").c_str() } },
+		{ EnemyType::OCTOPUS, { (base + "Assets\\Textures\\octopus_1.png").c_str(), (base + "Assets\\Textures\\octopus_2.png").c_str() } },
+		{ EnemyType::CRAB,    { (base + "Assets\\Textures\\crab_1.png").c_str(), (base + "Assets\\Textures\\crab_2.png").c_str() } }
 	};
 
 	for (auto& pair : texturePaths)
@@ -85,8 +87,8 @@ void Enemy::LoadTextures(SDL_Renderer* renderer)
 
 	std::vector<std::string> deathPaths = 
 	{
-		"../Assets/Textures/enemy_death_1.png",
-		"../Assets/Textures/enemy_death_2.png"
+		(base + "Assets\\Textures\\enemy_death_1.png").c_str(),
+		(base + "Assets\\Textures\\enemy_death_2.png").c_str()
 	};
 
 	for (const std::string& path : deathPaths) 

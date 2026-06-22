@@ -9,7 +9,9 @@ Player::Player(SDL_Renderer* renderer)
 {
     rect = { 375, 475, 55, 28 };
 
-    font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+    std::string base = getExeDir();
+
+    font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
     if (!font)
         SDL_Log("Failed to load font: %s", TTF_GetError());
 
@@ -69,11 +71,13 @@ void Player::handleEvent(const SDL_Event& e)
 
 void Player::loadWeaponTextures(SDL_Renderer* renderer)
 {
-    weaponTextures[WeaponType::DEFAULT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
-    weaponTextures[WeaponType::PIERCING_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_2.png");
-    weaponTextures[WeaponType::BOMB_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_2.png");
-    weaponTextures[WeaponType::TRIPMINE] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
-    weaponTextures[WeaponType::RAPID_SHOT] = IMG_LoadTexture(renderer, "../Assets/Textures/player_1.png");
+    std::string base = getExeDir();
+
+    weaponTextures[WeaponType::DEFAULT] = IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_1.png").c_str());
+    weaponTextures[WeaponType::PIERCING_SHOT] = IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_2.png").c_str());
+    weaponTextures[WeaponType::BOMB_SHOT] = IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_2.png").c_str());
+    weaponTextures[WeaponType::TRIPMINE] = IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_1.png").c_str());
+    weaponTextures[WeaponType::RAPID_SHOT] = IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_1.png").c_str());
 
     // Fallback default
     currentTexture = weaponTextures[WeaponType::DEFAULT];
@@ -87,8 +91,10 @@ void Player::setWeaponTexture(WeaponType type)
 
 void Player::loadDeathTextures(SDL_Renderer* renderer)
 {
-    deathFrames.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/player_death_1.png"));
-    deathFrames.push_back(IMG_LoadTexture(renderer, "../Assets/Textures/player_death_2.png"));
+    std::string base = getExeDir();
+
+    deathFrames.push_back(IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_death_1.png").c_str()));
+    deathFrames.push_back(IMG_LoadTexture(renderer, (base + "Assets\\Textures\\player_death_2.png").c_str()));
 }
 
 void Player::startDeathAnimation()
@@ -111,9 +117,6 @@ void Player::render()
     }
 
     if (!visible) return;
-
-    if (currentTexture)
-        SDL_RenderCopy(renderer, currentTexture, nullptr, &rect);
 
     if (!font)
     {

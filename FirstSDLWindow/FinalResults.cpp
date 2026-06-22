@@ -4,8 +4,9 @@
 
 FinalResults::FinalResults()
 {
-    font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+    std::string base = getExeDir();
 
+    font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
     if (!font)
         SDL_Log("Failed to load ammo font: %s", TTF_GetError());
 

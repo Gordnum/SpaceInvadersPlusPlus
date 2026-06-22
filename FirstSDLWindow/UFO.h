@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <SDL_image.h>
+#include "Utils.h"
 
 class UFO
 {

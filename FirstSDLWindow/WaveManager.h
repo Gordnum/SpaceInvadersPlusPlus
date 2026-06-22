@@ -3,6 +3,7 @@
 #include <SDL_ttf.h>
 #include <string>
 #include "SoundManager.h"
+#include "Utils.h"
 
 enum class waveIntroType
 {

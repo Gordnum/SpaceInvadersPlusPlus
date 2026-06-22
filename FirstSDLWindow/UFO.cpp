@@ -15,7 +15,9 @@ UFO::UFO(SDL_Renderer* renderer)
 
 void UFO::LoadTextures(SDL_Renderer* renderer)
 {
-	std::string texturePath = "../Assets/Textures/ufo.png";
+	std::string base = getExeDir();
+
+	std::string texturePath = (base + "Assets\\Textures\\ufo.png");
 	SDL_Surface* surface = IMG_Load(texturePath.c_str());
 	if (!surface)
 		SDL_Log("Failed to load enemy image: %s", IMG_GetError());
@@ -26,8 +28,8 @@ void UFO::LoadTextures(SDL_Renderer* renderer)
 
 	std::vector<std::string> deathPaths =
 	{
-		"../Assets/Textures/ufo_death_1.png",
-		"../Assets/Textures/ufo_death_2.png"
+		(base + "Assets\\Textures\\ufo_death_1.png").c_str(),
+		(base + "Assets\\Textures\\ufo_death_2.png").c_str()
 	};
 
 	for (const std::string& path : deathPaths)

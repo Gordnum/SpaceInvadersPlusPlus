@@ -6,20 +6,28 @@ const int SCREEN_HEIGHT = 600;
 MenuManager::MenuManager(SDL_Renderer* renderer, ScoreManager* scoreManager)
 			:renderer(renderer), titleFont(nullptr), choicesFont(nullptr), currentState(MenuState::Main), selectedIndex(0), inMainMenu(true), scoreManager(scoreManager)
 {
-	titleFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 48);
+	std::string base = getExeDir();
+
+	titleFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 48);
 	if (!titleFont)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
 	}
 
-	choicesFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 24);
+	choicesFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 24);
 	if (!choicesFont)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
 	}
 
-	creditsFont = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 20);
+	creditsFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 20);
 	if (!choicesFont)
+	{
+		SDL_Log("Failed to load font: %s", TTF_GetError());
+	}
+
+	starFont = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 28);
+	if (!starFont)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
 	}
@@ -126,7 +134,38 @@ void MenuManager::render()
 	SDL_FreeSurface(creditsSurface);
 	SDL_DestroyTexture(creditsTexture);
 
+	renderStars(scoreManager->getStarCount());
+
 	SDL_RenderPresent(renderer);
+}
+
+void MenuManager::renderStars(int starCount)
+{
+	const int STAR_SPACING = 50;
+	const int START_X = 40;
+	const int START_Y = 555;
+
+	for (int i = 0; i < starCount; i++)
+	{
+		SDL_Color color = SDL_Color{ 255, 215, 0 };
+
+		SDL_Surface* surface = TTF_RenderText_Solid(starFont, "*", color);
+		if (!surface) continue;
+
+		SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+
+		SDL_Rect rect =
+		{
+			START_X + i * STAR_SPACING,
+			START_Y,
+			surface->w,
+			surface->h
+		};
+
+		SDL_RenderCopy(renderer, tex, nullptr, &rect);
+		SDL_FreeSurface(surface);
+		SDL_DestroyTexture(tex);
+	}
 }
 
 void MenuManager::renderMainMenu()

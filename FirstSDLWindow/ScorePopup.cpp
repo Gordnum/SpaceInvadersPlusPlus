@@ -3,7 +3,9 @@
 ScorePopup::ScorePopup(SDL_Renderer* renderer, const std::string& text, int x, int y, float multiplier, SDL_Color* overrideColor)
 	: texture(nullptr), lifetime(0.0f)
 {
-	TTF_Font* font = TTF_OpenFont("../Assets/Fonts/space_invaders.ttf", 18);
+	std::string base = getExeDir();
+
+	TTF_Font* font = TTF_OpenFont((base + "Assets\\Fonts\\space_invaders.ttf").c_str(), 18);
 	if (!font)
 	{
 		SDL_Log("Failed to load font: %s", TTF_GetError());
