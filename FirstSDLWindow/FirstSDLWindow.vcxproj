@@ -125,7 +125,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\ASUS\source\repos\SDL2_ttf-2.24.0\include;C:\Users\ASUS\source\repos\SDL2_mixer-2.8.1\include;C:\Users\ASUS\source\repos\SDL2-2.32.8\include;C:\Users\ASUS\source\repos\SDL2_image-2.8.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,6 +185,7 @@ xcopy /y /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Pickup.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ScorePopup.h" />
@@ -193,6 +194,9 @@ xcopy /y /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
     <ClInclude Include="WaveManager.h" />
     <ClInclude Include="WeaponInventory.h" />
     <ClInclude Include="WeaponType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
